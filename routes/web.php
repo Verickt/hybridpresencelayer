@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\MagicLinkController;
+use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\BoothDemoController;
 use App\Http\Controllers\BoothModerationController;
@@ -9,10 +10,12 @@ use App\Http\Controllers\BoothTabletController;
 use App\Http\Controllers\BoothThreadController;
 use App\Http\Controllers\BoothVisitController;
 use App\Http\Controllers\CallController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ConnectionListController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventProfileController;
 use App\Http\Controllers\EventSetupController;
+use App\Http\Controllers\EventSetupPageController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
@@ -20,14 +23,17 @@ use App\Http\Controllers\OrganizerActionController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\QrResolveController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionQrDisplayController;
 use App\Http\Controllers\SessionQuestionController;
 use App\Http\Controllers\SessionReactionController;
+use App\Http\Controllers\SharedInterestController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\SuggestionController;
+use App\Http\Controllers\VideoCallController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
@@ -94,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/dashboard', DashboardController::class)->name('event.dashboard');
 
+    Route::get('/events/create', EventSetupPageController::class)->name('events.create');
     Route::post('/events', [EventSetupController::class, 'store'])->name('events.store');
     Route::patch('/events/{event:slug}', [EventSetupController::class, 'update'])->name('events.update');
     Route::post('/events/{event:slug}/import-attendees', [EventSetupController::class, 'importAttendees'])->name('events.import-attendees');
@@ -105,6 +112,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');
     Route::patch('/event/{event:slug}/ping/{ping}/ignore', [PingController::class, 'ignore'])->name('event.ping.ignore');
+
+    Route::post('/event/{event:slug}/block/{user}', [BlockController::class, 'store'])->name('event.block');
+    Route::delete('/event/{event:slug}/block/{user}', [BlockController::class, 'destroy'])->name('event.unblock');
+    Route::post('/event/{event:slug}/report/{user}', [ReportController::class, 'store'])->name('event.report');
+
+    Route::post('/event/{event:slug}/share-interest', [SharedInterestController::class, 'store'])->name('event.share-interest');
+    Route::get('/event/{event:slug}/shared-interests', [SharedInterestController::class, 'index'])->name('event.shared-interests');
+
+    Route::get('/event/{event:slug}/connections/{connection}/chat', ChatController::class)->name('event.connection.chat');
+    Route::get('/event/{event:slug}/connections/{connection}/call/{call}', VideoCallController::class)->name('event.connection.call');
 
     Route::get('/connections/{connection}/messages', [MessageController::class, 'index'])->name('connection.messages.index');
     Route::post('/connections/{connection}/messages', [MessageController::class, 'store'])->name('connection.messages.store');
