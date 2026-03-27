@@ -100,6 +100,60 @@ Random encounters are not random — they are systematically manufactured throug
 - Needs data: who connected, which sessions drove networking, booth performance
 - New KPIs beyond attendance: connection quality, cross-pollination
 
+## Ideal Customer Profile (ICP)
+
+### Primary
+- **B2B conferences & association events** with 200–2,000 attendees
+- 10–40% remote participation
+- Meaningful sponsor/exhibitor booths
+- Professional networking is a stated event goal
+
+### Secondary
+- Innovation summits, hackathons, industry meetups
+- Recurring event series (quarterly, annual)
+
+### Anti-ICP
+- Pure entertainment events (concerts, festivals)
+- Events with <50 attendees (too sparse for algorithmic matching)
+- Events with >90% single-mode attendance (no hybrid gap to bridge)
+- Events where sponsor ROI is irrelevant
+
+## Business Model
+
+### Pricing Structure
+- **Per-event licensing** with attendee-tier pricing (organizers pay, participants never pay)
+- **Free**: ≤50 attendees, basic features (presence + ping + chat)
+- **Pro**: ≤500 attendees, full features, basic analytics
+- **Enterprise**: Unlimited attendees, white-label, API access, SSO, advanced analytics, CRM integrations
+- **Annual contracts** for recurring event series (discount vs. per-event)
+
+### Revenue Expansion
+- **Sponsor/Booth add-ons**: Premium booth features (lead scoring, priority placement in discovery, branded cards, analytics webhooks)
+- **Post-event data packages**: Anonymized aggregate analytics for organizers (networking heatmaps, session-to-connection attribution)
+- **API access**: Embeddable presence widget for organizers' own platforms
+
+### Value Proposition by Actor
+- **Organizers**: Measurable networking ROI, new KPIs beyond attendance, sponsor satisfaction data
+- **Sponsors/Exhibitors**: Qualified leads from both worlds, session-to-booth attribution, response SLAs
+- **Participants**: Zero cost, zero friction — meet people you wouldn't have met otherwise
+
+## Go-to-Market
+
+1. **Start with tech conferences** — highest tolerance for new tools, most hybrid-forward audiences
+2. **Partner with event platforms** (Eventbrite, Luma, Hopin) as a "networking add-on", not a competitor
+3. **Free for community/non-profit events** — build word-of-mouth and case studies
+4. **High-touch sales for enterprise** — event agencies, conference operators, associations
+5. **Use BSI Connection Challenge as live proof-of-concept**
+
+## Competitive Positioning
+
+We are NOT an event platform. We are the **social infrastructure layer** that sits on top of any event setup. The moat is:
+
+1. **Interaction graph**: Accumulated data on what makes connections work at events
+2. **Outcome measurement**: The system that proves networking ROI (cross-pollination rate, lead quality, follow-up completion)
+3. **Organizer playbooks**: Event-type-specific matching configurations and engagement patterns
+4. **Platform integrations**: Deep connectors into registration, CRM, and streaming stacks
+
 ## Technical Approach
 
 - **PWA** (Progressive Web App) — no app store, instant access via QR/link

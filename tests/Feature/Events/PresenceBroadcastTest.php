@@ -28,7 +28,7 @@ it('broadcasts on the event presence channel', function () {
     $event = Event::factory()->live()->create();
     $user = User::factory()->create();
 
-    $broadcastEvent = new PresenceStateChanged($event, $user, 'available', 'Watching: Zero Trust Keynote');
+    $broadcastEvent = new PresenceStateChanged($event, $user, 'available', 'In session: Zero Trust Keynote');
 
     expect($broadcastEvent->broadcastOn()->name)->toBe("private-event.{$event->id}.presence");
 });

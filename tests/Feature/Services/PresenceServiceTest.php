@@ -48,7 +48,7 @@ it('sets context badge when checking into a session', function () {
     $pivot = $this->user->events()->where('event_id', $this->event->id)->first()->pivot;
 
     expect($pivot->status)->toBe('in_session')
-        ->and($pivot->context_badge)->toBe('Watching: Zero Trust Keynote');
+        ->and($pivot->context_badge)->toBe('In session: Zero Trust Keynote');
 });
 
 it('clears context badge when checking out of a session', function () {
@@ -93,8 +93,17 @@ it('replaces booth context with session context when the participant moves into 
     $pivot = $this->user->events()->where('event_id', $this->event->id)->first()->pivot;
 
     expect($pivot->status)->toBe('in_session')
-        ->and($pivot->context_badge)->toBe('Watching: Zero Trust Keynote');
+        ->and($pivot->context_badge)->toBe('In session: Zero Trust Keynote');
 });
+
+it('rejects session check-ins for users who are not participants', function () {
+    $outsider = User::factory()->create();
+    $session = EventSession::factory()->create([
+        'event_id' => $this->event->id,
+    ]);
+
+    $this->service->checkInToSession($outsider, $this->event, $session);
+})->throws(AuthorizationException::class);
 
 it('marks a participant as away after inactivity', function () {
     $this->service->markInactive($this->user, $this->event);

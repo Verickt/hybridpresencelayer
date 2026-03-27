@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booth;
+use App\Models\BoothVisit;
 use App\Models\Event;
 use App\Models\EventSession;
+use App\Models\SessionCheckIn;
 use App\Services\PresenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,18 +36,28 @@ class QrResolveController extends Controller
             return response()->json(['message' => 'Not a participant of this event.'], 403);
         }
 
-        // Validate the signed URL
-        if (! URL::hasCorrectSignature($this->buildFakeRequest($payload), false, ['signature'])) {
-            // Check if it's expired vs just invalid
-            if (URL::hasCorrectSignature($this->buildFakeRequest($payload), false)) {
+        // Build a fake request for signature validation
+        $fakeRequest = Request::create(
+            url($payload),
+            'GET',
+        );
+
+        // Check signature validity (relative = true for relative signed URLs)
+        $hasValidSignature = URL::hasCorrectSignature($fakeRequest, false);
+        $hasNotExpired = URL::signatureHasNotExpired($fakeRequest);
+
+        if (! $hasNotExpired && $hasValidSignature) {
+            return response()->json(['message' => 'QR code has expired.'], 410);
+        }
+
+        if (! $hasValidSignature) {
+            // It might be expired — check ignoring expiry
+            $fakeRequestForExpiry = Request::create(url($payload), 'GET');
+            if (URL::hasCorrectSignature($fakeRequestForExpiry, false, ['expires'])) {
                 return response()->json(['message' => 'QR code has expired.'], 410);
             }
 
             return response()->json(['message' => 'Invalid QR payload.'], 422);
-        }
-
-        if (URL::signatureHasNotExpired($this->buildFakeRequest($payload)) === false) {
-            return response()->json(['message' => 'QR code has expired.'], 410);
         }
 
         // Resolve the route from the payload
@@ -56,17 +68,29 @@ class QrResolveController extends Controller
         }
 
         $routeName = $matchedRoute->getName();
-        $parameters = $matchedRoute->parameters();
+        $rawParams = $matchedRoute->parameters();
 
-        // Verify event scope
-        $payloadEvent = $parameters['event'] ?? null;
-        if (! $payloadEvent instanceof Event || $payloadEvent->id !== $event->id) {
-            return response()->json(['message' => 'QR code belongs to a different event.'], 403);
+        // Verify event scope before handling the QR action.
+        $payloadEvent = $rawParams['event'] ?? null;
+        $payloadEventSlug = $payloadEvent instanceof Event
+            ? $payloadEvent->slug
+            : $payloadEvent;
+
+        if (! $payloadEventSlug || $payloadEventSlug !== $event->slug) {
+            return response()->json(['message' => 'QR code belongs to a different event.'], 422);
         }
 
         return match ($routeName) {
-            'event.sessions.qr-checkin' => $this->handleSessionCheckIn($request, $event, $parameters['session'], $presenceService),
-            'event.booths.qr-checkin' => $this->handleBoothCheckIn($request, $event, $parameters['booth'], $presenceService),
+            'event.sessions.qr-checkin' => $this->handleSessionCheckIn(
+                $request, $event,
+                EventSession::where('event_id', $event->id)->findOrFail($this->normalizeRouteKey($rawParams['session'])),
+                $presenceService,
+            ),
+            'event.booths.qr-checkin' => $this->handleBoothCheckIn(
+                $request, $event,
+                Booth::where('event_id', $event->id)->findOrFail($this->normalizeRouteKey($rawParams['booth'])),
+                $presenceService,
+            ),
             default => response()->json(['message' => 'Unsupported QR action.'], 422),
         };
     }
@@ -78,6 +102,7 @@ class QrResolveController extends Controller
         return response()->json([
             'message' => 'Checked in',
             'action' => 'session_check_in',
+            'redirect_to' => route('event.sessions.show', [$event, $session], false),
             'target' => [
                 'type' => 'session',
                 'id' => $session->id,
@@ -88,22 +113,42 @@ class QrResolveController extends Controller
 
     private function handleBoothCheckIn(Request $request, Event $event, Booth $booth, PresenceService $presenceService): JsonResponse
     {
+        $user = $request->user();
+        $pivot = $user->events()->where('event_id', $event->id)->first()?->pivot;
+
+        $lastSessionId = null;
+        if ($pivot?->status === 'in_session') {
+            $lastSessionId = SessionCheckIn::where('user_id', $user->id)
+                ->whereNull('checked_out_at')
+                ->value('event_session_id');
+        }
+
+        BoothVisit::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'booth_id' => $booth->id,
+                'left_at' => null,
+            ],
+            [
+                'is_anonymous' => false,
+                'participant_type' => $pivot?->participant_type,
+                'from_session_id' => $lastSessionId,
+                'entered_at' => now(),
+            ],
+        );
+
         $presenceService->checkInToBooth($request->user(), $event, $booth);
 
         return response()->json([
             'message' => 'Checked in',
             'action' => 'booth_check_in',
+            'redirect_to' => route('event.booths.show', [$event, $booth], false),
             'target' => [
                 'type' => 'booth',
                 'id' => $booth->id,
                 'name' => $booth->name,
             ],
         ]);
-    }
-
-    private function buildFakeRequest(string $payload): Request
-    {
-        return Request::create($payload);
     }
 
     private function resolveRoute(string $payload): ?Route
@@ -129,5 +174,12 @@ class QrResolveController extends Controller
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function normalizeRouteKey(mixed $value): mixed
+    {
+        return is_object($value) && method_exists($value, 'getRouteKey')
+            ? $value->getRouteKey()
+            : $value;
     }
 }

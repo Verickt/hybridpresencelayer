@@ -33,6 +33,27 @@ it('knows if it is currently happening', function () {
         ->and($past->isLive())->toBeFalse();
 });
 
+it('knows when participants may join and interact', function () {
+    $startingSoon = EventSession::factory()->create([
+        'starts_at' => now()->addMinutes(5),
+        'ends_at' => now()->addHour(),
+    ]);
+    $recentlyEnded = EventSession::factory()->create([
+        'starts_at' => now()->subHour(),
+        'ends_at' => now()->subMinutes(10),
+    ]);
+    $tooEarly = EventSession::factory()->create([
+        'starts_at' => now()->addMinutes(20),
+        'ends_at' => now()->addHours(2),
+    ]);
+
+    expect($startingSoon->isJoinable())->toBeTrue()
+        ->and($startingSoon->canInteract())->toBeFalse()
+        ->and($recentlyEnded->isJoinable())->toBeTrue()
+        ->and($recentlyEnded->canInteract())->toBeFalse()
+        ->and($tooEarly->isJoinable())->toBeFalse();
+});
+
 it('can have Q&A enabled or disabled', function () {
     $session = EventSession::factory()->create([
         'qa_enabled' => false,

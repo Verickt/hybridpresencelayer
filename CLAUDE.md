@@ -14,6 +14,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
+- laravel/reverb (REVERB) - v1
 - laravel/wayfinder (WAYFINDER) - v0
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
@@ -117,6 +118,13 @@ This project has domain-specific skills available. You MUST activate the relevan
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
+=== herd rules ===
+
+# Laravel Herd
+
+- The application is served by Laravel Herd at `https?://[kebab-case-project-dir].test`. Use the `get-absolute-url` tool to generate valid URLs. Never run commands to serve the site. It is always available.
+- Use the `herd` CLI to manage services, PHP versions, and sites (e.g. `herd sites`, `herd services:start <service>`, `herd php:list`). Run `herd list` to discover all available commands.
+
 === tests rules ===
 
 # Test Enforcement
@@ -206,3 +214,89 @@ Vue components must have a single root element.
 - IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
 
 </laravel-boost-guidelines>
+
+# Hybrid Presence Platform — Project Instructions
+
+## What This Is
+A real-time social layer for hybrid events that creates connections between physical and remote participants. See `docs/mvp/PRESENTATION-BRIEF.md` for full product context and `docs/mvp/13-mvp-scope.md` for build vs stub decisions.
+
+## Implementation Plans
+All backend implementation plans are in `docs/superpowers/plans/`. There are 9 sequential plans:
+1. Data Model & Auth (foundation — do first)
+2. Presence & Real-time (WebSockets)
+3. Discovery Engine (matching algorithm)
+4. Interactions (ping, chat, video call)
+5. Sessions (check-in, Q&A, reactions)
+6. Booths (visits, staff tools, leads)
+7. Organizer Dashboard (KPIs, setup wizard)
+8. Notifications (push, in-app, frequency limits)
+9. PWA Shell (manifest, layout, QR scanner)
+
+## Design System
+The frontend design is built in Paper (design tool). When implementing Vue components, reference the Paper designs for spacing, colors, typography, and component structure. Use the `mcp__paper__` tools to inspect the design when needed.
+
+## TDD Workflow (MANDATORY)
+
+Every feature follows strict Test-Driven Development. This is the loop:
+
+### Backend (Pest)
+1. **Write the failing test** — `tests/Feature/` for integration, `tests/Unit/` for isolated logic
+2. **Run it** — `php artisan test --compact --filter=TestName` — confirm it FAILS
+3. **Write minimal code** to make the test pass
+4. **Run it** — confirm it PASSES
+5. **Refactor** if needed, run tests again
+6. **Lint** — `vendor/bin/pint --dirty --format agent`
+7. **Commit** — one commit per test+implementation cycle
+
+### Frontend (Browser Testing)
+- Use the Claude Code browser extension (`mcp__claude-in-chrome__*` tools) for visual verification
+- After implementing Vue components, navigate to the page in the browser and verify:
+  - Component renders correctly
+  - Interactions work (clicks, form submissions)
+  - Responsive layout at mobile breakpoints
+  - No console errors
+- Use `mcp__browser-tools__takeScreenshot` to capture verification evidence
+
+### End-to-End Testing
+- Use Pest browser tests (`tests/Browser/`) for critical user flows
+- Key flows to E2E test:
+  - Magic link auth → onboarding → presence feed
+  - Ping → mutual match → chat
+  - Session check-in → reactions → Q&A
+  - Booth visit → lead capture
+
+### Test Commands
+```bash
+# Run all tests
+php artisan test --compact
+
+# Run specific test file
+php artisan test --compact --filter=EventTest
+
+# Run with coverage (when needed)
+php artisan test --coverage
+
+# Lint PHP
+vendor/bin/pint --dirty --format agent
+
+# Build frontend
+npm run build
+
+# Regenerate Wayfinder routes
+php artisan wayfinder:generate
+```
+
+## Authentication
+- Magic link only — no passwords
+- Fortify features disabled: registration, password reset, 2FA
+- `users.password` is nullable
+- Magic link tokens stored as SHA-256 hashes
+- Old unused links are revoked when new ones are generated
+
+## Key Architecture Decisions
+- Organizer and booth staff are roles on the User model, not separate models
+- `event_user` pivot tracks participant state (type, status, context badge, preferences)
+- `user_interest_tag` pivot is scoped to event_id
+- Connections store user IDs in sorted order (lower first) for unique constraint
+- Real-time via Laravel Reverb (WebSockets)
+- Video calls use WebRTC with server-side signaling only (room ID generation)

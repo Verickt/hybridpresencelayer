@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Booth;
 use App\Models\Connection;
 use App\Models\SessionCheckIn;
 use Illuminate\Support\Facades\Broadcast;
@@ -27,4 +28,10 @@ Broadcast::channel('session.{sessionId}', function ($user, int $sessionId) {
         ->where('event_session_id', $sessionId)
         ->whereNull('checked_out_at')
         ->exists();
+});
+
+Broadcast::channel('booth.{boothId}', function ($user, int $boothId) {
+    $booth = Booth::find($boothId);
+
+    return $booth && $user->events()->where('event_id', $booth->event_id)->exists();
 });

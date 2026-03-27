@@ -55,10 +55,10 @@ class DashboardService
             'physical_count' => $physicalCount,
             'remote_count' => $remoteCount,
             'total_connections' => $totalConnections,
-            'cross_pollination_rate' => $crossPollinationRate,
-            'interaction_rate' => $interactionRate,
-            'match_acceptance_rate' => $matchAcceptanceRate,
-            'networking_density' => $networkingDensity,
+            'cross_pollination_rate' => (float) $crossPollinationRate,
+            'interaction_rate' => (float) $interactionRate,
+            'match_acceptance_rate' => (float) $matchAcceptanceRate,
+            'networking_density' => (float) $networkingDensity,
         ];
     }
 

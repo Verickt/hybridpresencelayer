@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /*
@@ -14,8 +15,10 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature');
+    ->use(RefreshDatabase::class)
+    ->in('Feature', 'Browser');
+
+pest()->browser()->timeout(10000);
 
 /*
 |--------------------------------------------------------------------------

@@ -1,0 +1,3 @@
+- [TDD workflow](feedback_tdd_workflow.md) — strict TDD required: Pest tests, browser extension verification, E2E for critical flows
+- [Design system](project_design_system.md) — frontend design built in Paper, agents must reference it when implementing Vue components
+- [Ultrasonic proximity](project_ultrasonic_proximity.md) — experimental sound-based booth proximity detection, implement last

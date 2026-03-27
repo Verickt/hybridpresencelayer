@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(herd list:*)",
+      "Bash(herd links:*)",
+      "Bash(herd parked:*)",
+      "mcp__validate-plans-and-brainstorm-ideas__codex",
+      "mcp__validate-plans-and-brainstorm-ideas__codex-reply",
+      "mcp__paper__get_basic_info",
+      "Bash(find /Users/rick/Projects/hybridpresencelayer/resources/js/pages -type f -name *.vue)",
+      "mcp__paper__create_artboard",
+      "mcp__paper__write_html",
+      "Bash(cat:*)",
+      "mcp__paper__get_screenshot",
+      "Bash(php artisan:*)",
+      "Bash(vendor/bin/pint --dirty --format agent 2>&1)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(vendor/bin/pint --format agent 2>&1)",
+      "Bash(npm run:*)",
+      "Bash(1)",
+      "Bash(/Users/rick/Projects/hybridpresencelayer/resources/js/routes/register/index.ts:*)",
+      "Bash(/Users/rick/Projects/hybridpresencelayer/resources/js/routes/verification/index.ts:*)",
+      "Bash(/Users/rick/Projects/hybridpresencelayer/resources/js/routes/two-factor/index.ts:*)",
+      "Bash(/Users/rick/Projects/hybridpresencelayer/resources/js/routes/two-factor/login/index.ts:*)",
+      "Bash(printf 'const noop = \\(\\(\\) => {}\\) as any\\\\nexport const store = noop\\\\n')",
+      "Bash(printf 'const noop = \\(\\(\\) => {}\\) as any\\\\nexport const send = noop\\\\n')",
+      "Bash(printf 'const noop = \\(\\(\\) => {}\\) as any\\\\nexport const qrCode = noop\\\\nexport const recoveryCodes = noop\\\\nexport const secretKey = noop\\\\nexport const regenerateRecoveryCodes = noop\\\\nexport const confirm = noop\\\\nexport const disable = noop\\\\nexport const enable = noop\\\\n')",
+      "Bash(git reset:*)",
+      "Bash(find resources/js/pages/Event -name *.vue)",
+      "Bash(xargs basename:*)",
+      "Bash(grep -l \"create.*table\" /Users/rick/Projects/hybridpresencelayer/database/migrations/*.php)",
+      "Bash(./vendor/bin/pest --version 2>&1)",
+      "Bash(./vendor/bin/pest tests/Feature/Services/DashboardServiceTest.php)",
+      "Bash(./vendor/bin/pest tests/Feature/Http/DashboardControllerTest.php)",
+      "Bash(grep -c \"discovery\\\\|Discovery\" /Users/rick/Projects/hybridpresencelayer/resources/js/pages/Event/*.vue)",
+      "Bash(./vendor/bin/pest tests/Feature/Http/NotificationControllerTest.php)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(xargs -I {} basename {})",
+      "Bash(./vendor/bin/pest tests/Feature/Services/NotificationServiceTest.php)",
+      "Bash(grep:*)",
+      "Bash(./vendor/bin/pest tests/Feature/Http/EventSetupControllerTest.php)",
+      "Bash(./vendor/bin/pest tests/Feature/Http/ManifestControllerTest.php)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost",
+    "validate-plans-and-brainstorm-ideas"
+  ]
+}

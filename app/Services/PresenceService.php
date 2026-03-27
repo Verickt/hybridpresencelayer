@@ -39,6 +39,8 @@ class PresenceService
 
     public function checkInToSession(User $user, Event $event, EventSession $session): void
     {
+        $this->ensureParticipant($user, $event);
+
         $this->checkOutOfSession($user, $event);
         BoothVisit::where('user_id', $user->id)->whereNull('left_at')->update(['left_at' => now()]);
 
@@ -49,15 +51,17 @@ class PresenceService
 
         $user->events()->updateExistingPivot($event->id, [
             'status' => 'in_session',
-            'context_badge' => "Watching: {$session->title}",
+            'context_badge' => "In session: {$session->title}",
             'last_active_at' => now(),
         ]);
 
-        PresenceStateChanged::dispatch($event, $user, 'in_session', "Watching: {$session->title}");
+        PresenceStateChanged::dispatch($event, $user, 'in_session', "In session: {$session->title}");
     }
 
     public function checkOutOfSession(User $user, Event $event): void
     {
+        $this->ensureParticipant($user, $event);
+
         SessionCheckIn::where('user_id', $user->id)
             ->whereNull('checked_out_at')
             ->update(['checked_out_at' => now()]);
@@ -73,6 +77,8 @@ class PresenceService
 
     public function checkInToBooth(User $user, Event $event, Booth $booth): void
     {
+        $this->ensureParticipant($user, $event);
+
         $user->events()->updateExistingPivot($event->id, [
             'status' => 'at_booth',
             'context_badge' => "At Booth: {$booth->name}",
@@ -101,5 +107,12 @@ class PresenceService
     public function toggleInvisible(User $user): void
     {
         $user->update(['is_invisible' => ! $user->is_invisible]);
+    }
+
+    private function ensureParticipant(User $user, Event $event): void
+    {
+        if (! $user->events()->where('event_id', $event->id)->exists()) {
+            throw new AuthorizationException('User is not a participant of this event.');
+        }
     }
 }

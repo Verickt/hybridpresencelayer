@@ -30,7 +30,7 @@ it('checks into a session and updates the presence context', function () {
     $pivot = $this->participant->events()->where('event_id', $this->event->id)->first()->pivot;
 
     expect($pivot->status)->toBe('in_session')
-        ->and($pivot->context_badge)->toContain($this->session->title);
+        ->and($pivot->context_badge)->toBe("In session: {$this->session->title}");
 });
 
 it('checks out of a session and restores availability', function () {
@@ -84,4 +84,19 @@ it('rejects cross-event check-ins', function () {
         ->post(route('event.sessions.checkin', [$this->event, $foreignSession]));
 
     $response->assertNotFound();
+});
+
+it('rejects check-ins outside the session join window', function () {
+    $futureSession = EventSession::factory()->create([
+        'event_id' => $this->event->id,
+        'starts_at' => now()->addMinutes(20),
+        'ends_at' => now()->addHour(),
+    ]);
+
+    $response = $this->actingAs($this->participant)
+        ->post(route('event.sessions.checkin', [$this->event, $futureSession]));
+
+    $response->assertUnprocessable();
+
+    expect(SessionCheckIn::count())->toBe(0);
 });

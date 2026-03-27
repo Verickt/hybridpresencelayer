@@ -12,6 +12,8 @@ class SessionCheckInController extends Controller
 {
     public function store(Request $request, Event $event, EventSession $session, PresenceService $presenceService): JsonResponse
     {
+        abort_unless($session->isJoinable(), 422, 'Session is not open for joining.');
+
         $presenceService->checkInToSession($request->user(), $event, $session);
 
         return response()->json(['message' => 'Checked in']);

@@ -68,3 +68,16 @@ it('rejects reactions after the session has ended', function () {
 
     $response->assertUnprocessable();
 });
+
+it('rejects reactions when the session has reactions disabled', function () {
+    $this->session->update([
+        'reactions_enabled' => false,
+    ]);
+
+    $response = $this->actingAs($this->participant)
+        ->post(route('event.sessions.reactions.store', [$this->event, $this->session]), [
+            'type' => 'fire',
+        ]);
+
+    $response->assertForbidden();
+});

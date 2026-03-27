@@ -40,4 +40,14 @@ class Booth extends Model
     {
         return $this->hasMany(BoothVisit::class);
     }
+
+    public function threads(): HasMany
+    {
+        return $this->hasMany(BoothThread::class);
+    }
+
+    public function demos(): HasMany
+    {
+        return $this->hasMany(BoothDemo::class);
+    }
 }

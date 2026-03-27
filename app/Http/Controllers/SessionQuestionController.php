@@ -14,8 +14,9 @@ class SessionQuestionController extends Controller
 {
     public function store(Request $request, Event $event, EventSession $session): JsonResponse
     {
+        abort_unless($session->hasActiveCheckInFor($request->user()), 403);
         abort_unless($session->qa_enabled, 403);
-        abort_unless($session->isLive(), 422, 'Session has ended');
+        abort_unless($session->canInteract(), 422, 'Session has ended');
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:500'],
@@ -34,6 +35,10 @@ class SessionQuestionController extends Controller
 
     public function vote(Request $request, Event $event, EventSession $session, SessionQuestion $question): JsonResponse
     {
+        abort_unless($session->hasActiveCheckInFor($request->user()), 403);
+        abort_unless($session->qa_enabled, 403);
+        abort_unless($session->canInteract(), 422, 'Session has ended');
+
         $exists = SessionQuestionVote::where('session_question_id', $question->id)
             ->where('user_id', $request->user()->id)
             ->exists();

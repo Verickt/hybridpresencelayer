@@ -1,0 +1,17 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "php",
+            "args": [
+                "artisan",
+                "boost:mcp"
+            ]
+        },
+        "validate-plans-and-brainstorm-ideas": {
+            "command": "/opt/homebrew/bin/codex",
+            "args": [
+                "mcp-server"
+            ]
+        }
+    }
+}

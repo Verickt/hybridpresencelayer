@@ -49,12 +49,12 @@ it('scores higher when both users are in the same session', function () {
     $this->event->participants()->attach($userA, [
         'participant_type' => 'physical',
         'status' => 'in_session',
-        'context_badge' => "Watching: {$session->title}",
+        'context_badge' => "In session: {$session->title}",
     ]);
     $this->event->participants()->attach($userB, [
         'participant_type' => 'remote',
         'status' => 'in_session',
-        'context_badge' => "Watching: {$session->title}",
+        'context_badge' => "In session: {$session->title}",
     ]);
 
     SessionCheckIn::create(['user_id' => $userA->id, 'event_session_id' => $session->id]);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,5 +47,36 @@ class EventSession extends Model
     public function isLive(): bool
     {
         return now()->between($this->starts_at, $this->ends_at);
+    }
+
+    public function isJoinable(): bool
+    {
+        return now()->between(
+            $this->joinWindowStartsAt(),
+            $this->joinWindowEndsAt(),
+        );
+    }
+
+    public function canInteract(): bool
+    {
+        return $this->isLive();
+    }
+
+    public function hasActiveCheckInFor(User $user): bool
+    {
+        return $this->checkIns()
+            ->where('user_id', $user->id)
+            ->whereNull('checked_out_at')
+            ->exists();
+    }
+
+    public function joinWindowStartsAt(): CarbonInterface
+    {
+        return $this->starts_at->copy()->subMinutes(10);
+    }
+
+    public function joinWindowEndsAt(): CarbonInterface
+    {
+        return $this->ends_at->copy()->addMinutes(15);
     }
 }

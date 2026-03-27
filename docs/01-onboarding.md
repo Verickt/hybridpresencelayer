@@ -85,9 +85,48 @@ Event Invitation (email/QR)
 - **Participant switches type mid-event**: Toggle in settings, UX adapts immediately
 - **Event has multiple days**: Session persists across days, no re-onboarding
 
+## Progressive Identity Enrichment
+
+The 60-second onboarding captures the minimum. Richer identity is collected progressively without interrupting the experience:
+
+### Phase 1: Onboarding (0–60s)
+- Name, email (pre-filled), participant type, 3 interest tags
+
+### Phase 2: First Idle Moment (after first ping or 5 min)
+- Soft prompt: "Help people find you — add your company and role?"
+- Optional: company name, role/title
+- Dismissible, re-accessible from profile
+
+### Phase 3: First Connection (after first mutual match)
+- Prompt to add intent: "What are you here for?" (free-text, 100 chars)
+- Examples shown: "Looking for cloud migration partners", "Hiring senior engineers", "Exploring zero-trust vendors"
+- Intent is shown on profile card and used as a matching signal
+
+### Phase 4: Registration Data Import (automatic)
+- If organizer uploaded attendee list with company/role/LinkedIn: auto-populate
+- Participant confirms on first profile view — never asked to re-type
+- LinkedIn URL enables optional profile photo import (with consent)
+
+### Why Progressive
+- 60s onboarding stays sacred — no extra fields
+- Richer data dramatically improves matching quality
+- Each prompt arrives at a natural pause, not during active networking
+- All additional fields are optional — the product works without them
+
+## Intent & Availability Signals
+
+Beyond status (Available/Busy/Away), participants can broadcast intent:
+
+- **"Open to a 3-min call now"** — shown as a badge, boosts call-ready suggestions
+- **"Available after this session"** — queues them for post-session matching
+- **"Looking for [X]"** — free-text intent from Phase 3, visible on card
+
+Intent signals are more actionable than status alone. "Available" tells you nothing about whether someone wants to talk. "Looking for cloud migration partners" tells you everything.
+
 ## Organizer Configuration
 
 - Define the interest tag cloud per event
 - Define icebreaker questions per event
-- Option to import participant list (name, email) for pre-population
+- Option to import participant list (name, email, company, role, LinkedIn) for pre-population
 - Option to allow open registration or invitation-only
+- Map registration fields to profile fields for automatic enrichment

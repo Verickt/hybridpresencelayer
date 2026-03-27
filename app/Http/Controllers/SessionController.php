@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\SessionCheckIn;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,6 +15,8 @@ class SessionController extends Controller
 {
     public function index(Request $request, Event $event): Response
     {
+        abort_unless($this->canViewSessions($request->user(), $event), 403);
+
         $sessions = $event->sessions()
             ->orderBy('starts_at')
             ->get()
@@ -37,20 +41,36 @@ class SessionController extends Controller
 
     public function show(Request $request, Event $event, EventSession $session): Response
     {
+        $user = $request->user();
+        abort_unless($this->canViewSessions($user, $event), 403);
+
+        $viewerParticipant = $event->participants()->whereKey($user->id)->first();
+        $isOrganizer = $event->organizer_id === $user->id;
+        $isParticipant = $viewerParticipant !== null;
+        $isCheckedIn = $isParticipant && $session->hasActiveCheckInFor($user);
+
         $participants = SessionCheckIn::where('event_session_id', $session->id)
             ->whereNull('checked_out_at')
-            ->with('user')
+            ->with([
+                'user.events' => fn ($query) => $query->whereKey($event->id),
+            ])
             ->get()
-            ->map(fn ($checkIn) => [
+            ->map(fn (SessionCheckIn $checkIn) => [
                 'id' => $checkIn->user->id,
                 'name' => $checkIn->user->name,
-                'participant_type' => $checkIn->user->events()->where('event_id', $event->id)->first()?->pivot?->participant_type,
+                'participant_type' => $checkIn->user->events->first()?->pivot?->participant_type,
             ]);
 
         $questions = $session->questions()
             ->with('user:id,name')
             ->withCount('votes')
+            ->with([
+                'votes' => fn ($query) => $query
+                    ->where('user_id', $user->id)
+                    ->select('id', 'session_question_id'),
+            ])
             ->orderByDesc('votes_count')
+            ->orderByDesc('id')
             ->get();
 
         return Inertia::render('Event/SessionDetail', [
@@ -64,15 +84,33 @@ class SessionController extends Controller
                 'starts_at' => $session->starts_at->toISOString(),
                 'ends_at' => $session->ends_at->toISOString(),
                 'is_live' => $session->isLive(),
+                'is_joinable' => $session->isJoinable(),
                 'qa_enabled' => $session->qa_enabled,
                 'reactions_enabled' => $session->reactions_enabled,
+                'can_interact' => $session->canInteract(),
+            ],
+            'viewer' => [
+                'is_organizer' => $isOrganizer,
+                'participant_type' => $viewerParticipant?->pivot?->participant_type,
+                'is_checked_in' => $isCheckedIn,
+                'can_join' => $isParticipant && $session->isJoinable(),
+                'can_interact' => $isParticipant && $isCheckedIn && $session->canInteract(),
             ],
             'participants' => $participants,
-            'questions' => $questions,
+            'questions' => $questions->map(fn ($question) => [
+                'id' => $question->id,
+                'body' => $question->body,
+                'user' => [
+                    'id' => $question->user->id,
+                    'name' => $question->user->name,
+                ],
+                'votes_count' => $question->votes_count,
+                'viewer_has_voted' => $question->votes->isNotEmpty(),
+            ]),
         ]);
     }
 
-    public function store(Request $request, Event $event)
+    public function store(Request $request, Event $event): RedirectResponse
     {
         abort_unless($request->user()->id === $event->organizer_id, 403);
 
@@ -88,5 +126,11 @@ class SessionController extends Controller
         $event->sessions()->create($validated);
 
         return redirect()->route('event.sessions', $event);
+    }
+
+    private function canViewSessions(User $user, Event $event): bool
+    {
+        return $event->organizer_id === $user->id
+            || $event->participants()->whereKey($user->id)->exists();
     }
 }
