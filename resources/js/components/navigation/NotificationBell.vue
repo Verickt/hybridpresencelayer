@@ -6,7 +6,7 @@ const unreadCount = ref(0)
 
 async function fetchCount() {
     try {
-        const response = await fetch(route('notifications.count'))
+        const response = await fetch('/notifications/count')
         const data = await response.json()
         unreadCount.value = data.count
     } catch {

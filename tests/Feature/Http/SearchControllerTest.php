@@ -3,7 +3,6 @@
 use App\Models\Event;
 use App\Models\InterestTag;
 use App\Models\User;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 beforeEach(function () {
     $this->event = Event::factory()->live()->create();
@@ -26,7 +25,10 @@ it('searches participants by name', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'Lena']));
 
     $response->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 1)
+        );
 });
 
 it('searches participants by company', function () {
@@ -40,7 +42,10 @@ it('searches participants by company', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'CyberDefense']));
 
     $response->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 1)
+        );
 });
 
 it('searches participants by interest tags', function () {
@@ -57,7 +62,10 @@ it('searches participants by interest tags', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'Zero Trust']));
 
     $response->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 1)
+        );
 });
 
 it('excludes invisible participants from search', function () {
@@ -75,7 +83,10 @@ it('excludes invisible participants from search', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'Hidden']));
 
     $response->assertOk()
-        ->assertJsonCount(0, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 0)
+        );
 });
 
 it('omits sensitive fields from search results', function () {
@@ -89,8 +100,9 @@ it('omits sensitive fields from search results', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'Visible']));
 
     $response->assertOk()
-        ->assertJson(fn (AssertableJson $json) => $json
-            ->has('data.0', fn (AssertableJson $participant) => $participant
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results.0', fn ($participant) => $participant
                 ->where('id', $target->id)
                 ->where('name', 'Visible Person')
                 ->missing('email')
@@ -107,7 +119,10 @@ it('returns an empty result set when no participants match the query', function 
         ->get(route('event.search', ['event' => $this->event, 'q' => 'No Match Here']));
 
     $response->assertOk()
-        ->assertJsonCount(0, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 0)
+        );
 });
 
 it('limits search results to the top ten matches', function () {
@@ -126,7 +141,10 @@ it('limits search results to the top ten matches', function () {
         ->get(route('event.search', ['event' => $this->event, 'q' => 'Alex Result']));
 
     $response->assertOk()
-        ->assertJsonCount(10, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Search')
+            ->has('results', 10)
+        );
 });
 
 it('applies the correct authorization rules for search', function (string $actorType) {

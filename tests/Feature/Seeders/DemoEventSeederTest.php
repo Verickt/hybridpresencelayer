@@ -99,7 +99,10 @@ it('seeds a useful demo dataset for browsing the current app', function () {
     $this->actingAs($participant)
         ->get(route('event.suggestions', $event))
         ->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Event/Suggestions')
+            ->has('suggestions', 1)
+        );
 
     $this->actingAs($organizer)
         ->get(route('event.dashboard', $event))

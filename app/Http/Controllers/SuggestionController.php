@@ -7,10 +7,12 @@ use App\Models\Suggestion;
 use App\Services\SuggestionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SuggestionController extends Controller
 {
-    public function index(Request $request, Event $event): JsonResponse
+    public function index(Request $request, Event $event): Response
     {
         $user = $request->user();
 
@@ -37,7 +39,14 @@ class SuggestionController extends Controller
                 'expires_at' => $s->expires_at->toISOString(),
             ]);
 
-        return response()->json(['data' => $suggestions]);
+        return Inertia::render('Event/Suggestions', [
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'slug' => $event->slug,
+            ],
+            'suggestions' => $suggestions,
+        ]);
     }
 
     public function decline(Request $request, Event $event, Suggestion $suggestion, SuggestionService $suggestionService): JsonResponse

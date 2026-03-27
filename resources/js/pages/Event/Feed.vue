@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, router, useHttp } from '@inertiajs/vue3';
 import { Activity, Sparkles, Users } from 'lucide-vue-next';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import Heading from '@/components/Heading.vue';
 import ParticipantCard from '@/components/presence/ParticipantCard.vue';
 import PresenceFilters from '@/components/presence/PresenceFilters.vue';
@@ -31,6 +31,14 @@ const props = defineProps<{
 }>();
 
 const liveParticipants = ref([...props.participants]);
+
+watch(
+    () => props.participants,
+    (updated) => {
+        liveParticipants.value = [...updated];
+    },
+);
+
 const pingRequest = useHttp();
 
 async function handlePing(userId: number) {

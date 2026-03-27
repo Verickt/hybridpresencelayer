@@ -4,7 +4,6 @@ use App\Models\Event;
 use App\Models\InterestTag;
 use App\Models\Suggestion;
 use App\Models\User;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 beforeEach(function () {
     $this->event = Event::factory()->live()->create();
@@ -38,14 +37,12 @@ it('returns suggestions for the current user', function () {
         ->get(route('event.suggestions', $this->event));
 
     $response->assertOk()
-        ->assertJson(fn (AssertableJson $json) => $json
-            ->has('data.0', fn (AssertableJson $suggestion) => $suggestion
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Suggestions')
+            ->has('suggestions.0', fn ($suggestion) => $suggestion
                 ->where('id', $this->suggestion->id)
-                ->has('suggested_user', fn (AssertableJson $user) => $user
+                ->has('suggested_user', fn ($user) => $user
                     ->where('id', $this->suggestion->suggested_user_id)
-                    ->missing('email')
-                    ->missing('password')
-                    ->missing('remember_token')
                     ->etc()
                 )
                 ->whereType('score', 'double')
@@ -63,7 +60,10 @@ it('returns an empty payload when the user has no active suggestions', function 
         ->get(route('event.suggestions', $this->event));
 
     $response->assertOk()
-        ->assertJsonCount(0, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Suggestions')
+            ->has('suggestions', 0)
+        );
 });
 
 it('declines a suggestion', function () {
@@ -134,7 +134,10 @@ it('hides expired suggestions from the index', function () {
         ->get(route('event.suggestions', $this->event));
 
     $response->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertInertia(fn ($page) => $page
+            ->component('Event/Suggestions')
+            ->has('suggestions', 1)
+        );
 });
 
 it('applies the correct authorization rules for suggestion endpoints', function (string $actorType) {

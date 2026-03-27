@@ -41,7 +41,15 @@
       "Bash(./vendor/bin/pest tests/Feature/Services/NotificationServiceTest.php)",
       "Bash(grep:*)",
       "Bash(./vendor/bin/pest tests/Feature/Http/EventSetupControllerTest.php)",
-      "Bash(./vendor/bin/pest tests/Feature/Http/ManifestControllerTest.php)"
+      "Bash(./vendor/bin/pest tests/Feature/Http/ManifestControllerTest.php)",
+      "Bash(npx eslint:*)",
+      "mcp__laravel-boost__get-absolute-url",
+      "Bash(/Users/rick/Projects/hybridpresencelayer/.env:*)",
+      "Bash(curl:*)",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "mcp__paper__get_tree_summary",
+      "mcp__browser-tools__takeScreenshot",
+      "mcp__browser-tools__getConsoleErrors"
     ]
   },
   "enableAllProjectMcpServers": true,

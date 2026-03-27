@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import BottomTabs from '@/components/navigation/BottomTabs.vue'
 import NotificationBell from '@/components/navigation/NotificationBell.vue'
+import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
-defineProps<{
-    eventName: string
-    eventSlug: string
-}>()
+const page = usePage()
+const event = computed(() => (page.props as any).event ?? {})
+const eventName = computed(() => event.value.name ?? '')
+const eventSlug = computed(() => event.value.slug ?? '')
 </script>
 
 <template>

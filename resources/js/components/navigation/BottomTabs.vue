@@ -10,29 +10,31 @@ const props = defineProps<{
 const page = usePage()
 const currentUrl = computed(() => page.url)
 
+const base = computed(() => `/event/${props.eventSlug}`)
+
 const tabs = computed(() => [
     {
         name: 'Feed',
         icon: Users,
-        href: route('event.feed', { event: props.eventSlug }),
+        href: `${base.value}/feed`,
         active: currentUrl.value.includes('/feed'),
     },
     {
         name: 'Sessions',
         icon: Calendar,
-        href: route('event.sessions', { event: props.eventSlug }),
+        href: `${base.value}/sessions`,
         active: currentUrl.value.includes('/sessions'),
     },
     {
         name: 'Connections',
         icon: MessageCircle,
-        href: route('event.connections', { event: props.eventSlug }),
+        href: `${base.value}/connections`,
         active: currentUrl.value.includes('/connections'),
     },
     {
         name: 'Profile',
         icon: UserCircle,
-        href: route('event.profile', { event: props.eventSlug }),
+        href: `${base.value}/profile`,
         active: currentUrl.value.includes('/profile'),
     },
 ])

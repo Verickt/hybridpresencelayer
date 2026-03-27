@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Activity, Handshake, LayoutGrid, Megaphone, Sparkles, Users } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
+
+defineOptions({ layout: AppLayout });
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Heading from '@/components/Heading.vue';
