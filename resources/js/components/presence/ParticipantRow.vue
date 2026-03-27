@@ -1,0 +1,105 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/composables/useInitials';
+
+const props = defineProps<{
+    participant: {
+        id: number;
+        name: string;
+        company?: string;
+        role_title?: string;
+        participant_type: string;
+        status: string;
+        context_badge: string | null;
+        interest_tags: string[];
+    };
+}>();
+
+defineEmits<{
+    ping: [userId: number];
+}>();
+
+const initials = computed(() => getInitials(props.participant.name));
+
+const statusColors: Record<string, string> = {
+    available: 'bg-green-500',
+    in_session: 'bg-blue-500',
+    at_booth: 'bg-purple-500',
+    busy: 'bg-amber-500',
+    away: 'bg-neutral-400',
+};
+
+const statusColor = computed(() => statusColors[props.participant.status] ?? 'bg-neutral-400');
+
+const avatarColors = [
+    'bg-rose-100 text-rose-700',
+    'bg-indigo-100 text-indigo-700',
+    'bg-emerald-100 text-emerald-700',
+    'bg-amber-100 text-amber-700',
+    'bg-sky-100 text-sky-700',
+    'bg-purple-100 text-purple-700',
+];
+
+const avatarColor = computed(() => {
+    const hash = props.participant.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return avatarColors[hash % avatarColors.length];
+});
+
+const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
+</script>
+
+<template>
+    <div
+        :dusk="`presence-row-${participant.id}`"
+        class="flex items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+    >
+        <div class="relative shrink-0">
+            <Avatar class="size-10">
+                <AvatarFallback
+                    class="text-sm font-semibold"
+                    :class="avatarColor"
+                >
+                    {{ initials }}
+                </AvatarFallback>
+            </Avatar>
+            <span
+                class="absolute -bottom-0.5 -left-0.5 size-3 rounded-full border-2 border-white"
+                :class="statusColor"
+            />
+        </div>
+
+        <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+                <span class="truncate text-sm font-semibold text-neutral-900">
+                    {{ participant.name }}
+                </span>
+                <span v-if="participant.role_title" class="truncate text-sm text-neutral-500">
+                    {{ participant.role_title }}
+                </span>
+                <span
+                    v-if="participant.context_badge"
+                    class="shrink-0 rounded bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-600"
+                >
+                    {{ participant.context_badge }}
+                </span>
+            </div>
+            <div class="mt-0.5 flex flex-wrap gap-1">
+                <span
+                    v-for="t in displayTags"
+                    :key="t"
+                    class="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600"
+                >
+                    {{ t }}
+                </span>
+            </div>
+        </div>
+
+        <button
+            class="shrink-0 text-xl"
+            @click="$emit('ping', participant.id)"
+        >
+            👋
+        </button>
+    </div>
+</template>
