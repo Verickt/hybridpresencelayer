@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\BoothStaffController;
 use App\Http\Controllers\BoothVisitController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PresenceFeedController;
@@ -67,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/event/{event:slug}/suggestions/{suggestion}/decline', [SuggestionController::class, 'decline'])->name('event.suggestions.decline');
     Route::patch('/event/{event:slug}/suggestions/{suggestion}/accept', [SuggestionController::class, 'accept'])->name('event.suggestions.accept');
     Route::get('/event/{event:slug}/search', SearchController::class)->name('event.search');
+
+    Route::get('/event/{event:slug}/dashboard', DashboardController::class)->name('event.dashboard');
 });
 
 require __DIR__.'/settings.php';

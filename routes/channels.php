@@ -11,6 +11,10 @@ Broadcast::channel('event.{eventId}.presence', function ($user, int $eventId) {
     return $user->events()->where('event_id', $eventId)->exists();
 });
 
+Broadcast::channel('user.{userId}.notifications', function ($user, int $userId) {
+    return $user->id === $userId;
+});
+
 Broadcast::channel('session.{sessionId}', function ($user, int $sessionId) {
     return SessionCheckIn::where('user_id', $user->id)
         ->where('event_session_id', $sessionId)
