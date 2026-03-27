@@ -58,6 +58,13 @@ class MagicLinkController extends Controller
                 ->with('error', 'This link is invalid or has expired. Please request a new one.');
         }
 
-        return redirect()->route('dashboard');
+        $event = $link->event;
+
+        // Organizers go to dashboard, participants go to feed
+        if ($link->user->id === $event->organizer_id) {
+            return redirect()->route('event.dashboard', $event);
+        }
+
+        return redirect()->route('event.feed', $event);
     }
 }
