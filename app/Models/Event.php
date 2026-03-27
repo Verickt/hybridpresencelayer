@@ -51,6 +51,27 @@ class Event extends Model
         return $this->hasMany(Booth::class);
     }
 
+    public function icebreakerQuestions(): HasMany
+    {
+        return $this->hasMany(IcebreakerQuestion::class);
+    }
+
+    public function magicLinks(): HasMany
+    {
+        return $this->hasMany(MagicLink::class);
+    }
+
+    public function participants(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot([
+                'participant_type', 'status', 'context_badge',
+                'icebreaker_answer', 'open_to_call',
+                'available_after_session', 'last_active_at',
+            ])
+            ->withTimestamps();
+    }
+
     public function isLive(): bool
     {
         return now()->between($this->starts_at, $this->ends_at);
