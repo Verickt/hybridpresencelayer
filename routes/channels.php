@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SessionCheckIn;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
@@ -8,4 +9,11 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 
 Broadcast::channel('event.{eventId}.presence', function ($user, int $eventId) {
     return $user->events()->where('event_id', $eventId)->exists();
+});
+
+Broadcast::channel('session.{sessionId}', function ($user, int $sessionId) {
+    return SessionCheckIn::where('user_id', $user->id)
+        ->where('event_session_id', $sessionId)
+        ->whereNull('checked_out_at')
+        ->exists();
 });

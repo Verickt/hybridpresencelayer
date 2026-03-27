@@ -1,0 +1,108 @@
+<?php
+
+use App\Models\Event;
+use App\Models\EventSession;
+use App\Models\SessionCheckIn;
+use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
+
+beforeEach(function () {
+    $this->event = Event::factory()->live()->create();
+    $this->participant = User::factory()->create();
+    $this->event->participants()->attach($this->participant, [
+        'participant_type' => 'physical',
+        'status' => 'available',
+    ]);
+    $this->organizer = $this->event->organizer;
+});
+
+it('shows the session schedule with an empty state', function () {
+    $response = $this->actingAs($this->participant)
+        ->get(route('event.sessions', $this->event));
+
+    $response->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Event/Sessions')
+            ->where('event.slug', $this->event->slug)
+            ->has('sessions', 0)
+            ->etc()
+        );
+});
+
+it('shows session detail with live participants and questions', function () {
+    $session = EventSession::factory()->live()->create([
+        'event_id' => $this->event->id,
+    ]);
+
+    SessionCheckIn::create([
+        'user_id' => $this->participant->id,
+        'event_session_id' => $session->id,
+    ]);
+
+    $response = $this->actingAs($this->participant)
+        ->get(route('event.sessions.show', [$this->event, $session]));
+
+    $response->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Event/SessionDetail')
+            ->where('event.slug', $this->event->slug)
+            ->where('session.title', $session->title)
+            ->has('participants', 1)
+            ->has('questions', 0)
+            ->etc()
+        );
+});
+
+it('blocks guests from the session schedule', function () {
+    $response = $this->get(route('event.sessions', $this->event));
+
+    $response->assertRedirect(route('login'));
+});
+
+it('blocks cross-event access to a session', function () {
+    $foreignEvent = Event::factory()->live()->create();
+    $foreignSession = EventSession::factory()->live()->create([
+        'event_id' => $foreignEvent->id,
+    ]);
+
+    $response = $this->actingAs($this->participant)
+        ->get(route('event.sessions.show', [$this->event, $foreignSession]));
+
+    $response->assertNotFound();
+});
+
+it('allows the organizer to create a session', function () {
+    $response = $this->actingAs($this->organizer)
+        ->post(route('event.sessions.store', $this->event), [
+            'title' => 'Zero Trust Keynote',
+            'description' => 'A good talk',
+            'speaker' => 'Jane Doe',
+            'room' => 'Room A',
+            'starts_at' => now()->addHour()->toISOString(),
+            'ends_at' => now()->addHours(2)->toISOString(),
+        ]);
+
+    $response->assertRedirect(route('event.sessions', $this->event));
+});
+
+it('rejects non-organizers from creating sessions', function () {
+    $response = $this->actingAs($this->participant)
+        ->post(route('event.sessions.store', $this->event), [
+            'title' => 'Unauthorized Talk',
+            'starts_at' => now()->addHour()->toISOString(),
+            'ends_at' => now()->addHours(2)->toISOString(),
+        ]);
+
+    $response->assertForbidden();
+});
+
+it('rejects invalid session time windows', function () {
+    $response = $this->actingAs($this->organizer)
+        ->postJson(route('event.sessions.store', $this->event), [
+            'title' => 'Backwards Session',
+            'starts_at' => now()->addHours(2)->toISOString(),
+            'ends_at' => now()->addHour()->toISOString(),
+        ]);
+
+    $response->assertUnprocessable();
+});
