@@ -4,10 +4,14 @@ use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\BoothStaffController;
 use App\Http\Controllers\BoothVisitController;
+use App\Http\Controllers\ConnectionListController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventProfileController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
+use App\Http\Controllers\QrResolveController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
@@ -70,6 +74,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/event/{event:slug}/search', SearchController::class)->name('event.search');
 
     Route::get('/event/{event:slug}/dashboard', DashboardController::class)->name('event.dashboard');
+
+    Route::post('/event/{event:slug}/qr/resolve', QrResolveController::class)->name('event.qr.resolve');
+
+    Route::get('/event/{event:slug}/connections', ConnectionListController::class)->name('event.connections');
+    Route::get('/event/{event:slug}/profile', EventProfileController::class)->name('event.profile');
+
+    Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');
+    Route::patch('/event/{event:slug}/ping/{ping}/ignore', [PingController::class, 'ignore'])->name('event.ping.ignore');
+});
+
+Route::scopeBindings()->group(function () {
+    Route::get('/event/{event:slug}/sessions/{session}/qr-checkin', fn () => abort(204))
+        ->middleware('signed:relative')
+        ->name('event.sessions.qr-checkin');
+
+    Route::get('/event/{event:slug}/booths/{booth}/qr-checkin', fn () => abort(204))
+        ->middleware('signed:relative')
+        ->name('event.booths.qr-checkin');
 });
 
 require __DIR__.'/settings.php';
