@@ -6,11 +6,13 @@ use App\Http\Controllers\BoothStaffController;
 use App\Http\Controllers\BoothVisitController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PresenceFeedController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionQuestionController;
 use App\Http\Controllers\SessionReactionController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\SuggestionController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome', [
@@ -57,6 +59,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/event/{event:slug}/sessions/{session}/questions', [SessionQuestionController::class, 'store'])->name('event.sessions.questions.store')->scopeBindings();
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/vote', [SessionQuestionController::class, 'vote'])->name('event.sessions.questions.vote')->scopeBindings();
+
+    Route::get('/event/{event:slug}/suggestions', [SuggestionController::class, 'index'])->name('event.suggestions');
+    Route::patch('/event/{event:slug}/suggestions/{suggestion}/decline', [SuggestionController::class, 'decline'])->name('event.suggestions.decline');
+    Route::patch('/event/{event:slug}/suggestions/{suggestion}/accept', [SuggestionController::class, 'accept'])->name('event.suggestions.accept');
+    Route::get('/event/{event:slug}/search', SearchController::class)->name('event.search');
 });
 
 require __DIR__.'/settings.php';
