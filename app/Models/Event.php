@@ -46,6 +46,11 @@ class Event extends Model
         return $this->hasMany(EventSession::class);
     }
 
+    public function booths(): HasMany
+    {
+        return $this->hasMany(Booth::class);
+    }
+
     public function isLive(): bool
     {
         return now()->between($this->starts_at, $this->ends_at);
