@@ -144,14 +144,12 @@ return [
     */
 
     'features' => [
-        Features::registration(),
-        Features::resetPasswords(),
-        Features::emailVerification(),
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0
-        ]),
+        // Features::registration(),     // Disabled — using magic links
+        // Features::resetPasswords(),   // Disabled — no passwords
+        // Features::emailVerification(), // Disabled — magic link = verified
+        // Features::updateProfileInformation(),
+        // Features::updatePasswords(),
+        // Features::twoFactorAuthentication(), // Disabled — no passwords
     ],
 
 ];
