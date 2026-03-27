@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\BoothController;
-use App\Http\Controllers\CallController;
+use App\Http\Controllers\BoothDemoController;
+use App\Http\Controllers\BoothModerationController;
 use App\Http\Controllers\BoothStaffController;
+use App\Http\Controllers\BoothTabletController;
+use App\Http\Controllers\BoothThreadController;
 use App\Http\Controllers\BoothVisitController;
+use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConnectionListController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventProfileController;
@@ -12,12 +16,14 @@ use App\Http\Controllers\EventSetupController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrganizerActionController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\QrResolveController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SessionQrDisplayController;
 use App\Http\Controllers\SessionQuestionController;
 use App\Http\Controllers\SessionReactionController;
 use App\Http\Controllers\StatusController;
@@ -51,9 +57,18 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/booths', [BoothController::class, 'index'])->name('event.booths');
     Route::get('/event/{event:slug}/booths/{booth}', [BoothController::class, 'show'])->name('event.booths.show')->scopeBindings();
+    Route::get('/event/{event:slug}/booths/{booth}/tablet', BoothTabletController::class)->name('event.booths.tablet')->scopeBindings();
 
     Route::post('/event/{event:slug}/booths/{booth}/checkin', [BoothVisitController::class, 'store'])->name('event.booths.checkin')->scopeBindings();
     Route::delete('/event/{event:slug}/booths/{booth}/checkout', [BoothVisitController::class, 'destroy'])->name('event.booths.checkout')->scopeBindings();
+    Route::post('/event/{event:slug}/booths/{booth}/threads', [BoothThreadController::class, 'store'])->name('event.booths.threads.store')->scopeBindings();
+    Route::post('/event/{event:slug}/booths/{booth}/threads/{thread}/replies', [BoothThreadController::class, 'reply'])->name('event.booths.threads.replies.store')->scopeBindings();
+    Route::post('/event/{event:slug}/booths/{booth}/threads/{thread}/vote', [BoothThreadController::class, 'vote'])->name('event.booths.threads.vote')->scopeBindings();
+    Route::patch('/event/{event:slug}/booths/{booth}/threads/{thread}/follow-up', [BoothThreadController::class, 'followUp'])->name('event.booths.threads.follow-up')->scopeBindings();
+    Route::patch('/event/{event:slug}/booths/{booth}/threads/{thread}/answer', [BoothModerationController::class, 'answer'])->name('event.booths.threads.answer')->scopeBindings();
+    Route::patch('/event/{event:slug}/booths/{booth}/threads/{thread}/pin', [BoothModerationController::class, 'pin'])->name('event.booths.threads.pin')->scopeBindings();
+    Route::post('/event/{event:slug}/booths/{booth}/demos', [BoothDemoController::class, 'store'])->name('event.booths.demos.start')->scopeBindings();
+    Route::patch('/event/{event:slug}/booths/{booth}/demos/{demo}/end', [BoothDemoController::class, 'end'])->name('event.booths.demos.end')->scopeBindings();
 
     Route::get('/event/{event:slug}/booths/{booth}/leads', [BoothStaffController::class, 'leads'])->name('event.booths.leads')->scopeBindings();
     Route::post('/event/{event:slug}/booths/{booth}/announce', [BoothStaffController::class, 'announce'])->name('event.booths.announce')->scopeBindings();
@@ -61,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/sessions', [SessionController::class, 'index'])->name('event.sessions');
     Route::get('/event/{event:slug}/sessions/{session}', [SessionController::class, 'show'])->name('event.sessions.show')->scopeBindings();
+    Route::get('/event/{event:slug}/sessions/{session}/qr-display', SessionQrDisplayController::class)->name('event.sessions.qr-display')->scopeBindings();
     Route::post('/event/{event:slug}/sessions', [SessionController::class, 'store'])->name('event.sessions.store');
 
     Route::post('/event/{event:slug}/sessions/{session}/checkin', [SessionCheckInController::class, 'store'])->name('event.sessions.checkin')->scopeBindings();
@@ -96,6 +112,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/connections/{connection}/call', [CallController::class, 'start'])->name('connection.call.start');
     Route::patch('/connections/{connection}/call/{call}/extend', [CallController::class, 'extend'])->name('connection.call.extend');
     Route::patch('/connections/{connection}/call/{call}/end', [CallController::class, 'end'])->name('connection.call.end');
+
+    Route::post('/event/{event:slug}/actions/announce', [OrganizerActionController::class, 'announce'])->name('event.actions.announce');
+    Route::post('/event/{event:slug}/actions/serendipity-wave', [OrganizerActionController::class, 'serendipityWave'])->name('event.actions.serendipity-wave');
 });
 
 Route::scopeBindings()->group(function () {
