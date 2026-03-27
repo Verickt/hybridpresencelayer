@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\BoothController;
 use App\Http\Controllers\BoothStaffController;
 use App\Http\Controllers\BoothVisitController;
+use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\SearchController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\SessionReactionController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\SuggestionController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
 
 Route::inertia('/', 'Welcome', [
     'canRegister' => false,
