@@ -49,7 +49,9 @@
       "Bash(vendor/bin/pint --dirty --format agent)",
       "mcp__paper__get_tree_summary",
       "mcp__browser-tools__takeScreenshot",
-      "mcp__browser-tools__getConsoleErrors"
+      "mcp__browser-tools__getConsoleErrors",
+      "mcp__paper__get_computed_styles",
+      "Bash(wc -l /Users/rick/Projects/hybridpresencelayer/resources/js/pages/Event/*.vue)"
     ]
   },
   "enableAllProjectMcpServers": true,
