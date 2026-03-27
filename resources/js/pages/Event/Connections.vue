@@ -2,10 +2,7 @@
 import { Head, useHttp } from '@inertiajs/vue3';
 import { MessageCircle, Phone, PhoneOff, Send, X } from 'lucide-vue-next';
 import { nextTick, ref } from 'vue';
-import Heading from '@/components/Heading.vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { start as startCall, end as endCall } from '@/routes/connection/call';
 import { index as fetchMessages, store as sendMessage } from '@/routes/connection/messages';
 
@@ -138,14 +135,10 @@ function formatTime(iso: string): string {
     <div class="flex h-full flex-1 flex-col gap-4 p-4 md:p-6">
         <Head :title="`${event.name} - Connections`" />
 
-        <Heading
-            title="Your connections"
-            :description="`People you connected with at ${event.name}.`"
-        />
-
-        <p v-if="connections.length === 0" class="text-sm text-muted-foreground">
-            No connections yet. Start meeting people!
-        </p>
+        <div class="space-y-1">
+            <h1 class="text-2xl font-bold text-neutral-900">Connections</h1>
+            <p class="text-sm text-neutral-500">{{ connections.length }} people you've matched with</p>
+        </div>
 
         <!-- Chat overlay -->
         <div
@@ -246,43 +239,41 @@ function formatTime(iso: string): string {
         </div>
 
         <!-- Connection list -->
-        <Card
-            v-for="connection in connections"
-            :key="connection.connection_id"
-            class="shadow-sm"
-        >
-            <CardContent class="flex items-center justify-between gap-4 p-4">
-                <div class="min-w-0">
-                    <p class="truncate font-medium">{{ connection.user.name }}</p>
-                    <p class="truncate text-sm text-muted-foreground">
-                        {{ connection.user.company }}
-                    </p>
-                    <p
-                        v-if="connection.context"
-                        class="mt-1 text-xs text-muted-foreground"
-                    >
-                        {{ connection.context }}
+        <div>
+            <div
+                v-for="connection in connections"
+                :key="connection.connection_id"
+                class="flex items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+            >
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                    {{ connection.user.name.split(' ').map((n: string) => n[0]).join('') }}
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-neutral-900">{{ connection.user.name }}</p>
+                    <p class="truncate text-sm text-neutral-500">
+                        {{ connection.user.company }}{{ connection.context ? ` · ${connection.context}` : '' }}
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <Badge
-                        v-if="connection.is_cross_world"
-                        variant="secondary"
-                        class="shrink-0"
-                    >
-                        Cross-world
-                    </Badge>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        class="shrink-0"
+
+                <div class="flex shrink-0 items-center gap-2">
+                    <button
+                        class="flex size-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50"
                         @click="openChat(connection.connection_id)"
                     >
-                        <MessageCircle class="mr-1 size-3.5" />
-                        Chat
-                    </Button>
+                        <MessageCircle class="size-4" />
+                    </button>
+                    <button
+                        class="flex size-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50"
+                    >
+                        <Phone class="size-4" />
+                    </button>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
+
+        <p v-if="connections.length === 0" class="py-8 text-center text-sm text-neutral-400">
+            No connections yet. Start meeting people!
+        </p>
     </div>
 </template>
