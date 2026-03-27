@@ -6,10 +6,22 @@ import { feed } from '@/routes/event';
 const props = defineProps<{
     filters: { type?: string; status?: string; tag?: string };
     eventSlug: string;
+    availableTags?: string[];
 }>();
 
 const type = ref(props.filters.type ?? '');
 const status = ref(props.filters.status ?? '');
+const tag = ref(props.filters.tag ?? '');
+
+function toggleFilter(filter: 'type' | 'status' | 'tag', value: string) {
+    if (filter === 'type') {
+        type.value = type.value === value ? '' : value;
+    } else if (filter === 'status') {
+        status.value = status.value === value ? '' : value;
+    } else {
+        tag.value = tag.value === value ? '' : value;
+    }
+}
 
 function applyFilters() {
     router.visit(
@@ -19,6 +31,7 @@ function applyFilters() {
                 query: {
                     type: type.value || null,
                     status: status.value || null,
+                    tag: tag.value || null,
                 },
             },
         ),
@@ -29,55 +42,44 @@ function applyFilters() {
     );
 }
 
-watch([type, status], applyFilters);
+watch([type, status, tag], applyFilters);
+
+const pills = [
+    { filter: 'status' as const, value: 'available', label: 'Available' },
+    { filter: 'type' as const, value: 'physical', label: 'Physical' },
+    { filter: 'type' as const, value: 'remote', label: 'Remote' },
+];
 </script>
 
 <template>
-    <div
-        dusk="presence-filters"
-        class="grid gap-3 rounded-2xl border border-border/70 bg-card/95 p-3 shadow-sm sm:grid-cols-2"
-    >
-        <label class="space-y-2">
-            <span
-                class="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase"
-            >
-                Format
-            </span>
-            <select
-                v-model="type"
-                class="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm transition outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-            >
-                <option value="">All Types</option>
-                <option value="physical">Physical</option>
-                <option value="remote" dusk="presence-filter-type-remote">
-                    Remote
-                </option>
-            </select>
-        </label>
+    <div dusk="presence-filters" class="flex flex-wrap gap-2">
+        <button
+            v-for="pill in pills"
+            :key="pill.value"
+            class="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+            :class="
+                (pill.filter === 'type' ? type : status) === pill.value
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300'
+            "
+            :dusk="`presence-filter-${pill.filter}-${pill.value}`"
+            @click="toggleFilter(pill.filter, pill.value)"
+        >
+            {{ pill.label }}
+        </button>
 
-        <label class="space-y-2">
-            <span
-                class="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase"
-            >
-                Status
-            </span>
-            <select
-                v-model="status"
-                class="h-10 w-full rounded-xl border border-border bg-background px-3 text-sm transition outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-            >
-                <option value="">All Statuses</option>
-                <option
-                    value="available"
-                    dusk="presence-filter-status-available"
-                >
-                    Available
-                </option>
-                <option value="in_session">In Session</option>
-                <option value="at_booth">At Booth</option>
-                <option value="busy" dusk="presence-filter-status-busy">
-                    Busy
-                </option>
-            </select>
-        </label>
+        <button
+            v-for="t in availableTags ?? []"
+            :key="t"
+            class="rounded-full border px-4 py-1.5 text-sm font-medium transition"
+            :class="
+                tag === t
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300'
+            "
+            @click="toggleFilter('tag', t)"
+        >
+            {{ t }}
+        </button>
     </div>
 </template>
