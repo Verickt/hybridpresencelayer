@@ -95,24 +95,56 @@ defineProps<{
             <Card class="border-border/70 py-0 shadow-sm">
                 <CardContent class="space-y-4 p-6">
                     <h2 class="text-lg font-semibold">Session analytics</h2>
-                    <p class="text-sm text-muted-foreground">
-                        {{ sessionAnalytics.length }} session metric row{{
-                            sessionAnalytics.length !== 1 ? 's' : ''
-                        }}
-                        available.
-                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-border/50 text-left text-muted-foreground">
+                                    <th class="pb-2 font-medium">Session</th>
+                                    <th class="pb-2 font-medium text-center">Check-ins</th>
+                                    <th class="pb-2 font-medium text-center">Reactions</th>
+                                    <th class="pb-2 font-medium text-center">Questions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="session in sessionAnalytics" :key="session.id" class="border-b border-border/30">
+                                    <td class="py-3 font-medium">{{ session.title }}</td>
+                                    <td class="py-3 text-center">{{ session.check_ins_count }}</td>
+                                    <td class="py-3 text-center">{{ session.reactions_count }}</td>
+                                    <td class="py-3 text-center">{{ session.questions_count }}</td>
+                                </tr>
+                                <tr v-if="sessionAnalytics.length === 0">
+                                    <td colspan="4" class="py-6 text-center text-muted-foreground">No sessions yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </CardContent>
             </Card>
 
             <Card class="border-border/70 py-0 shadow-sm">
                 <CardContent class="space-y-4 p-6">
                     <h2 class="text-lg font-semibold">Booth performance</h2>
-                    <p class="text-sm text-muted-foreground">
-                        {{ boothPerformance.length }} booth metric row{{
-                            boothPerformance.length !== 1 ? 's' : ''
-                        }}
-                        available.
-                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-border/50 text-left text-muted-foreground">
+                                    <th class="pb-2 font-medium">Booth</th>
+                                    <th class="pb-2 font-medium">Company</th>
+                                    <th class="pb-2 font-medium text-center">Visitors</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="booth in boothPerformance" :key="booth.id" class="border-b border-border/30">
+                                    <td class="py-3 font-medium">{{ booth.name }}</td>
+                                    <td class="py-3 text-muted-foreground">{{ booth.company }}</td>
+                                    <td class="py-3 text-center">{{ booth.visitor_count }}</td>
+                                </tr>
+                                <tr v-if="boothPerformance.length === 0">
+                                    <td colspan="3" class="py-6 text-center text-muted-foreground">No booths yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </CardContent>
             </Card>
         </div>
