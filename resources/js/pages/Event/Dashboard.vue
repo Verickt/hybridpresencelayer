@@ -12,7 +12,58 @@ const props = defineProps<{
     overview: Record<string, number>;
     sessionAnalytics: Array<Record<string, unknown>>;
     boothPerformance: Array<Record<string, unknown>>;
+    sessions: Array<{ id: number; title: string; speaker: string; room: string; starts_at: string; ends_at: string; qa_enabled: boolean }>;
+    booths: Array<{ id: number; name: string; company: string; description: string; staff: string[] }>;
+    interestTags: Record<number, string>;
+    icebreakers: Array<{ id: number; question: string }>;
 }>();
+
+const showAddSession = ref(false);
+const showAddBooth = ref(false);
+const newSession = ref({ title: '', speaker: '', room: '', starts_at: '', ends_at: '', description: '' });
+const newBooth = ref({ name: '', company: '', description: '' });
+
+function addSession() {
+    fetch(`/event/${props.event.slug}/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'text/html' },
+        body: JSON.stringify(newSession.value),
+        credentials: 'same-origin',
+    }).then(() => {
+        newSession.value = { title: '', speaker: '', room: '', starts_at: '', ends_at: '', description: '' };
+        showAddSession.value = false;
+        router.reload();
+    });
+}
+
+function deleteSession(id: number) {
+    fetch(`/event/${props.event.slug}/sessions/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'text/html' },
+        credentials: 'same-origin',
+    }).then(() => router.reload());
+}
+
+function addBooth() {
+    fetch(`/event/${props.event.slug}/booths`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'text/html' },
+        body: JSON.stringify(newBooth.value),
+        credentials: 'same-origin',
+    }).then(() => {
+        newBooth.value = { name: '', company: '', description: '' };
+        showAddBooth.value = false;
+        router.reload();
+    });
+}
+
+function deleteBooth(id: number) {
+    fetch(`/event/${props.event.slug}/booths/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-XSRF-TOKEN': getCsrfToken(), 'Accept': 'text/html' },
+        credentials: 'same-origin',
+    }).then(() => router.reload());
+}
 
 const announcementText = ref('');
 const announcementSent = ref(false);
@@ -223,5 +274,80 @@ function getCsrfToken(): string {
                 </CardContent>
             </Card>
         </div>
+
+        <!-- Session Management -->
+        <Card class="border-border/70 py-0 shadow-sm">
+            <CardContent class="space-y-4 p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold">Manage Sessions</h2>
+                    <Button @click="showAddSession = !showAddSession" size="sm">
+                        {{ showAddSession ? 'Cancel' : '+ Add Session' }}
+                    </Button>
+                </div>
+
+                <div v-if="showAddSession" class="grid gap-3 rounded-lg border border-border/50 p-4">
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <input v-model="newSession.title" placeholder="Session title" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.speaker" placeholder="Speaker name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.room" placeholder="Room" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.description" placeholder="Description" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.starts_at" type="datetime-local" class="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+                        <input v-model="newSession.ends_at" type="datetime-local" class="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+                    </div>
+                    <Button @click="addSession" :disabled="!newSession.title || !newSession.starts_at || !newSession.ends_at">
+                        Create Session
+                    </Button>
+                </div>
+
+                <div class="space-y-2">
+                    <div v-for="session in sessions" :key="session.id" class="flex items-center justify-between rounded-lg border border-border/30 px-4 py-3">
+                        <div>
+                            <p class="font-medium">{{ session.title }}</p>
+                            <p class="text-xs text-muted-foreground">{{ session.speaker }} &middot; {{ session.room }}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="deleteSession(session.id)">
+                            Delete
+                        </Button>
+                    </div>
+                    <p v-if="sessions.length === 0" class="text-sm text-muted-foreground">No sessions yet.</p>
+                </div>
+            </CardContent>
+        </Card>
+
+        <!-- Booth Management -->
+        <Card class="border-border/70 py-0 shadow-sm">
+            <CardContent class="space-y-4 p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold">Manage Booths</h2>
+                    <Button @click="showAddBooth = !showAddBooth" size="sm">
+                        {{ showAddBooth ? 'Cancel' : '+ Add Booth' }}
+                    </Button>
+                </div>
+
+                <div v-if="showAddBooth" class="grid gap-3 rounded-lg border border-border/50 p-4">
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <input v-model="newBooth.name" placeholder="Booth name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newBooth.company" placeholder="Company name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                    </div>
+                    <input v-model="newBooth.description" placeholder="Description" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                    <Button @click="addBooth" :disabled="!newBooth.name || !newBooth.company">
+                        Create Booth
+                    </Button>
+                </div>
+
+                <div class="space-y-2">
+                    <div v-for="booth in booths" :key="booth.id" class="flex items-center justify-between rounded-lg border border-border/30 px-4 py-3">
+                        <div>
+                            <p class="font-medium">{{ booth.name }}</p>
+                            <p class="text-xs text-muted-foreground">{{ booth.company }} <span v-if="booth.staff.length"> &middot; Staff: {{ booth.staff.join(', ') }}</span></p>
+                        </div>
+                        <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="deleteBooth(booth.id)">
+                            Delete
+                        </Button>
+                    </div>
+                    <p v-if="booths.length === 0" class="text-sm text-muted-foreground">No booths yet.</p>
+                </div>
+            </CardContent>
+        </Card>
     </div>
 </template>

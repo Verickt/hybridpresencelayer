@@ -84,6 +84,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/event/{event:slug}/sessions/{session}', [SessionController::class, 'show'])->name('event.sessions.show')->scopeBindings();
     Route::get('/event/{event:slug}/sessions/{session}/qr-display', SessionQrDisplayController::class)->name('event.sessions.qr-display')->scopeBindings();
     Route::post('/event/{event:slug}/sessions', [SessionController::class, 'store'])->name('event.sessions.store');
+    Route::delete('/event/{event:slug}/sessions/{session}', [SessionController::class, 'destroy'])->name('event.sessions.destroy')->scopeBindings();
+    Route::post('/event/{event:slug}/booths', [BoothController::class, 'store'])->name('event.booths.store');
+    Route::delete('/event/{event:slug}/booths/{booth}', [BoothController::class, 'destroy'])->name('event.booths.destroy')->scopeBindings();
 
     Route::post('/event/{event:slug}/sessions/{session}/checkin', [SessionCheckInController::class, 'store'])->name('event.sessions.checkin')->scopeBindings();
     Route::delete('/event/{event:slug}/sessions/{session}/checkout', [SessionCheckInController::class, 'destroy'])->name('event.sessions.checkout')->scopeBindings();

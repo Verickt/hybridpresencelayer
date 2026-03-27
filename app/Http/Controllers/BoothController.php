@@ -6,6 +6,7 @@ use App\Models\Booth;
 use App\Models\BoothDemo;
 use App\Models\BoothThread;
 use App\Models\Event;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -132,6 +133,30 @@ class BoothController extends Controller
                 'votes' => fn ($query) => $query->where('user_id', $viewerId),
             ])
             ->withCount(['votes', 'replies']);
+    }
+
+    public function store(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->id === $event->organizer_id, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'company' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $event->booths()->create($validated);
+
+        return redirect()->back();
+    }
+
+    public function destroy(Request $request, Event $event, Booth $booth): RedirectResponse
+    {
+        abort_unless($request->user()->id === $event->organizer_id, 403);
+
+        $booth->delete();
+
+        return redirect()->back();
     }
 
     private function serializeDemo(BoothDemo $demo): array

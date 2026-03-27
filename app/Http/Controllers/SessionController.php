@@ -125,7 +125,16 @@ class SessionController extends Controller
 
         $event->sessions()->create($validated);
 
-        return redirect()->route('event.sessions', $event);
+        return redirect()->back();
+    }
+
+    public function destroy(Request $request, Event $event, EventSession $session): RedirectResponse
+    {
+        abort_unless($request->user()->id === $event->organizer_id, 403);
+
+        $session->delete();
+
+        return redirect()->back();
     }
 
     private function canViewSessions(User $user, Event $event): bool
