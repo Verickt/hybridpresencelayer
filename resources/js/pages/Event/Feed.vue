@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useHttp } from '@inertiajs/vue3';
 import { Activity, Sparkles, Users } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref } from 'vue';
+import Heading from '@/components/Heading.vue';
 import ParticipantCard from '@/components/presence/ParticipantCard.vue';
 import PresenceFilters from '@/components/presence/PresenceFilters.vue';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import Heading from '@/components/Heading.vue';
+import { useHaptics } from '@/composables/useHaptics';
+import { ping } from '@/routes/event';
+
+const { ping: hapticPing } = useHaptics();
 
 const props = defineProps<{
     event: { id: number; name: string; slug: string };
@@ -27,9 +31,17 @@ const props = defineProps<{
 }>();
 
 const liveParticipants = ref([...props.participants]);
+const pingRequest = useHttp();
 
-function handlePing(userId: number) {
-    console.log('Ping user:', userId);
+async function handlePing(userId: number) {
+    hapticPing();
+    try {
+        await pingRequest.submit(
+            ping({ event: props.event.slug, user: userId }),
+        );
+    } catch {
+        // silently fail — rate limits, duplicates handled by backend
+    }
 }
 
 const lastOccurredAt = ref<Record<number, string>>({});
