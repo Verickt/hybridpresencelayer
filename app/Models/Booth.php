@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booth extends Model
 {
@@ -33,5 +34,10 @@ class Booth extends Model
     public function interestTags(): BelongsToMany
     {
         return $this->belongsToMany(InterestTag::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(BoothVisit::class);
     }
 }
