@@ -71,6 +71,7 @@ function deleteBooth(id: number) {
 const announcementText = ref('');
 const announcementSent = ref(false);
 const waveSent = ref(false);
+const showAnnounce = ref(false);
 
 function sendAnnouncement() {
     if (!announcementText.value.trim()) return;
@@ -106,21 +107,44 @@ function getCsrfToken(): string {
     <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
         <Head :title="`${event.name} Dashboard`" />
 
-        <Card
-            class="border-border/70 bg-gradient-to-br from-primary/8 via-card to-card py-0 shadow-sm"
-        >
-            <CardContent class="space-y-3 p-6">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <Heading
-                        title="Organizer overview"
-                        :description="`Live event metrics for ${event.name}.`"
-                    />
-                    <Badge variant="secondary" class="rounded-full px-3 py-1">
-                        {{ event.slug }}
-                    </Badge>
-                </div>
-            </CardContent>
-        </Card>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <p class="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Organizer</p>
+                <h1 class="text-2xl font-bold">{{ event.name }} Dashboard</h1>
+            </div>
+            <div class="flex gap-2">
+                <Button
+                    class="rounded-full bg-green-600 text-white hover:bg-green-700"
+                    @click="triggerSerendipityWave"
+                >
+                    <Sparkles class="mr-1 size-4" />
+                    Serendipity Wave
+                </Button>
+                <Button
+                    variant="outline"
+                    class="rounded-full"
+                    @click="showAnnounce = !showAnnounce"
+                >
+                    <Megaphone class="mr-1 size-4" />
+                    Announce
+                </Button>
+            </div>
+        </div>
+
+        <!-- Inline announcement input -->
+        <div v-if="showAnnounce" class="flex gap-2">
+            <input
+                v-model="announcementText"
+                type="text"
+                maxlength="500"
+                placeholder="Type an event-wide announcement..."
+                class="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                @keydown.enter="sendAnnouncement"
+            />
+            <Button @click="sendAnnouncement" :disabled="!announcementText.trim()">Send</Button>
+        </div>
+        <p v-if="announcementSent" class="text-sm text-green-600">Announcement sent!</p>
+        <p v-if="waveSent" class="text-sm text-green-600">Serendipity wave triggered!</p>
 
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Card class="border-border/70 py-0 shadow-sm">
@@ -176,46 +200,6 @@ function getCsrfToken(): string {
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.cross_pollination_rate }}%
                     </p>
-                </CardContent>
-            </Card>
-        </div>
-
-        <div class="grid gap-4 md:grid-cols-2">
-            <Card class="border-border/70 py-0 shadow-sm">
-                <CardContent class="space-y-4 p-6">
-                    <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <Megaphone class="size-5" />
-                        Send Announcement
-                    </h2>
-                    <div class="flex gap-2">
-                        <input
-                            v-model="announcementText"
-                            type="text"
-                            maxlength="500"
-                            placeholder="Type an event-wide announcement..."
-                            class="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        />
-                        <Button @click="sendAnnouncement" :disabled="!announcementText.trim()">
-                            Send
-                        </Button>
-                    </div>
-                    <p v-if="announcementSent" class="text-sm text-green-500">Announcement sent to all participants!</p>
-                </CardContent>
-            </Card>
-
-            <Card class="border-border/70 py-0 shadow-sm">
-                <CardContent class="space-y-4 p-6">
-                    <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <Sparkles class="size-5" />
-                        Serendipity Wave
-                    </h2>
-                    <p class="text-sm text-muted-foreground">
-                        Push match suggestions to all active participants simultaneously. Creates event-wide networking energy.
-                    </p>
-                    <Button @click="triggerSerendipityWave" variant="outline" class="w-full">
-                        Trigger Connection Wave
-                    </Button>
-                    <p v-if="waveSent" class="text-sm text-green-500">Serendipity wave triggered!</p>
                 </CardContent>
             </Card>
         </div>

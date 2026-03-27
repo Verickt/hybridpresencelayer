@@ -1,10 +1,5 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CalendarDays, Mic2, Users } from 'lucide-vue-next';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import Heading from '@/components/Heading.vue';
 import { show } from '@/routes/event/sessions';
 
 const props = defineProps<{
@@ -20,6 +15,9 @@ const props = defineProps<{
         is_live: boolean;
         qa_enabled: boolean;
         attendee_count: number;
+        physical_count: number;
+        remote_count: number;
+        is_checked_in: boolean;
     }>;
 }>();
 
@@ -28,124 +26,86 @@ function formatTimeRange(startsAt: string, endsAt: string): string {
         hour: 'numeric',
         minute: '2-digit',
     });
-
-    return `${formatter.format(new Date(startsAt))} - ${formatter.format(new Date(endsAt))}`;
+    return `${formatter.format(new Date(startsAt))} – ${formatter.format(new Date(endsAt))}`;
 }
+
+const today = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-4 p-4">
         <Head :title="`${event.name} Sessions`" />
 
-        <Card
-            class="border-border/70 bg-gradient-to-br from-primary/8 via-card to-card py-0 shadow-sm"
-        >
-            <CardContent class="space-y-3 p-6">
-                <Heading
-                    title="Sessions"
-                    :description="`${sessions.length} sessions scheduled for ${event.name}.`"
-                />
-                <p class="text-sm text-muted-foreground">
-                    A shared schedule for in-room and remote participants,
-                    styled with the same primitives as the rest of the app.
-                </p>
-            </CardContent>
-        </Card>
+        <div>
+            <h1 class="text-2xl font-bold text-neutral-900">Sessions</h1>
+            <p class="text-sm text-neutral-500">{{ today }}</p>
+        </div>
 
         <div class="space-y-3">
-            <Card
+            <Link
                 v-for="session in sessions"
                 :key="session.id"
-                class="border-border/70 py-0 shadow-sm"
+                :href="show({ event: props.event.slug, session: session.id }).url"
+                class="block rounded-2xl border bg-white p-4 transition"
+                :class="session.is_live ? 'border-red-200 shadow-sm' : 'border-neutral-100'"
             >
-                <CardContent class="space-y-4 p-6">
-                    <div
-                        class="flex flex-wrap items-start justify-between gap-3"
-                    >
-                        <div class="space-y-2">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h2 class="text-lg font-semibold">
-                                    {{ session.title }}
-                                </h2>
-                                <Badge
-                                    v-if="session.is_live"
-                                    class="rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[0.12em] uppercase"
-                                >
-                                    Live
-                                </Badge>
-                                <Badge
-                                    v-if="session.qa_enabled"
-                                    variant="secondary"
-                                    class="rounded-full px-2.5 py-1 text-[11px]"
-                                >
-                                    Q&amp;A
-                                </Badge>
-                            </div>
+                <!-- Live badge + time -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span
+                            v-if="session.is_live"
+                            class="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-semibold text-white"
+                        >
+                            <span class="size-1.5 animate-pulse rounded-full bg-white" />
+                            LIVE
+                        </span>
+                        <span v-else class="text-xs text-neutral-400">
+                            {{ formatTimeRange(session.starts_at, session.ends_at) }}
+                        </span>
+                    </div>
+                    <span v-if="session.is_live" class="text-xs text-neutral-400">
+                        {{ formatTimeRange(session.starts_at, session.ends_at) }}
+                    </span>
+                </div>
 
-                            <p
-                                v-if="session.description"
-                                class="text-sm text-muted-foreground"
-                            >
-                                {{ session.description }}
-                            </p>
-                        </div>
+                <!-- Title + speaker -->
+                <h2 class="mt-2 text-base font-semibold text-neutral-900">{{ session.title }}</h2>
+                <p class="mt-0.5 text-sm text-neutral-500">
+                    {{ session.speaker || 'Speaker TBA' }} · {{ session.room || 'Room TBA' }}
+                </p>
 
-                        <Button as-child variant="outline" class="rounded-full">
-                            <Link
-                                :href="
-                                    show({
-                                        event: props.event.slug,
-                                        session: session.id,
-                                    })
-                                "
-                            >
-                                View
-                            </Link>
-                        </Button>
+                <!-- Bottom row: counts + action -->
+                <div class="mt-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3 text-xs text-neutral-500">
+                        <span class="flex items-center gap-1">
+                            📍 {{ session.physical_count }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            🌐 {{ session.remote_count }}
+                        </span>
                     </div>
 
-                    <div
-                        class="grid gap-3 text-sm text-muted-foreground md:grid-cols-3"
+                    <span
+                        v-if="session.is_checked_in"
+                        class="rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white"
                     >
-                        <div class="flex items-center gap-2">
-                            <CalendarDays class="size-4" />
-                            {{
-                                formatTimeRange(
-                                    session.starts_at,
-                                    session.ends_at,
-                                )
-                            }}
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <Mic2 class="size-4" />
-                            {{ session.speaker || 'Speaker TBA' }}
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <Users class="size-4" />
-                            {{ session.attendee_count }} attendee{{
-                                session.attendee_count !== 1 ? 's' : ''
-                            }}
-                        </div>
-                    </div>
+                        ✓ Checked in
+                    </span>
+                    <span
+                        v-else-if="!session.is_live"
+                        class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600"
+                    >
+                        Remind me
+                    </span>
+                </div>
+            </Link>
 
-                    <p class="text-sm font-medium text-foreground">
-                        {{ session.room || 'Room to be announced' }}
-                    </p>
-                </CardContent>
-            </Card>
-
-            <Card
+            <p
                 v-if="sessions.length === 0"
-                class="border-dashed border-border/70 py-0 shadow-sm"
+                class="py-12 text-center text-sm text-neutral-400"
             >
-                <CardContent class="py-12 text-center">
-                    <p class="font-medium">No sessions are scheduled yet.</p>
-                    <p class="mt-2 text-sm text-muted-foreground">
-                        Session cards will appear here once the event agenda is
-                        published.
-                    </p>
-                </CardContent>
-            </Card>
+                No sessions are scheduled yet.
+            </p>
         </div>
     </div>
 </template>

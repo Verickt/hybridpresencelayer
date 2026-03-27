@@ -17,21 +17,35 @@ class SessionController extends Controller
     {
         abort_unless($this->canViewSessions($request->user(), $event), 403);
 
+        $user = $request->user();
+
         $sessions = $event->sessions()
             ->orderBy('starts_at')
             ->get()
-            ->map(fn (EventSession $s) => [
-                'id' => $s->id,
-                'title' => $s->title,
-                'description' => $s->description,
-                'speaker' => $s->speaker,
-                'room' => $s->room,
-                'starts_at' => $s->starts_at->toISOString(),
-                'ends_at' => $s->ends_at->toISOString(),
-                'is_live' => $s->isLive(),
-                'qa_enabled' => $s->qa_enabled,
-                'attendee_count' => $s->checkIns()->whereNull('checked_out_at')->count(),
-            ]);
+            ->map(function (EventSession $s) use ($event, $user) {
+                $activeCheckIns = $s->checkIns()->whereNull('checked_out_at')
+                    ->with(['user.events' => fn ($q) => $q->whereKey($event->id)])
+                    ->get();
+
+                $physical = $activeCheckIns->filter(fn ($c) => $c->user->events->first()?->pivot?->participant_type === 'physical')->count();
+                $remote = $activeCheckIns->count() - $physical;
+
+                return [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'description' => $s->description,
+                    'speaker' => $s->speaker,
+                    'room' => $s->room,
+                    'starts_at' => $s->starts_at->toISOString(),
+                    'ends_at' => $s->ends_at->toISOString(),
+                    'is_live' => $s->isLive(),
+                    'qa_enabled' => $s->qa_enabled,
+                    'attendee_count' => $activeCheckIns->count(),
+                    'physical_count' => $physical,
+                    'remote_count' => $remote,
+                    'is_checked_in' => $s->hasActiveCheckInFor($user),
+                ];
+            });
 
         return Inertia::render('Event/Sessions', [
             'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],

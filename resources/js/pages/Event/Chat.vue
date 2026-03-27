@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Head, useHttp } from '@inertiajs/vue3';
-import { ArrowLeft, Send } from 'lucide-vue-next';
+import { Head, Link, useHttp, usePage } from '@inertiajs/vue3';
+import { ArrowLeft, Phone } from 'lucide-vue-next';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Button } from '@/components/ui/button';
 import { index as fetchMessages, store as sendMessage } from '@/routes/connection/messages';
 
 type Message = {
@@ -15,9 +14,14 @@ type Message = {
 
 const props = defineProps<{
     event: { id: number; name: string; slug: string };
-    connection: { id: number };
+    connection: { id: number; context?: string };
     peer: { id: number; name: string; company: string };
+    icebreaker?: string;
+    sharedTags?: string[];
 }>();
+
+const page = usePage();
+const currentUserId = (page.props as any).auth?.user?.id;
 
 const messages = ref<Message[]>([]);
 const messagesContainer = ref<HTMLDivElement>();
@@ -26,43 +30,24 @@ const isTyping = ref(false);
 const chatRequest = useHttp();
 const messageForm = useHttp<{ body: string }>({ body: '' });
 
-const charCount = ref(0);
-const maxChars = 500;
-
-watch(
-    () => messageForm.body,
-    (val) => {
-        charCount.value = val?.length ?? 0;
-    },
-);
-
 async function loadMessages() {
     try {
         const response = (await chatRequest.submit(
             fetchMessages(props.connection.id),
         )) as { data: Message[] };
-
         messages.value = response.data;
         await nextTick();
         scrollToBottom();
-    } catch {
-        // silently fail
-    }
+    } catch { /* */ }
 }
 
 async function handleSend() {
-    if (!messageForm.body.trim() || charCount.value > maxChars) {
-        return;
-    }
-
+    if (!messageForm.body.trim()) return;
     try {
         await messageForm.submit(sendMessage(props.connection.id));
-
         messageForm.reset();
         await loadMessages();
-    } catch {
-        // silently fail
-    }
+    } catch { /* */ }
 }
 
 function scrollToBottom() {
@@ -72,46 +57,34 @@ function scrollToBottom() {
 }
 
 function formatTime(iso: string): string {
-    return new Intl.DateTimeFormat('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).format(new Date(iso));
+    return new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
 }
 
-function formatDate(iso: string): string {
-    return new Intl.DateTimeFormat('en-GB', {
-        day: 'numeric',
-        month: 'short',
-    }).format(new Date(iso));
-}
+const initials = props.peer.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
 
-// Echo listener for real-time messages
 let echoChannel: unknown = null;
 
 onMounted(() => {
     loadMessages();
-
-    // Listen for new messages via Echo
-    if (typeof window !== 'undefined' && (window as any).Echo) {
-        echoChannel = (window as any).Echo.private(`connection.${props.connection.id}.chat`)
+    if (window.Echo) {
+        echoChannel = window.Echo.private(`connection.${props.connection.id}.chat`)
             .listen('NewMessage', (e: Message) => {
                 messages.value.push(e);
                 nextTick(() => scrollToBottom());
             })
             .listenForWhisper('typing', () => {
                 isTyping.value = true;
-                setTimeout(() => {
-                    isTyping.value = false;
-                }, 2000);
+                setTimeout(() => { isTyping.value = false; }, 2000);
             });
     }
 });
 
 onUnmounted(() => {
-    if (typeof window !== 'undefined' && (window as any).Echo && echoChannel) {
-        (window as any).Echo.leave(`connection.${props.connection.id}.chat`);
-    }
+    window.Echo?.leave(`connection.${props.connection.id}.chat`);
 });
 
 function handleInput() {
@@ -122,23 +95,40 @@ function handleInput() {
 </script>
 
 <template>
-    <div class="flex h-dvh flex-col bg-background">
+    <div class="flex h-dvh flex-col bg-white">
         <Head :title="`Chat with ${peer.name}`" />
 
         <!-- Header -->
-        <div class="flex items-center gap-3 border-b border-border/70 px-4 py-3">
-            <a
+        <div class="flex items-center gap-3 border-b border-neutral-100 px-4 py-3">
+            <Link
                 :href="`/event/${event.slug}/connections`"
-                class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                class="p-1 text-neutral-400 transition hover:text-neutral-600"
             >
                 <ArrowLeft class="size-5" />
-            </a>
+            </Link>
+
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                {{ initials }}
+            </div>
+
             <div class="min-w-0 flex-1">
-                <h1 class="truncate text-sm font-semibold">{{ peer.name }}</h1>
-                <p v-if="peer.company" class="truncate text-xs text-muted-foreground">
-                    {{ peer.company }}
+                <h1 class="truncate text-sm font-semibold text-neutral-900">{{ peer.name }}</h1>
+                <p class="truncate text-xs text-neutral-500">
+                    {{ connection.context || peer.company }}{{ sharedTags?.length ? ` · ${sharedTags[0]}` : '' }}
                 </p>
             </div>
+
+            <button class="p-2 text-neutral-400 transition hover:text-neutral-600">
+                <Phone class="size-5" />
+            </button>
+        </div>
+
+        <!-- Icebreaker banner -->
+        <div
+            v-if="icebreaker && messages.length === 0"
+            class="border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-sm text-indigo-700"
+        >
+            💡 Try asking: "{{ icebreaker }}"
         </div>
 
         <!-- Messages -->
@@ -147,12 +137,12 @@ function handleInput() {
             class="flex-1 space-y-3 overflow-y-auto p-4"
         >
             <div v-if="chatRequest.processing" class="flex items-center justify-center py-8">
-                <div class="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div class="size-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
             </div>
 
             <div
                 v-if="!chatRequest.processing && messages.length === 0"
-                class="py-12 text-center text-sm text-muted-foreground"
+                class="py-12 text-center text-sm text-neutral-400"
             >
                 No messages yet. Say hello!
             </div>
@@ -160,57 +150,68 @@ function handleInput() {
             <div
                 v-for="msg in messages"
                 :key="msg.id"
-                class="space-y-0.5"
+                class="flex"
+                :class="msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'"
             >
-                <div class="flex items-baseline gap-2">
-                    <span class="text-xs font-medium">{{ msg.sender_name }}</span>
-                    <span class="text-[10px] text-muted-foreground">
-                        {{ formatDate(msg.created_at) }} {{ formatTime(msg.created_at) }}
-                    </span>
+                <!-- Other person's avatar -->
+                <div
+                    v-if="msg.sender_id !== currentUserId"
+                    class="mr-2 mt-auto flex size-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700"
+                >
+                    {{ initials }}
                 </div>
-                <p class="text-sm">{{ msg.body }}</p>
+
+                <div
+                    class="max-w-[75%] rounded-2xl px-4 py-2.5"
+                    :class="msg.sender_id === currentUserId
+                        ? 'rounded-br-md bg-indigo-600 text-white'
+                        : 'rounded-bl-md bg-neutral-100 text-neutral-900'"
+                >
+                    <p class="text-sm">{{ msg.body }}</p>
+                    <p
+                        class="mt-0.5 text-[10px]"
+                        :class="msg.sender_id === currentUserId ? 'text-indigo-200' : 'text-neutral-400'"
+                    >
+                        {{ formatTime(msg.created_at) }}
+                    </p>
+                </div>
             </div>
 
             <!-- Typing indicator -->
-            <div v-if="isTyping" class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span class="flex gap-0.5">
-                    <span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                    <span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                    <span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
-                </span>
-                {{ peer.name }} is typing...
+            <div v-if="isTyping" class="flex items-center gap-2">
+                <div class="flex size-7 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700">
+                    {{ initials }}
+                </div>
+                <div class="flex gap-1 rounded-2xl bg-neutral-100 px-4 py-3">
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
+                    <span class="size-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
+                </div>
             </div>
         </div>
 
-        <!-- Input -->
-        <div class="border-t border-border/70 p-3">
-            <div class="flex gap-2">
-                <div class="relative flex-1">
-                    <input
-                        v-model="messageForm.body"
-                        type="text"
-                        :maxlength="maxChars"
-                        placeholder="Type a message..."
-                        class="w-full rounded-xl border border-input bg-background px-3 py-2 pr-12 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                        @keydown.enter="handleSend"
-                        @input="handleInput"
-                    />
-                    <span
-                        v-if="charCount > 400"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px]"
-                        :class="charCount >= maxChars ? 'text-destructive' : 'text-muted-foreground'"
-                    >
-                        {{ charCount }}/{{ maxChars }}
-                    </span>
-                </div>
-                <Button
-                    size="icon"
-                    class="shrink-0"
+        <!-- Input bar -->
+        <div class="border-t border-neutral-100 p-3">
+            <div class="flex items-center gap-2">
+                <input
+                    v-model="messageForm.body"
+                    type="text"
+                    maxlength="500"
+                    placeholder="Type a message..."
+                    class="flex-1 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    @keydown.enter="handleSend"
+                    @input="handleInput"
+                />
+                <button
+                    class="flex size-10 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:opacity-40"
                     :disabled="messageForm.processing || !messageForm.body?.trim()"
                     @click="handleSend"
                 >
-                    <Send class="size-4" />
-                </Button>
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
