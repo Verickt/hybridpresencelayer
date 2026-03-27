@@ -48,7 +48,7 @@ const tabs = computed(() => [
                 :key="tab.name"
                 :href="tab.href"
                 class="relative flex min-w-[64px] flex-col items-center gap-0.5 px-3 py-2 text-[11px] font-medium transition-colors"
-                :class="tab.active ? 'text-indigo-600' : 'text-neutral-400'"
+                :class="tab.active ? 'text-orange-600' : 'text-neutral-400'"
             >
                 <!-- Feed icon -->
                 <svg v-if="tab.icon === 'feed'" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">

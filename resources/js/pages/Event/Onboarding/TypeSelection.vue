@@ -37,7 +37,7 @@ function submit() {
             <button
                 class="flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition"
                 :class="form.participant_type === 'physical'
-                    ? 'border-indigo-600 bg-indigo-50'
+                    ? 'border-orange-600 bg-orange-50'
                     : 'border-neutral-200 bg-white'"
                 @click="select('physical')"
             >
@@ -50,7 +50,7 @@ function submit() {
                 </div>
                 <div
                     v-if="form.participant_type === 'physical'"
-                    class="flex size-6 items-center justify-center rounded-full bg-indigo-600 text-white"
+                    class="flex size-6 items-center justify-center rounded-full bg-orange-600 text-white"
                 >
                     ✓
                 </div>
@@ -59,7 +59,7 @@ function submit() {
             <button
                 class="flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition"
                 :class="form.participant_type === 'remote'
-                    ? 'border-indigo-600 bg-indigo-50'
+                    ? 'border-orange-600 bg-orange-50'
                     : 'border-neutral-200 bg-white'"
                 @click="select('remote')"
             >
@@ -72,7 +72,7 @@ function submit() {
                 </div>
                 <div
                     v-if="form.participant_type === 'remote'"
-                    class="flex size-6 items-center justify-center rounded-full bg-indigo-600 text-white"
+                    class="flex size-6 items-center justify-center rounded-full bg-orange-600 text-white"
                 >
                     ✓
                 </div>
@@ -86,7 +86,7 @@ function submit() {
         <div class="mt-auto pt-6">
             <button
                 :disabled="!form.participant_type || form.processing"
-                class="w-full rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-40"
+                class="w-full rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
                 Continue

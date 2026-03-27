@@ -44,14 +44,14 @@ function skip() {
                 :key="question.id"
                 class="flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left text-sm transition"
                 :class="form.icebreaker_answer === question.text
-                    ? 'border-indigo-600 bg-indigo-50'
+                    ? 'border-orange-600 bg-orange-50'
                     : 'border-neutral-200 bg-white'"
                 @click="select(question.text)"
             >
                 <div
                     class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition"
                     :class="form.icebreaker_answer === question.text
-                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        ? 'border-orange-600 bg-orange-600 text-white'
                         : 'border-neutral-300'"
                 >
                     <span v-if="form.icebreaker_answer === question.text" class="text-xs">✓</span>
@@ -69,7 +69,7 @@ function skip() {
             </button>
             <button
                 :disabled="form.processing"
-                class="flex-1 rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-40"
+                class="flex-1 rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
                 Continue

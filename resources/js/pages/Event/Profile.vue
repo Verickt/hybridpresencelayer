@@ -59,7 +59,7 @@ async function handleScan(data: string) {
 
         <!-- Profile header — centered -->
         <div class="flex flex-col items-center pt-4">
-            <div class="flex size-20 items-center justify-center rounded-full bg-indigo-100 text-2xl font-bold text-indigo-700">
+            <div class="flex size-20 items-center justify-center rounded-full bg-orange-100 text-2xl font-bold text-orange-700">
                 {{ user.name.split(' ').map(n => n[0]).join('') }}
             </div>
             <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ user.name }}</h1>
@@ -72,7 +72,7 @@ async function handleScan(data: string) {
                 <span
                     v-for="tag in interestTags"
                     :key="tag"
-                    class="rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white"
+                    class="rounded-full bg-orange-600 px-3 py-1 text-xs font-medium text-white"
                 >
                     {{ tag }}
                 </span>
@@ -89,7 +89,7 @@ async function handleScan(data: string) {
             <div class="divide-y divide-neutral-100">
                 <div class="flex items-center justify-between py-3">
                     <span class="text-sm text-neutral-700">Serendipity Mode</span>
-                    <div class="relative h-6 w-11 rounded-full bg-indigo-600">
+                    <div class="relative h-6 w-11 rounded-full bg-orange-600">
                         <div class="absolute right-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
                     </div>
                 </div>

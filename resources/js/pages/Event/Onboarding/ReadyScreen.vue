@@ -25,7 +25,7 @@ const initials = props.user.name
         <StepProgress :current-step="4" :total-steps="4" class="w-full" />
 
         <div class="mt-16 flex flex-col items-center">
-            <div class="flex size-24 items-center justify-center rounded-full bg-indigo-100 text-3xl font-bold text-indigo-700">
+            <div class="flex size-24 items-center justify-center rounded-full bg-orange-100 text-3xl font-bold text-orange-700">
                 {{ initials }}
             </div>
 
@@ -45,7 +45,7 @@ const initials = props.user.name
         <div class="mt-auto w-full pt-6">
             <Link
                 :href="`/event/${event.slug}/feed`"
-                class="flex w-full items-center justify-center rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-700"
+                class="flex w-full items-center justify-center rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700"
             >
                 Enter Event →
             </Link>

@@ -245,7 +245,7 @@ function formatTime(iso: string): string {
                 :key="connection.connection_id"
                 class="flex items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
             >
-                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700">
                     {{ connection.user.name.split(' ').map((n: string) => n[0]).join('') }}
                 </div>
 

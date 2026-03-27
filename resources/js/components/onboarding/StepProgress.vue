@@ -11,7 +11,7 @@ defineProps<{
             v-for="step in totalSteps"
             :key="step"
             class="h-1 flex-1 rounded-full transition-colors"
-            :class="step <= currentStep ? 'bg-indigo-600' : 'bg-neutral-200'"
+            :class="step <= currentStep ? 'bg-orange-600' : 'bg-neutral-200'"
         />
     </div>
 </template>

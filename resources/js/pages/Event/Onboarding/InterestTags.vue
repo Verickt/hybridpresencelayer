@@ -41,7 +41,7 @@ function submit() {
             <p class="mt-1 text-sm text-neutral-500">Pick 3 topics to help us find your people</p>
         </div>
 
-        <p class="mt-4 text-sm font-medium text-indigo-600">
+        <p class="mt-4 text-sm font-medium text-orange-600">
             {{ form.tag_ids.length }} of 3 selected
         </p>
 
@@ -51,7 +51,7 @@ function submit() {
                 :key="tag.id"
                 class="rounded-full border px-4 py-2 text-sm font-medium transition"
                 :class="form.tag_ids.includes(tag.id)
-                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                    ? 'border-orange-600 bg-orange-600 text-white'
                     : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300'"
                 @click="toggle(tag.id)"
             >
@@ -62,7 +62,7 @@ function submit() {
         <div class="mt-auto pt-6">
             <button
                 :disabled="!canContinue || form.processing"
-                class="w-full rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-40"
+                class="w-full rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
                 {{ canContinue ? 'Continue' : `Pick ${remaining} more` }}

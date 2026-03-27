@@ -36,7 +36,7 @@ function submit() {
 
         <template v-if="event">
             <!-- Event branding -->
-            <div class="flex size-16 items-center justify-center rounded-2xl bg-indigo-600 text-2xl font-bold text-white">
+            <div class="flex size-16 items-center justify-center rounded-2xl bg-orange-600 text-2xl font-bold text-white">
                 {{ event.name.charAt(0) }}
             </div>
 
@@ -60,7 +60,7 @@ function submit() {
                         type="email"
                         placeholder="your@email.com"
                         required
-                        class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                        class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                     />
                     <p v-if="form.errors.email" class="mt-1 text-sm text-red-500">
                         {{ form.errors.email }}
@@ -69,7 +69,7 @@ function submit() {
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="mt-3 w-full rounded-xl bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                        class="mt-3 w-full rounded-xl bg-orange-600 py-3 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50"
                     >
                         Send Magic Link
                     </button>
