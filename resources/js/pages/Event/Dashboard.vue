@@ -1,16 +1,51 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { Activity, Handshake, LayoutGrid, Users } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Activity, Handshake, LayoutGrid, Megaphone, Sparkles, Users } from 'lucide-vue-next';
+import { ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Heading from '@/components/Heading.vue';
 
-defineProps<{
+const props = defineProps<{
     event: { id: number; name: string; slug: string };
     overview: Record<string, number>;
     sessionAnalytics: Array<Record<string, unknown>>;
     boothPerformance: Array<Record<string, unknown>>;
 }>();
+
+const announcementText = ref('');
+const announcementSent = ref(false);
+const waveSent = ref(false);
+
+function sendAnnouncement() {
+    if (!announcementText.value.trim()) return;
+    fetch(`/event/${props.event.slug}/actions/announce`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() },
+        body: JSON.stringify({ message: announcementText.value }),
+        credentials: 'same-origin',
+    }).then(() => {
+        announcementSent.value = true;
+        announcementText.value = '';
+        setTimeout(() => { announcementSent.value = false; }, 3000);
+    });
+}
+
+function triggerSerendipityWave() {
+    fetch(`/event/${props.event.slug}/actions/serendipity-wave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() },
+        credentials: 'same-origin',
+    }).then(() => {
+        waveSent.value = true;
+        setTimeout(() => { waveSent.value = false; }, 3000);
+    });
+}
+
+function getCsrfToken(): string {
+    return document.cookie.split('; ').find(c => c.startsWith('XSRF-TOKEN='))?.split('=')[1]?.replace('%3D', '=') ?? '';
+}
 </script>
 
 <template>
@@ -87,6 +122,46 @@ defineProps<{
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.cross_pollination_rate }}%
                     </p>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+            <Card class="border-border/70 py-0 shadow-sm">
+                <CardContent class="space-y-4 p-6">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <Megaphone class="size-5" />
+                        Send Announcement
+                    </h2>
+                    <div class="flex gap-2">
+                        <input
+                            v-model="announcementText"
+                            type="text"
+                            maxlength="500"
+                            placeholder="Type an event-wide announcement..."
+                            class="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                        <Button @click="sendAnnouncement" :disabled="!announcementText.trim()">
+                            Send
+                        </Button>
+                    </div>
+                    <p v-if="announcementSent" class="text-sm text-green-500">Announcement sent to all participants!</p>
+                </CardContent>
+            </Card>
+
+            <Card class="border-border/70 py-0 shadow-sm">
+                <CardContent class="space-y-4 p-6">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <Sparkles class="size-5" />
+                        Serendipity Wave
+                    </h2>
+                    <p class="text-sm text-muted-foreground">
+                        Push match suggestions to all active participants simultaneously. Creates event-wide networking energy.
+                    </p>
+                    <Button @click="triggerSerendipityWave" variant="outline" class="w-full">
+                        Trigger Connection Wave
+                    </Button>
+                    <p v-if="waveSent" class="text-sm text-green-500">Serendipity wave triggered!</p>
                 </CardContent>
             </Card>
         </div>
