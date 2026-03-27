@@ -42,7 +42,7 @@ class User extends Authenticatable
             ->withPivot([
                 'participant_type', 'status', 'context_badge',
                 'icebreaker_answer', 'open_to_call',
-                'available_after_session', 'last_active_at',
+                'available_after_session', 'notification_mode', 'last_active_at',
             ])
             ->withTimestamps();
     }
