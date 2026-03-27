@@ -18,6 +18,7 @@ const props = defineProps<{
 
 defineEmits<{
     ping: [userId: number];
+    select: [userId: number];
 }>();
 
 const initials = computed(() => getInitials(props.participant.name));
@@ -34,7 +35,7 @@ const statusColor = computed(() => statusColors[props.participant.status] ?? 'bg
 
 const avatarColors = [
     'bg-rose-100 text-rose-700',
-    'bg-indigo-100 text-indigo-700',
+    'bg-orange-100 text-orange-700',
     'bg-emerald-100 text-emerald-700',
     'bg-amber-100 text-amber-700',
     'bg-sky-100 text-sky-700',
@@ -52,7 +53,8 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
 <template>
     <div
         :dusk="`presence-row-${participant.id}`"
-        class="flex items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+        class="flex cursor-pointer items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+        @click="$emit('select', participant.id)"
     >
         <div class="relative shrink-0">
             <Avatar class="size-10">
@@ -79,7 +81,7 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
                 </span>
                 <span
                     v-if="participant.context_badge"
-                    class="shrink-0 rounded bg-indigo-50 px-1.5 py-0.5 text-[11px] font-medium text-indigo-600"
+                    class="shrink-0 rounded bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-600"
                 >
                     {{ participant.context_badge }}
                 </span>
@@ -97,7 +99,7 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
 
         <button
             class="shrink-0 text-xl"
-            @click="$emit('ping', participant.id)"
+            @click.stop="$emit('ping', participant.id)"
         >
             👋
         </button>

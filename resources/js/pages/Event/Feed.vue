@@ -2,6 +2,7 @@
 import { Head, Link, router, useHttp } from '@inertiajs/vue3';
 import { Search } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+import ParticipantDetailSheet from '@/components/presence/ParticipantDetailSheet.vue';
 import ParticipantRow from '@/components/presence/ParticipantRow.vue';
 import PresenceFilters from '@/components/presence/PresenceFilters.vue';
 import { useHaptics } from '@/composables/useHaptics';
@@ -41,6 +42,13 @@ const props = defineProps<{
 }>();
 
 const liveParticipants = ref([...props.participants]);
+const selectedParticipant = ref<(typeof props.participants)[number] | null>(null);
+const detailOpen = ref(false);
+
+function openDetail(userId: number) {
+    selectedParticipant.value = liveParticipants.value.find((p) => p.id === userId) ?? null;
+    detailOpen.value = true;
+}
 
 watch(
     () => props.participants,
@@ -136,14 +144,14 @@ onUnmounted(() => {
 
         <!-- RIGHT NOW — Featured suggestion -->
         <div v-if="suggestion" class="space-y-2">
-            <div class="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-indigo-500 uppercase">
+            <div class="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-orange-500 uppercase">
                 <span>✨</span> Right now
             </div>
 
-            <div class="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
+            <div class="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
                 <div class="flex items-start gap-3">
                     <div class="relative shrink-0">
-                        <div class="flex size-12 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                        <div class="flex size-12 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700">
                             {{ suggestion.name.split(' ').map(n => n[0]).join('') }}
                         </div>
                         <span class="absolute -bottom-0.5 -left-0.5 size-3 rounded-full border-2 border-white bg-green-500" />
@@ -161,13 +169,13 @@ onUnmounted(() => {
                             <span v-if="suggestion.time_left" class="text-xs text-neutral-400">{{ suggestion.time_left }}</span>
                         </div>
 
-                        <p class="mt-1 text-sm text-indigo-600">
+                        <p class="mt-1 text-sm text-orange-600">
                             {{ suggestion.shared_context || `Both interested in ${suggestion.shared_tags.join(' · ')}` }}
                         </p>
 
                         <div class="mt-3 flex items-center gap-2">
                             <button
-                                class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                                class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
                                 @click="handlePing(suggestion.id)"
                             >
                                 👋 Ping
@@ -195,6 +203,7 @@ onUnmounted(() => {
                     :key="participant.id"
                     :participant="participant"
                     @ping="handlePing"
+                    @select="openDetail"
                 />
 
                 <p
@@ -205,5 +214,12 @@ onUnmounted(() => {
                 </p>
             </div>
         </div>
+        <ParticipantDetailSheet
+            :participant="selectedParticipant"
+            :event-slug="event.slug"
+            :open="detailOpen"
+            @update:open="detailOpen = $event"
+            @pinged="detailOpen = false"
+        />
     </div>
 </template>
