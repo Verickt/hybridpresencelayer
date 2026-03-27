@@ -60,9 +60,18 @@ class MagicLinkController extends Controller
 
         $event = $link->event;
 
-        // Organizers go to dashboard, participants go to feed
+        // Organizers go to dashboard
         if ($link->user->id === $event->organizer_id) {
             return redirect()->route('event.dashboard', $event);
+        }
+
+        // New participants go through onboarding, returning participants go to feed
+        $hasInterestTags = $link->user->interestTags()
+            ->wherePivot('event_id', $event->id)
+            ->exists();
+
+        if (! $hasInterestTags) {
+            return redirect()->route('event.onboarding.type', $event);
         }
 
         return redirect()->route('event.feed', $event);

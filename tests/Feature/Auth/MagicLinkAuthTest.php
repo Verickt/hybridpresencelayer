@@ -145,7 +145,7 @@ test('authenticates via a valid magic link', function () {
 
     $response = $this->get(route('magic-link.authenticate', ['token' => $rawToken]));
 
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('event.onboarding.type', $event, absolute: false));
     $this->assertAuthenticatedAs($user);
     expect($link->fresh()->used_at)->not->toBeNull();
 });
@@ -246,7 +246,7 @@ test('cannot authenticate with the same magic link twice', function () {
     ]);
 
     $this->get(route('magic-link.authenticate', ['token' => $rawToken]))
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('event.onboarding.type', $event, absolute: false));
 
     $usedAt = $link->fresh()->used_at;
 

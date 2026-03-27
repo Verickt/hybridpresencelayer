@@ -13,12 +13,14 @@ use App\Http\Controllers\CallController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ConnectionListController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventLandingController;
 use App\Http\Controllers\EventProfileController;
 use App\Http\Controllers\EventSetupController;
 use App\Http\Controllers\EventSetupPageController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizerActionController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
@@ -38,9 +40,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
 
-Route::inertia('/', 'Welcome', [
-    'canRegister' => false,
-])->name('home');
+Route::get('/', EventLandingController::class)->name('home');
 
 Route::middleware(['auth'])->group(function () {
     // Redirect /dashboard to the user's event — participants should never see a generic dashboard
@@ -67,6 +67,15 @@ Route::post('/magic-link', [MagicLinkController::class, 'send'])
 Route::get('/magic-link/{token}', [MagicLinkController::class, 'authenticate'])->name('magic-link.authenticate');
 
 Route::middleware(['auth'])->group(function () {
+    // Onboarding wizard
+    Route::get('/event/{event:slug}/onboarding/type', [OnboardingController::class, 'typeSelection'])->name('event.onboarding.type');
+    Route::post('/event/{event:slug}/onboarding/type', [OnboardingController::class, 'saveType']);
+    Route::get('/event/{event:slug}/onboarding/tags', [OnboardingController::class, 'interestTags'])->name('event.onboarding.tags');
+    Route::post('/event/{event:slug}/onboarding/tags', [OnboardingController::class, 'saveTags']);
+    Route::get('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'icebreaker'])->name('event.onboarding.icebreaker');
+    Route::post('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'saveIcebreaker']);
+    Route::get('/event/{event:slug}/onboarding/ready', [OnboardingController::class, 'ready'])->name('event.onboarding.ready');
+
     Route::get('/event/{event:slug}/feed', PresenceFeedController::class)->name('event.feed');
     Route::patch('/event/{event:slug}/status', [StatusController::class, 'update'])->name('event.status.update');
     Route::patch('/event/{event:slug}/invisible', [StatusController::class, 'toggleInvisible'])->name('event.status.invisible');
