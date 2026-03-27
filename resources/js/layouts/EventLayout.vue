@@ -11,7 +11,7 @@ const eventSlug = computed(() => event.value.slug ?? '')
 </script>
 
 <template>
-    <div class="min-h-screen bg-background pb-16">
+    <div class="min-h-screen bg-neutral-50 pb-16">
         <!-- Top header -->
         <header class="sticky top-0 z-40 bg-white safe-area-pt">
             <div class="flex items-center justify-between px-4 py-3">
