@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\BoothController;
+use App\Http\Controllers\CallController;
 use App\Http\Controllers\BoothStaffController;
 use App\Http\Controllers\BoothVisitController;
 use App\Http\Controllers\ConnectionListController;
@@ -91,6 +92,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/connections/{connection}/messages', [MessageController::class, 'index'])->name('connection.messages.index');
     Route::post('/connections/{connection}/messages', [MessageController::class, 'store'])->name('connection.messages.store');
+
+    Route::post('/connections/{connection}/call', [CallController::class, 'start'])->name('connection.call.start');
+    Route::patch('/connections/{connection}/call/{call}/extend', [CallController::class, 'extend'])->name('connection.call.extend');
+    Route::patch('/connections/{connection}/call/{call}/end', [CallController::class, 'end'])->name('connection.call.end');
 });
 
 Route::scopeBindings()->group(function () {
