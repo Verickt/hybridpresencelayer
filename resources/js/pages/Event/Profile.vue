@@ -2,9 +2,7 @@
 import { Head, useHttp } from '@inertiajs/vue3';
 import { Camera } from 'lucide-vue-next';
 import { ref } from 'vue';
-import Heading from '@/components/Heading.vue';
 import QrScanner from '@/components/qr/QrScanner.vue';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { resolve as qrResolve } from '@/routes/event/qr';
@@ -56,48 +54,76 @@ async function handleScan(data: string) {
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-4 p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-6 p-4">
         <Head :title="`${event.name} - Profile`" />
 
-        <Heading
-            title="Your profile"
-            :description="`How others see you at ${event.name}.`"
-        />
+        <!-- Profile header — centered -->
+        <div class="flex flex-col items-center pt-4">
+            <div class="flex size-20 items-center justify-center rounded-full bg-indigo-100 text-2xl font-bold text-indigo-700">
+                {{ user.name.split(' ').map(n => n[0]).join('') }}
+            </div>
+            <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ user.name }}</h1>
+            <p class="text-sm text-neutral-500">{{ user.role_title }} · {{ user.company }}</p>
+            <p class="mt-1 text-sm text-neutral-400">
+                📍 {{ user.participant_type === 'physical' ? 'Physical' : 'Remote' }} · {{ user.status === 'available' ? 'Available' : user.status.replace('_', ' ') }}
+            </p>
 
-        <Card class="shadow-sm">
-            <CardContent class="space-y-3 p-4">
-                <div>
-                    <p class="text-lg font-semibold">{{ user.name }}</p>
-                    <p class="text-sm text-muted-foreground">{{ user.email }}</p>
+            <div class="mt-3 flex flex-wrap justify-center gap-2">
+                <span
+                    v-for="tag in interestTags"
+                    :key="tag"
+                    class="rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white"
+                >
+                    {{ tag }}
+                </span>
+            </div>
+
+            <button class="mt-4 rounded-full border border-neutral-200 px-6 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50">
+                Edit Profile
+            </button>
+        </div>
+
+        <!-- Availability section -->
+        <div class="space-y-1">
+            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Availability</p>
+            <div class="divide-y divide-neutral-100">
+                <div class="flex items-center justify-between py-3">
+                    <span class="text-sm text-neutral-700">Serendipity Mode</span>
+                    <div class="relative h-6 w-11 rounded-full bg-indigo-600">
+                        <div class="absolute right-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
+                    </div>
                 </div>
-
-                <div class="grid gap-2 text-sm sm:grid-cols-2">
-                    <div>
-                        <span class="text-muted-foreground">Company</span>
-                        <p>{{ user.company }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted-foreground">Role</span>
-                        <p>{{ user.role_title }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted-foreground">Intent</span>
-                        <p>{{ user.intent }}</p>
-                    </div>
-                    <div>
-                        <span class="text-muted-foreground">Participation</span>
-                        <p class="capitalize">{{ user.participant_type }}</p>
+                <div class="flex items-center justify-between py-3">
+                    <span class="text-sm text-neutral-700">Invisible Mode</span>
+                    <div class="relative h-6 w-11 rounded-full bg-neutral-200">
+                        <div class="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
                     </div>
                 </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <Badge v-for="tag in interestTags" :key="tag" variant="secondary">
-                        {{ tag }}
-                    </Badge>
+                <div class="flex items-center justify-between py-3">
+                    <span class="text-sm text-neutral-700">Attending as</span>
+                    <span class="text-sm text-neutral-500">📍 {{ user.participant_type === 'physical' ? 'Physical' : 'Remote' }} ›</span>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
 
+        <!-- Notifications section -->
+        <div class="space-y-1">
+            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Notifications</p>
+            <div class="divide-y divide-neutral-100">
+                <div class="flex items-center justify-between py-3">
+                    <span class="text-sm text-neutral-700">Do Not Disturb</span>
+                    <div class="relative h-6 w-11 rounded-full bg-neutral-200">
+                        <div class="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
+                    </div>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                    <span class="text-sm text-neutral-700">Notification Preferences</span>
+                    <span class="text-sm text-neutral-400">›</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Scanner section -->
         <Card class="shadow-sm">
             <CardContent class="space-y-3 p-4">
                 <div class="flex items-center justify-between">
