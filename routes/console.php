@@ -9,4 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('suggestions:expire')->everyMinute();
+Schedule::command('matching:post-session')->everyMinute();
 Schedule::command('events:purge-expired')->daily();
