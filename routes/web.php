@@ -7,7 +7,9 @@ use App\Http\Controllers\BoothVisitController;
 use App\Http\Controllers\ConnectionListController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventProfileController;
+use App\Http\Controllers\EventSetupController;
 use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
@@ -75,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/dashboard', DashboardController::class)->name('event.dashboard');
 
+    Route::post('/events', [EventSetupController::class, 'store'])->name('events.store');
+    Route::patch('/events/{event:slug}', [EventSetupController::class, 'update'])->name('events.update');
+    Route::post('/events/{event:slug}/import-attendees', [EventSetupController::class, 'importAttendees'])->name('events.import-attendees');
+
     Route::post('/event/{event:slug}/qr/resolve', QrResolveController::class)->name('event.qr.resolve');
 
     Route::get('/event/{event:slug}/connections', ConnectionListController::class)->name('event.connections');
@@ -82,6 +88,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');
     Route::patch('/event/{event:slug}/ping/{ping}/ignore', [PingController::class, 'ignore'])->name('event.ping.ignore');
+
+    Route::get('/connections/{connection}/messages', [MessageController::class, 'index'])->name('connection.messages.index');
+    Route::post('/connections/{connection}/messages', [MessageController::class, 'store'])->name('connection.messages.store');
 });
 
 Route::scopeBindings()->group(function () {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Connection;
 use App\Models\SessionCheckIn;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -13,6 +14,12 @@ Broadcast::channel('event.{eventId}.presence', function ($user, int $eventId) {
 
 Broadcast::channel('user.{userId}.notifications', function ($user, int $userId) {
     return $user->id === $userId;
+});
+
+Broadcast::channel('connection.{connectionId}.chat', function ($user, int $connectionId) {
+    $connection = Connection::find($connectionId);
+
+    return $connection && ($connection->user_a_id === $user->id || $connection->user_b_id === $user->id);
 });
 
 Broadcast::channel('session.{sessionId}', function ($user, int $sessionId) {
