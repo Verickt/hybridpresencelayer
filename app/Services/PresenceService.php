@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\PresenceStateChanged;
 use App\Models\Booth;
 use App\Models\BoothVisit;
 use App\Models\Event;
@@ -24,10 +25,16 @@ class PresenceService
             throw new AuthorizationException('User is not a participant of this event.');
         }
 
+        $previousStatus = $user->events()->where('event_id', $event->id)->first()->pivot->status;
+
         $user->events()->updateExistingPivot($event->id, [
             'status' => $status,
             'last_active_at' => now(),
         ]);
+
+        if ($status !== $previousStatus) {
+            PresenceStateChanged::dispatch($event, $user, $status);
+        }
     }
 
     public function checkInToSession(User $user, Event $event, EventSession $session): void
@@ -45,6 +52,8 @@ class PresenceService
             'context_badge' => "Watching: {$session->title}",
             'last_active_at' => now(),
         ]);
+
+        PresenceStateChanged::dispatch($event, $user, 'in_session', "Watching: {$session->title}");
     }
 
     public function checkOutOfSession(User $user, Event $event): void
@@ -58,6 +67,8 @@ class PresenceService
             'context_badge' => null,
             'last_active_at' => now(),
         ]);
+
+        PresenceStateChanged::dispatch($event, $user, 'available');
     }
 
     public function checkInToBooth(User $user, Event $event, Booth $booth): void
@@ -67,6 +78,8 @@ class PresenceService
             'context_badge' => "At Booth: {$booth->name}",
             'last_active_at' => now(),
         ]);
+
+        PresenceStateChanged::dispatch($event, $user, 'at_booth', "At Booth: {$booth->name}");
     }
 
     public function markInactive(User $user, Event $event): void
@@ -74,6 +87,8 @@ class PresenceService
         $user->events()->updateExistingPivot($event->id, [
             'status' => 'away',
         ]);
+
+        PresenceStateChanged::dispatch($event, $user, 'away');
     }
 
     public function touch(User $user, Event $event): void
