@@ -13,9 +13,9 @@ const eventSlug = computed(() => event.value.slug ?? '')
 <template>
     <div class="min-h-screen bg-background pb-16">
         <!-- Top header -->
-        <header class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur safe-area-pt">
+        <header class="sticky top-0 z-40 bg-white safe-area-pt">
             <div class="flex items-center justify-between px-4 py-3">
-                <h1 class="text-lg font-semibold truncate">{{ eventName }}</h1>
+                <h1 class="text-xl font-bold truncate text-neutral-900">{{ eventName }}</h1>
                 <NotificationBell />
             </div>
         </header>
