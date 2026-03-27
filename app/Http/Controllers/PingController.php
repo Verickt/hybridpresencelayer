@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BlockedUserException;
 use App\Exceptions\CooldownException;
 use App\Exceptions\DuplicatePingException;
 use App\Exceptions\RateLimitExceededException;
@@ -29,6 +30,8 @@ class PingController extends Controller
             return response()->json(['message' => 'Already pinged this person.'], 409);
         } catch (CooldownException) {
             return response()->json(['message' => 'This person has not responded to your pings.'], 403);
+        } catch (BlockedUserException) {
+            return response()->json(['message' => 'Unable to ping this user.'], 403);
         } catch (\InvalidArgumentException) {
             return response()->json(['message' => 'Invalid ping target.'], 422);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Block;
 use App\Models\BoothVisit;
 use App\Models\Event;
 use App\Models\SessionCheckIn;
@@ -39,9 +40,20 @@ class MatchingService
 
     public function topMatches(User $user, Event $event, int $limit = 3): Collection
     {
+        $blockedIds = Block::where('blocker_id', $user->id)
+            ->where('event_id', $event->id)
+            ->pluck('blocked_id');
+
+        $blockedByIds = Block::where('blocked_id', $user->id)
+            ->where('event_id', $event->id)
+            ->pluck('blocker_id');
+
+        $blockExcludeIds = $blockedIds->merge($blockedByIds)->unique();
+
         $participants = $event->participants()
             ->where('users.id', '!=', $user->id)
             ->where('users.is_invisible', false)
+            ->whereNotIn('users.id', $blockExcludeIds)
             ->get();
 
         // Get recently declined/active suggestion user IDs to exclude

@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Events\MutualMatchCreated;
 use App\Events\PingReceived;
+use App\Exceptions\BlockedUserException;
 use App\Exceptions\CooldownException;
 use App\Exceptions\DuplicatePingException;
 use App\Exceptions\RateLimitExceededException;
+use App\Models\Block;
 use App\Models\Connection;
 use App\Models\Event;
 use App\Models\Ping;
@@ -25,6 +27,7 @@ class PingService
             throw new \InvalidArgumentException('You cannot ping yourself.');
         }
 
+        $this->validateNotBlocked($sender, $receiver, $event);
         $this->validateRateLimit($sender, $event);
         $this->validateNoDuplicate($sender, $receiver, $event);
         $this->validateCooldown($sender, $receiver, $event);
@@ -61,6 +64,18 @@ class PingService
 
             return $ping;
         });
+    }
+
+    private function validateNotBlocked(User $sender, User $receiver, Event $event): void
+    {
+        $isBlocked = Block::where('blocker_id', $receiver->id)
+            ->where('blocked_id', $sender->id)
+            ->where('event_id', $event->id)
+            ->exists();
+
+        if ($isBlocked) {
+            throw new BlockedUserException;
+        }
     }
 
     private function validateRateLimit(User $sender, Event $event): void

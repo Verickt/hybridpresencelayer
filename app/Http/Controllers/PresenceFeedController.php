@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Block;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,8 +17,19 @@ class PresenceFeedController extends Controller
             403
         );
 
+        $blockedIds = Block::where('blocker_id', $request->user()->id)
+            ->where('event_id', $event->id)
+            ->pluck('blocked_id');
+
+        $blockedByIds = Block::where('blocked_id', $request->user()->id)
+            ->where('event_id', $event->id)
+            ->pluck('blocker_id');
+
+        $excludeIds = $blockedIds->merge($blockedByIds)->unique();
+
         $query = $event->participants()
-            ->where('users.is_invisible', false);
+            ->where('users.is_invisible', false)
+            ->whereNotIn('users.id', $excludeIds);
 
         $type = $request->input('type', 'all');
         $status = $request->input('status', 'all');
