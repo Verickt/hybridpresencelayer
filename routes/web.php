@@ -42,8 +42,23 @@ Route::inertia('/', 'Welcome', [
     'canRegister' => false,
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+Route::middleware(['auth'])->group(function () {
+    // Redirect /dashboard to the user's event — participants should never see a generic dashboard
+    Route::get('dashboard', function () {
+        $user = auth()->user();
+        $event = $user->events()->latest('event_user.created_at')->first()
+            ?? $user->organizedEvents()->latest()->first();
+
+        if (! $event) {
+            return redirect('/');
+        }
+
+        if ($user->id === $event->organizer_id) {
+            return redirect()->route('event.dashboard', $event);
+        }
+
+        return redirect()->route('event.feed', $event);
+    })->name('dashboard');
 });
 
 Route::post('/magic-link', [MagicLinkController::class, 'send'])
