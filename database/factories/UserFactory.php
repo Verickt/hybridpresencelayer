@@ -57,4 +57,20 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    public function organizer(): static
+    {
+        return $this->state(fn () => [
+            'is_organizer' => true,
+        ]);
+    }
+
+    public function withProfile(): static
+    {
+        return $this->state(fn () => [
+            'company' => fake()->company(),
+            'role_title' => fake()->jobTitle(),
+            'intent' => fake()->sentence(),
+        ]);
+    }
 }
