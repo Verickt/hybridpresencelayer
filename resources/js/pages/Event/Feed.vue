@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { Head, router, useHttp } from '@inertiajs/vue3';
-import { Activity, Sparkles, Users } from 'lucide-vue-next';
+import { Head, Link, router, useHttp } from '@inertiajs/vue3';
+import { Search } from 'lucide-vue-next';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import Heading from '@/components/Heading.vue';
-import ParticipantCard from '@/components/presence/ParticipantCard.vue';
+import ParticipantRow from '@/components/presence/ParticipantRow.vue';
 import PresenceFilters from '@/components/presence/PresenceFilters.vue';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { useHaptics } from '@/composables/useHaptics';
-import { ping } from '@/routes/event';
+import { ping, search } from '@/routes/event';
 
 const { ping: hapticPing } = useHaptics();
 
@@ -27,7 +24,20 @@ const props = defineProps<{
         open_to_call: boolean;
         interest_tags: string[];
     }>;
+    suggestion?: {
+        id: number;
+        name: string;
+        company?: string;
+        role_title?: string;
+        participant_type: string;
+        status: string;
+        interest_tags: string[];
+        shared_tags: string[];
+        shared_context?: string;
+        time_left?: string;
+    } | null;
     filters: { type?: string; status?: string; tag?: string };
+    availableTags?: string[];
 }>();
 
 const liveParticipants = ref([...props.participants]);
@@ -48,7 +58,7 @@ async function handlePing(userId: number) {
             ping({ event: props.event.slug, user: userId }),
         );
     } catch {
-        // silently fail — rate limits, duplicates handled by backend
+        // silently fail
     }
 }
 
@@ -62,17 +72,13 @@ onMounted(() => {
     const channel = window.Echo.join(`event.${props.event.id}.presence`);
 
     channel
-        .here(() => {
-            // Initial presence list from Reverb
-        })
+        .here(() => {})
         .joining((user: { id: number; name: string }) => {
             if (!liveParticipants.value.find((p) => p.id === user.id)) {
                 router.reload({ only: ['participants'] });
             }
         })
-        .leaving(() => {
-            // Don't remove — status will go to 'away' via server
-        });
+        .leaving(() => {});
 
     channel.listen(
         'PresenceStateChanged',
@@ -109,101 +115,95 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-6 overflow-x-auto p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-4 p-4">
         <Head :title="`${event.name} Feed`" />
 
-        <Card
-            class="overflow-hidden border-border/70 bg-gradient-to-br from-primary/8 via-card to-card py-0 shadow-sm"
+        <!-- Search bar -->
+        <Link
+            :href="search(event.slug).url"
+            class="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm text-neutral-400 transition hover:border-neutral-300"
         >
-            <CardContent class="space-y-5 p-6">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <Heading
-                        title="Presence Feed"
-                        :description="`${liveParticipants.length} participants currently visible in ${event.name}.`"
-                    />
+            <Search class="size-4" />
+            Search people, tags...
+        </Link>
 
-                    <Badge
-                        class="rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.16em] uppercase"
-                    >
-                        Live
-                    </Badge>
-                </div>
+        <!-- Filter pills -->
+        <PresenceFilters
+            :filters="filters"
+            :event-slug="event.slug"
+            :available-tags="availableTags"
+        />
 
-                <div class="grid gap-3 md:grid-cols-3">
-                    <div
-                        class="rounded-2xl border border-border/70 bg-background/80 p-4"
-                    >
-                        <div
-                            class="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                            <Users class="size-4" />
-                            Total visible
+        <!-- RIGHT NOW — Featured suggestion -->
+        <div v-if="suggestion" class="space-y-2">
+            <div class="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-indigo-500 uppercase">
+                <span>✨</span> Right now
+            </div>
+
+            <div class="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="relative shrink-0">
+                        <div class="flex size-12 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                            {{ suggestion.name.split(' ').map(n => n[0]).join('') }}
                         </div>
-                        <p class="mt-3 text-2xl font-semibold">
-                            {{ liveParticipants.length }}
-                        </p>
+                        <span class="absolute -bottom-0.5 -left-0.5 size-3 rounded-full border-2 border-white bg-green-500" />
                     </div>
 
-                    <div
-                        class="rounded-2xl border border-border/70 bg-background/80 p-4"
-                    >
-                        <div
-                            class="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                            <Activity class="size-4" />
-                            Open to connect
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-base font-semibold text-neutral-900">{{ suggestion.name }}</span>
+                                <p class="text-sm text-neutral-500">
+                                    {{ suggestion.role_title }}{{ suggestion.company ? `, ${suggestion.company}` : '' }}
+                                    · {{ suggestion.participant_type === 'physical' ? '📍' : '🌐' }} {{ suggestion.participant_type === 'physical' ? 'Physical' : 'Remote' }}
+                                </p>
+                            </div>
+                            <span v-if="suggestion.time_left" class="text-xs text-neutral-400">{{ suggestion.time_left }}</span>
                         </div>
-                        <p class="mt-3 text-2xl font-semibold">
-                            {{
-                                liveParticipants.filter(
-                                    (participant) => participant.open_to_call,
-                                ).length
-                            }}
-                        </p>
-                    </div>
 
-                    <div
-                        class="rounded-2xl border border-border/70 bg-background/80 p-4"
-                    >
-                        <div
-                            class="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                            <Sparkles class="size-4" />
-                            Filter state
-                        </div>
-                        <p class="mt-3 text-sm font-medium text-foreground">
-                            {{ filters.type || 'All types' }} /
-                            {{ filters.status || 'All statuses' }}
+                        <p class="mt-1 text-sm text-indigo-600">
+                            {{ suggestion.shared_context || `Both interested in ${suggestion.shared_tags.join(' · ')}` }}
                         </p>
+
+                        <div class="mt-3 flex items-center gap-2">
+                            <button
+                                class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                                @click="handlePing(suggestion.id)"
+                            >
+                                👋 Ping
+                            </button>
+                            <button
+                                class="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+                            >
+                                Later
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
 
-        <PresenceFilters :filters="filters" :event-slug="event.slug" />
+        <!-- People list -->
+        <div>
+            <p class="mb-2 text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+                People · {{ liveParticipants.length }} here
+            </p>
 
-        <div class="space-y-3">
-            <ParticipantCard
-                v-for="participant in liveParticipants"
-                :key="participant.id"
-                :participant="participant"
-                @ping="handlePing"
-            />
+            <div class="rounded-2xl bg-white">
+                <ParticipantRow
+                    v-for="participant in liveParticipants"
+                    :key="participant.id"
+                    :participant="participant"
+                    @ping="handlePing"
+                />
 
-            <Card
-                v-if="liveParticipants.length === 0"
-                class="border-dashed border-border/70 bg-card/80 py-0 shadow-sm"
-            >
-                <CardContent class="py-12 text-center">
-                    <p class="font-medium">
-                        No participants match your filters.
-                    </p>
-                    <p class="mt-2 text-sm text-muted-foreground">
-                        Broaden the filters to bring more of the event graph
-                        back into view.
-                    </p>
-                </CardContent>
-            </Card>
+                <p
+                    v-if="liveParticipants.length === 0"
+                    class="py-12 text-center text-sm text-neutral-400"
+                >
+                    No participants match your filters.
+                </p>
+            </div>
         </div>
     </div>
 </template>
