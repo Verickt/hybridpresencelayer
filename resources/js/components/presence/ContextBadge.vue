@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+
 defineProps<{
-    badge: string | null
-}>()
+    badge: string | null;
+}>();
 </script>
 
 <template>
-    <span v-if="badge" class="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+    <Badge
+        v-if="badge"
+        variant="secondary"
+        class="rounded-full px-2.5 py-1 text-[11px] font-medium"
+    >
         {{ badge }}
-    </span>
+    </Badge>
 </template>

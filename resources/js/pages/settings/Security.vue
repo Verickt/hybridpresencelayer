@@ -6,13 +6,10 @@ import SecurityController from '@/actions/App/Http/Controllers/Settings/Security
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
-import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
 import { edit } from '@/routes/security';
-import { disable, enable } from '@/routes/two-factor';
+// 2FA disabled — magic link auth only
 
 type Props = {
     canManageTwoFactor?: boolean;
@@ -37,10 +34,8 @@ defineOptions({
     },
 });
 
-const { hasSetupData, clearTwoFactorAuthData } = useTwoFactorAuth();
+// 2FA removed — magic link auth only
 const showSetupModal = ref<boolean>(false);
-
-onUnmounted(() => clearTwoFactorAuthData());
 </script>
 
 <template>
@@ -183,13 +178,7 @@ onUnmounted(() => clearTwoFactorAuthData());
                 </Form>
             </div>
 
-            <TwoFactorRecoveryCodes />
+            <!-- 2FA removed — magic link auth only -->
         </div>
-
-        <TwoFactorSetupModal
-            v-model:isOpen="showSetupModal"
-            :requiresConfirmation="requiresConfirmation"
-            :twoFactorEnabled="twoFactorEnabled"
-        />
     </div>
 </template>
