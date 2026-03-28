@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Form } from '@inertiajs/vue3';
-import { useTemplateRef } from 'vue';
+import { Form, usePage } from '@inertiajs/vue3';
+import { computed, useTemplateRef } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -19,6 +19,8 @@ import {
 import { Label } from '@/components/ui/label';
 
 const passwordInput = useTemplateRef('passwordInput');
+const page = usePage();
+const hasPassword = computed(() => (page.props.auth as { has_password?: boolean })?.has_password ?? true);
 </script>
 
 <template>
@@ -62,13 +64,16 @@ const passwordInput = useTemplateRef('passwordInput');
                             <DialogDescription>
                                 Once your account is deleted, all of its
                                 resources and data will also be permanently
-                                deleted. Please enter your password to confirm
-                                you would like to permanently delete your
-                                account.
+                                deleted.
+                                <template v-if="hasPassword">
+                                    Please enter your password to confirm you
+                                    would like to permanently delete your
+                                    account.
+                                </template>
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div class="grid gap-2">
+                        <div v-if="hasPassword" class="grid gap-2">
                             <Label for="password" class="sr-only"
                                 >Password</Label
                             >

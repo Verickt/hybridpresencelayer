@@ -25,7 +25,7 @@ it('sends an announcement for organizers', function () {
             'message' => 'Networking hour starts now!',
         ])
         ->assertSuccessful()
-        ->assertJsonPath('message', 'Announcement sent');
+        ->assertJsonPath('message', 'Ankündigung gesendet');
 
     EventBus::assertDispatched(ParticipantStatusChanged::class);
 });
@@ -77,6 +77,6 @@ it('triggers a serendipity wave for eligible participants only', function () {
     $this->actingAs($this->organizer)
         ->post(route('event.actions.serendipity-wave', $this->event))
         ->assertSuccessful()
-        ->assertJsonPath('message', 'Serendipity wave triggered')
+        ->assertJsonPath('message', 'Serendipity-Welle ausgelöst')
         ->assertJsonPath('suggestions_generated', 0);
 });

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hybrid Presence Platform — Design Katalog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F5F5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid #E5E5E5;
+      padding: 32px 40px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      font-size: 14px;
+      color: #888;
+      margin-top: 4px;
+    }
+    nav {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: #F5F5F5;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover {
+      background: #E8E8E8;
+      color: #1a1a1a;
+    }
+    main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+    .section {
+      margin-bottom: 56px;
+    }
+    .section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .section h2 span {
+      font-size: 12px;
+      font-weight: 500;
+      color: #999;
+      margin-left: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 28px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+    }
+    figure {
+      flex-shrink: 0;
+      margin: 0;
+    }
+    figcaption {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .artboard {
+      background: #FAFAFA;
+      border: 1px solid #E5E5E5;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .artboard.mobile {
+      width: 390px;
+      height: 844px;
+    }
+    .artboard.desktop {
+      width: 1440px;
+      height: 900px;
+    }
+    .artboard-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 100%;
+      color: #AAA;
+      font-size: 13px;
+    }
+    .artboard-placeholder .name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+    }
+    .artboard-placeholder .loading {
+      font-size: 12px;
+      color: #CCC;
+    }
+    .desktop-wrapper {
+      width: 720px;
+      height: 450px;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .desktop-wrapper .artboard {
+      transform: scale(0.5);
+      transform-origin: top left;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .desktop-col {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Hybrid Presence Platform — Design Katalog</h1>
+    <p>Alle Screens und Design System Komponenten</p>
+    <nav>
+      <a href="#design-system">Design System</a>
+      <a href="#onboarding">Onboarding</a>
+      <a href="#core">Core Experience</a>
+      <a href="#communication">Communication</a>
+      <a href="#discovery">Discovery &amp; Profile</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- Design System -->
+    <div class="section" id="design-system">
+      <h2>Design System <span>3 Artboards</span></h2>
+      <div class="desktop-col">
+
+        <figure>
+          <div class="desktop-wrapper">
+            <div class="artboard desktop">
+              <!-- ARTBOARD: DS — Typography & Colors -->
+              <div class="artboard-placeholder">
+                <div class="name">DS — Typography &amp; Colors</div>
+                <div>1440 &times; 900</div>
+                <div class="loading">Wird geladen...</div>
+              </div>
+            </div>
+          </div>
+          <figcaption>DS — Typography &amp; Colors</figcaption>
+        </figure>
+
+        <figure>
+          <div class="desktop-wrapper">
+            <div class="artboard desktop">
+              <!-- ARTBOARD: DS — Primitives A -->
+              <div class="artboard-placeholder">
+                <div class="name">DS — Primitives A</div>
+                <div>1440 &times; 900</div>
+                <div class="loading">Wird geladen...</div>
+              </div>
+            </div>
+          </div>
+          <figcaption>DS — Primitives A</figcaption>
+        </figure>
+
+        <figure>
+          <div class="desktop-wrapper">
+            <div class="artboard desktop">
+              <!-- ARTBOARD: DS — Primitives B -->
+              <div class="artboard-placeholder">
+                <div class="name">DS — Primitives B</div>
+                <div>1440 &times; 900</div>
+                <div class="loading">Wird geladen...</div>
+              </div>
+            </div>
+          </div>
+          <figcaption>DS — Primitives B</figcaption>
+        </figure>
+
+      </div>
+    </div>
+
+    <!-- Onboarding Flow -->
+    <div class="section" id="onboarding">
+      <h2>Onboarding Flow <span>5 Artboards</span></h2>
+      <div class="row">
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 01 — Magic Link Entry -->
+            <div class="artboard-placeholder">
+              <div class="name">01 — Magic Link Entry</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>01 — Magic Link Entry</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 02 — Type Selection -->
+            <div class="artboard-placeholder">
+              <div class="name">02 — Type Selection</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>02 — Type Selection</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 03 — Interest Tags -->
+            <div class="artboard-placeholder">
+              <div class="name">03 — Interest Tags</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>03 — Interest Tags</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 04 — Icebreaker Selection -->
+            <div class="artboard-placeholder">
+              <div class="name">04 — Icebreaker Selection</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>04 — Icebreaker Selection</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 05 — Ready Screen -->
+            <div class="artboard-placeholder">
+              <div class="name">05 — Ready Screen</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>05 — Ready Screen</figcaption>
+        </figure>
+
+      </div>
+    </div>
+
+    <!-- Core Experience -->
+    <div class="section" id="core">
+      <h2>Core Experience <span>5 Artboards</span></h2>
+      <div class="row">
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 06 — Presence Feed -->
+            <div class="artboard-placeholder">
+              <div class="name">06 — Presence Feed</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>06 — Presence Feed</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 07 — Participant Detail -->
+            <div class="artboard-placeholder">
+              <div class="name">07 — Participant Detail</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>07 — Participant Detail</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 08 — Mutual Match -->
+            <div class="artboard-placeholder">
+              <div class="name">08 — Mutual Match</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>08 — Mutual Match</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 09 — Sessions Schedule -->
+            <div class="artboard-placeholder">
+              <div class="name">09 — Sessions Schedule</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>09 — Sessions Schedule</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 10 — Session Detail -->
+            <div class="artboard-placeholder">
+              <div class="name">10 — Session Detail</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>10 — Session Detail</figcaption>
+        </figure>
+
+      </div>
+    </div>
+
+    <!-- Communication -->
+    <div class="section" id="communication">
+      <h2>Communication <span>3 Artboards</span></h2>
+      <div class="row">
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 11 — Connections List -->
+            <div class="artboard-placeholder">
+              <div class="name">11 — Connections List</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>11 — Connections List</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 12 — Chat -->
+            <div class="artboard-placeholder">
+              <div class="name">12 — Chat</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>12 — Chat</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 13 — Video Call -->
+            <div class="artboard-placeholder">
+              <div class="name">13 — Video Call</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>13 — Video Call</figcaption>
+        </figure>
+
+      </div>
+    </div>
+
+    <!-- Discovery & Profile -->
+    <div class="section" id="discovery">
+      <h2>Discovery &amp; Profile <span>3 Artboards</span></h2>
+      <div class="row">
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 14 — Booth Discovery -->
+            <div class="artboard-placeholder">
+              <div class="name">14 — Booth Discovery</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>14 — Booth Discovery</figcaption>
+        </figure>
+
+        <figure>
+          <div class="artboard mobile">
+            <!-- ARTBOARD: 15 — Profile & Settings -->
+            <div class="artboard-placeholder">
+              <div class="name">15 — Profile &amp; Settings</div>
+              <div>390 &times; 844</div>
+              <div class="loading">Wird geladen...</div>
+            </div>
+          </div>
+          <figcaption>15 — Profile &amp; Settings</figcaption>
+        </figure>
+
+        <figure>
+          <div class="desktop-wrapper">
+            <div class="artboard desktop">
+              <!-- ARTBOARD: 16 — Organizer Dashboard -->
+              <div class="artboard-placeholder">
+                <div class="name">16 — Organizer Dashboard</div>
+                <div>1440 &times; 900</div>
+                <div class="loading">Wird geladen...</div>
+              </div>
+            </div>
+          </div>
+          <figcaption>16 — Organizer Dashboard</figcaption>
+        </figure>
+
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

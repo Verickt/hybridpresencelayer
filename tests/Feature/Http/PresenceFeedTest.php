@@ -30,7 +30,7 @@ it('returns the presence feed page with the current event and visible participan
                 ->where('id', $this->event->id)
                 ->etc()
             )
-            ->has('participants', 2)
+            ->has('participants', 1)
             ->has('participants.0', fn (Assert $page) => $page
                 ->where('id', $visible->id)
                 ->missing('email')
@@ -82,8 +82,7 @@ it('excludes invisible participants from the feed', function () {
 
     $response->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('participants', 1)
-            ->missing('participants.1')
+            ->has('participants', 0)
         );
 });
 

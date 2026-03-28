@@ -24,20 +24,20 @@ class StatusController extends Controller
 
         if ($validator->fails()) {
             throw new ValidationException($validator, response()->json([
-                'message' => 'The given data was invalid.',
+                'message' => 'Die eingegebenen Daten sind ungültig.',
                 'errors' => $validator->errors(),
             ], 422));
         }
 
         $presenceService->updateStatus($request->user(), $event, $validator->validated()['status']);
 
-        return response()->json(['message' => 'Status updated']);
+        return response()->json(['message' => 'Status aktualisiert']);
     }
 
     public function toggleInvisible(Request $request, Event $event, PresenceService $presenceService): JsonResponse
     {
         $presenceService->toggleInvisible($request->user());
 
-        return response()->json(['message' => 'Visibility toggled']);
+        return response()->json(['message' => 'Sichtbarkeit umgeschaltet']);
     }
 }

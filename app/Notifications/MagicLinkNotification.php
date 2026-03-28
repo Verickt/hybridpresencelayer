@@ -24,9 +24,9 @@ class MagicLinkNotification extends Notification
         $url = route('magic-link.authenticate', ['token' => $this->rawToken]);
 
         return (new MailMessage)
-            ->subject('Your event access link')
-            ->line('Click the button below to join the event.')
-            ->action('Join Event', $url)
-            ->line('This link expires in 48 hours and can only be used once.');
+            ->subject('Ihr Zugangslink zur Veranstaltung')
+            ->line('Klicken Sie auf die Schaltfläche unten, um der Veranstaltung beizutreten.')
+            ->action('Veranstaltung beitreten', $url)
+            ->line('Dieser Link ist 48 Stunden gültig und kann nur einmal verwendet werden.');
     }
 }

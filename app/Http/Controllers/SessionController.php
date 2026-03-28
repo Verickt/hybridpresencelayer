@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\SessionCheckIn;
+use App\Models\Suggestion;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,7 @@ class SessionController extends Controller
 
         $viewerParticipant = $event->participants()->whereKey($user->id)->first();
         $isOrganizer = $event->organizer_id === $user->id;
+        $isSpeaker = $session->speaker_user_id === $user->id;
         $isParticipant = $viewerParticipant !== null;
         $isCheckedIn = $isParticipant && $session->hasActiveCheckInFor($user);
 
@@ -75,17 +77,39 @@ class SessionController extends Controller
                 'participant_type' => $checkIn->user->events->first()?->pivot?->participant_type,
             ]);
 
-        $questions = $session->questions()
-            ->with('user:id,name')
-            ->withCount('votes')
-            ->with([
-                'votes' => fn ($query) => $query
-                    ->where('user_id', $user->id)
-                    ->select('id', 'session_question_id'),
-            ])
+        $questionsQuery = $session->questions()
+            ->with(['user:id,name', 'replies' => fn ($q) => $q->with('user:id,name')->withCount('votes'), 'votes'])
+            ->withCount('votes');
+
+        if (! $isOrganizer && ! $isSpeaker) {
+            $questionsQuery->where('is_hidden', false);
+        }
+
+        $questions = $questionsQuery
+            ->orderByDesc('is_pinned')
             ->orderByDesc('votes_count')
-            ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->map(fn ($q) => [
+                'id' => $q->id,
+                'body' => $q->body,
+                'user' => ['id' => $q->user->id, 'name' => $q->user->name],
+                'votes_count' => $q->votes_count,
+                'viewer_has_voted' => $q->votes->contains('user_id', $user->id),
+                'is_answered' => $q->is_answered,
+                'is_pinned' => $q->is_pinned,
+                'is_hidden' => $q->is_hidden,
+                'answered_by' => $q->answered_by,
+                'replies' => $q->replies->map(fn ($r) => [
+                    'id' => $r->id,
+                    'body' => $r->body,
+                    'user' => ['id' => $r->user->id, 'name' => $r->user->name],
+                    'votes_count' => $r->votes_count,
+                    'viewer_has_voted' => $r->votes->contains('user_id', $user->id),
+                    'is_speaker' => $session->speaker_user_id === $r->user_id,
+                    'is_organizer' => $event->organizer_id === $r->user_id,
+                    'created_at' => $r->created_at->toISOString(),
+                ]),
+            ]);
 
         return Inertia::render('Event/SessionDetail', [
             'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
@@ -102,25 +126,144 @@ class SessionController extends Controller
                 'qa_enabled' => $session->qa_enabled,
                 'reactions_enabled' => $session->reactions_enabled,
                 'can_interact' => $session->canInteract(),
+                'speaker_user_id' => $session->speaker_user_id,
             ],
             'viewer' => [
                 'is_organizer' => $isOrganizer,
+                'is_speaker' => $isSpeaker,
+                'is_moderator' => $isOrganizer || $isSpeaker,
                 'participant_type' => $viewerParticipant?->pivot?->participant_type,
                 'is_checked_in' => $isCheckedIn,
                 'can_join' => $isParticipant && $session->isJoinable(),
                 'can_interact' => $isParticipant && $isCheckedIn && $session->canInteract(),
             ],
             'participants' => $participants,
-            'questions' => $questions->map(fn ($question) => [
-                'id' => $question->id,
-                'body' => $question->body,
+            'questions' => $questions,
+        ]);
+    }
+
+    public function moderate(Request $request, Event $event, EventSession $session): Response
+    {
+        abort_unless($event->organizer_id === $request->user()->id, 403);
+
+        $questions = $session->questions()
+            ->with(['user:id,name', 'replies' => fn ($q) => $q->with('user:id,name')->withCount('votes'), 'votes'])
+            ->withCount('votes')
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('votes_count')
+            ->get()
+            ->map(fn ($q) => [
+                'id' => $q->id,
+                'body' => $q->body,
+                'user' => ['id' => $q->user->id, 'name' => $q->user->name],
+                'votes_count' => $q->votes_count,
+                'is_answered' => $q->is_answered,
+                'is_pinned' => $q->is_pinned,
+                'is_hidden' => $q->is_hidden,
+                'answered_by' => $q->answered_by,
+                'replies' => $q->replies->map(fn ($r) => [
+                    'id' => $r->id,
+                    'body' => $r->body,
+                    'user' => ['id' => $r->user->id, 'name' => $r->user->name],
+                    'votes_count' => $r->votes_count,
+                    'is_speaker' => $session->speaker_user_id === $r->user_id,
+                    'is_organizer' => $event->organizer_id === $r->user_id,
+                    'created_at' => $r->created_at->toISOString(),
+                ]),
+            ]);
+
+        $driver = $session->reactions()->getQuery()->getConnection()->getDriverName();
+        $startsAt = $session->starts_at->toDateTimeString();
+
+        if ($driver === 'sqlite') {
+            $reactionBuckets = $session->reactions()
+                ->selectRaw('CAST((julianday(created_at) - julianday(?)) * 86400 / 30 AS INTEGER) as time_window, type, COUNT(*) as count', [$startsAt])
+                ->groupBy('time_window', 'type')
+                ->orderBy('time_window')
+                ->get();
+        } else {
+            $reactionBuckets = $session->reactions()
+                ->selectRaw('FLOOR(TIMESTAMPDIFF(SECOND, ?, created_at) / 30) as time_window, type, COUNT(*) as count', [$startsAt])
+                ->groupBy('time_window', 'type')
+                ->orderBy('time_window')
+                ->get();
+        }
+
+        $checkIns = $session->checkIns()->with('user:id,name')->get();
+        $physicalCount = 0;
+        $remoteCount = 0;
+        $participants = $checkIns->map(function ($ci) use ($event, &$physicalCount, &$remoteCount) {
+            $type = $event->participants()->where('user_id', $ci->user_id)->first()?->pivot->participant_type;
+            if ($type === 'physical') {
+                $physicalCount++;
+            } else {
+                $remoteCount++;
+            }
+
+            return [
+                'id' => $ci->user->id,
+                'name' => $ci->user->name,
+                'participant_type' => $type,
+                'is_active' => $ci->checked_out_at === null,
+            ];
+        });
+
+        return Inertia::render('Event/SessionModerate', [
+            'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
+            'session' => [
+                'id' => $session->id,
+                'title' => $session->title,
+                'speaker' => $session->speaker,
+                'starts_at' => $session->starts_at->toISOString(),
+                'ends_at' => $session->ends_at->toISOString(),
+                'is_live' => $session->isLive(),
+            ],
+            'questions' => $questions,
+            'reactionBuckets' => $reactionBuckets,
+            'stats' => [
+                'total_reactions' => $session->reactions()->count(),
+                'total_questions' => $session->questions()->where('is_hidden', false)->count(),
+                'physical_count' => $physicalCount,
+                'remote_count' => $remoteCount,
+                'total_participants' => $participants->count(),
+            ],
+        ]);
+    }
+
+    public function postSession(Request $request, Event $event, EventSession $session): Response
+    {
+        abort_unless(
+            $session->ends_at?->isPast() && $session->ends_at->diffInMinutes(now()) <= 15,
+            404
+        );
+
+        $attended = SessionCheckIn::where('user_id', $request->user()->id)
+            ->where('event_session_id', $session->id)
+            ->exists();
+        abort_unless($attended, 404);
+
+        $suggestions = Suggestion::where('suggested_to_id', $request->user()->id)
+            ->where('event_id', $event->id)
+            ->where('trigger', 'session_affinity')
+            ->active()
+            ->with('suggestedUser:id,name')
+            ->orderByDesc('score')
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
                 'user' => [
-                    'id' => $question->user->id,
-                    'name' => $question->user->name,
+                    'id' => $s->suggestedUser->id,
+                    'name' => $s->suggestedUser->name,
+                    'participant_type' => $event->participants()->where('user_id', $s->suggested_user_id)->first()?->pivot->participant_type,
                 ],
-                'votes_count' => $question->votes_count,
-                'viewer_has_voted' => $question->votes->isNotEmpty(),
-            ]),
+                'score' => $s->score,
+                'reason' => $s->reason,
+            ]);
+
+        return Inertia::render('Event/PostSessionConnections', [
+            'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
+            'session' => ['id' => $session->id, 'title' => $session->title],
+            'suggestions' => $suggestions,
         ]);
     }
 

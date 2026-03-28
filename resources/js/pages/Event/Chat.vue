@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, useHttp, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useHttp, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, Phone } from 'lucide-vue-next';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { start as startCall } from '@/routes/connection/call';
 import { index as fetchMessages, store as sendMessage } from '@/routes/connection/messages';
 
 type Message = {
@@ -29,6 +30,19 @@ const isTyping = ref(false);
 
 const chatRequest = useHttp();
 const messageForm = useHttp<{ body: string }>({ body: '' });
+const callRequest = useHttp();
+
+async function handleStartCall() {
+    try {
+        const response = (await callRequest.submit(
+            startCall(props.connection.id),
+        )) as { call_id: number; room_id: string; expires_at: string };
+
+        router.visit(`/event/${props.event.slug}/connections/${props.connection.id}/call/${response.call_id}`);
+    } catch {
+        // silently fail
+    }
+}
 
 async function loadMessages() {
     try {
@@ -68,7 +82,12 @@ const initials = props.peer.name
 
 let echoChannel: unknown = null;
 
+const wasDark = ref(false);
+
 onMounted(() => {
+    wasDark.value = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.remove('dark');
+
     loadMessages();
     if (window.Echo) {
         echoChannel = window.Echo.private(`connection.${props.connection.id}.chat`)
@@ -84,6 +103,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    if (wasDark.value) {
+        document.documentElement.classList.add('dark');
+    }
     window.Echo?.leave(`connection.${props.connection.id}.chat`);
 });
 
@@ -99,7 +121,7 @@ function handleInput() {
         <Head :title="`Chat with ${peer.name}`" />
 
         <!-- Header -->
-        <div class="flex items-center gap-3 border-b border-neutral-100 px-4 py-3">
+        <div class="flex items-center gap-3 border-b border-neutral-100 px-4 py-3 safe-area-pt">
             <Link
                 :href="`/event/${event.slug}/connections`"
                 class="p-1 text-neutral-400 transition hover:text-neutral-600"
@@ -118,7 +140,11 @@ function handleInput() {
                 </p>
             </div>
 
-            <button class="p-2 text-neutral-400 transition hover:text-neutral-600">
+            <button
+                class="p-2 text-neutral-400 transition hover:text-neutral-600"
+                :disabled="callRequest.processing"
+                @click="handleStartCall"
+            >
                 <Phone class="size-5" />
             </button>
         </div>
@@ -144,7 +170,7 @@ function handleInput() {
                 v-if="!chatRequest.processing && messages.length === 0"
                 class="py-12 text-center text-sm text-neutral-400"
             >
-                No messages yet. Say hello!
+                Noch keine Nachrichten. Sagen Sie Hallo!
             </div>
 
             <div
@@ -191,13 +217,13 @@ function handleInput() {
         </div>
 
         <!-- Input bar -->
-        <div class="border-t border-neutral-100 p-3">
+        <div class="border-t border-neutral-100 p-3 safe-area-pb">
             <div class="flex items-center gap-2">
                 <input
                     v-model="messageForm.body"
                     type="text"
                     maxlength="500"
-                    placeholder="Type a message..."
+                    placeholder="Nachricht eingeben..."
                     class="flex-1 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                     @keydown.enter="handleSend"
                     @input="handleInput"
@@ -216,3 +242,12 @@ function handleInput() {
         </div>
     </div>
 </template>
+
+<style scoped>
+.safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+}
+.safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+</style>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Connection;
 use App\Models\Event;
+use App\Models\Ping;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,9 +36,27 @@ class ConnectionListController extends Controller
                 ];
             });
 
+        $incomingPings = Ping::where('receiver_id', $userId)
+            ->where('event_id', $event->id)
+            ->active()
+            ->with('sender:id,name,company,role_title')
+            ->latest()
+            ->get()
+            ->map(fn (Ping $p) => [
+                'ping_id' => $p->id,
+                'user' => [
+                    'id' => $p->sender->id,
+                    'name' => $p->sender->name,
+                    'company' => $p->sender->company,
+                    'role_title' => $p->sender->role_title,
+                ],
+                'created_at' => $p->created_at->toISOString(),
+            ]);
+
         return Inertia::render('Event/Connections', [
             'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
             'connections' => $connections,
+            'incomingPings' => $incomingPings,
         ]);
     }
 }

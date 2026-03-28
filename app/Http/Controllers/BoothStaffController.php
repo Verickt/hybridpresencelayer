@@ -56,7 +56,7 @@ class BoothStaffController extends Controller
 
         BoothAnnouncement::dispatch($booth, $validated['message']);
 
-        return response()->json(['message' => 'Announcement sent']);
+        return response()->json(['message' => 'Ankündigung gesendet']);
     }
 
     public function exportLeads(Request $request, Event $event, Booth $booth): StreamedResponse
@@ -71,7 +71,7 @@ class BoothStaffController extends Controller
 
         return response()->streamDownload(function () use ($visits) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Name', 'Email', 'Company', 'Role', 'Type', 'Duration (min)', 'Visited At']);
+            fputcsv($handle, ['Name', 'E-Mail', 'Unternehmen', 'Rolle', 'Typ', 'Dauer (Min.)', 'Besucht am']);
 
             foreach ($visits as $visit) {
                 fputcsv($handle, [

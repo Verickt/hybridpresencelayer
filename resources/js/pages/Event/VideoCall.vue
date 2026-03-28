@@ -156,27 +156,27 @@ onUnmounted(() => {
             <div class="rounded-2xl bg-white/10 p-6">
                 <CameraOff class="mx-auto size-12 text-white/60" />
             </div>
-            <h2 class="text-lg font-semibold">Video calls not supported</h2>
+            <h2 class="text-lg font-semibold">Videoanrufe werden nicht unterstützt</h2>
             <p class="max-w-sm text-sm text-white/60">
-                Your browser does not support video calls or camera access was denied. Please try a different browser or check your permissions.
+                Ihr Browser unterstützt keine Videoanrufe oder der Kamerazugriff wurde verweigert. Bitte versuchen Sie einen anderen Browser oder prüfen Sie Ihre Berechtigungen.
             </p>
             <a
                 :href="`/event/${event.slug}/connections`"
                 class="mt-2 rounded-xl bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
             >
-                Back to connections
+                Zurück zu Verbindungen
             </a>
         </div>
 
         <!-- Call ended -->
         <div v-else-if="callEnded" class="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-            <h2 class="text-lg font-semibold">Call ended</h2>
-            <p class="text-sm text-white/60">Your call with {{ peer.name }} has ended.</p>
+            <h2 class="text-lg font-semibold">Anruf beendet</h2>
+            <p class="text-sm text-white/60">Ihr Anruf mit {{ peer.name }} wurde beendet.</p>
             <a
                 :href="`/event/${event.slug}/connections`"
                 class="mt-2 rounded-xl bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
             >
-                Back to connections
+                Zurück zu Verbindungen
             </a>
         </div>
 
@@ -199,7 +199,7 @@ onUnmounted(() => {
                         <div class="flex size-20 items-center justify-center rounded-full bg-white/10 text-2xl font-semibold">
                             {{ peer.name.charAt(0) }}
                         </div>
-                        <p class="text-sm text-white/60">Waiting for {{ peer.name }}...</p>
+                        <p class="text-sm text-white/60">Warten auf {{ peer.name }}...</p>
                     </div>
                 </div>
 
@@ -233,7 +233,7 @@ onUnmounted(() => {
                     ]"
                 >
                     <Timer class="size-3.5" />
-                    <span v-if="timeUp">Time's up!</span>
+                    <span v-if="timeUp">Zeit abgelaufen!</span>
                     <span v-else>{{ formattedTime }}</span>
                 </div>
 
@@ -248,7 +248,7 @@ onUnmounted(() => {
                         @click="handleEnd"
                     >
                         <PhoneOff class="mr-1.5 size-4" />
-                        End Call
+                        Anruf beenden
                     </Button>
                     <Button
                         v-if="canExtend"
@@ -256,7 +256,7 @@ onUnmounted(() => {
                         :disabled="callHttp.processing"
                         @click="handleExtend"
                     >
-                        Extend +3 Min
+                        +3 Min verlängern
                     </Button>
                 </div>
             </div>
@@ -294,7 +294,7 @@ onUnmounted(() => {
                 v-if="extensions > 0"
                 class="bg-zinc-900 pb-2 text-center text-xs text-white/40"
             >
-                {{ extensions }}/{{ maxExtensions }} extensions used
+                {{ extensions }}/{{ maxExtensions }} Verlängerungen genutzt
             </div>
         </template>
     </div>

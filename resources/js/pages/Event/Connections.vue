@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, useHttp } from '@inertiajs/vue3';
-import { MessageCircle, Phone, PhoneOff, Send, X } from 'lucide-vue-next';
-import { nextTick, ref } from 'vue';
-import { Button } from '@/components/ui/button';
-import { start as startCall, end as endCall } from '@/routes/connection/call';
-import { index as fetchMessages, store as sendMessage } from '@/routes/connection/messages';
+import { Head, router, useHttp } from '@inertiajs/vue3';
+import { MessageCircle, Phone } from 'lucide-vue-next';
+import { useHaptics } from '@/composables/useHaptics';
+import { ping } from '@/routes/event';
+
+const { ping: hapticPing } = useHaptics();
 
 type ConnectionItem = {
     connection_id: number;
@@ -14,120 +14,39 @@ type ConnectionItem = {
     created_at: string;
 };
 
-type Message = {
-    id: number;
-    sender_id: number;
-    sender_name: string;
-    body: string;
+type IncomingPing = {
+    ping_id: number;
+    user: { id: number; name: string; company: string; role_title?: string };
     created_at: string;
 };
 
-defineProps<{
+const props = defineProps<{
     event: { id: number; name: string; slug: string };
     connections: ConnectionItem[];
+    incomingPings: IncomingPing[];
 }>();
 
-const activeChat = ref<number | null>(null);
-const messages = ref<Message[]>([]);
-const activeCall = ref<{ callId: number; roomId: string; expiresAt: string } | null>(null);
-const messagesContainer = ref<HTMLDivElement>();
+const pingRequest = useHttp();
 
-const chatRequest = useHttp();
-const messageForm = useHttp<{ body: string }>({ body: '' });
-const callRequest = useHttp();
+function openChat(connectionId: number) {
+    router.visit(`/event/${props.event.slug}/connections/${connectionId}/chat`);
+}
 
-async function openChat(connectionId: number) {
-    activeChat.value = connectionId;
-    messages.value = [];
-
+async function handlePingBack(userId: number) {
+    hapticPing();
     try {
-        const response = (await chatRequest.submit(
-            fetchMessages(connectionId),
-        )) as { data: Message[] };
-
-        messages.value = response.data;
-        await nextTick();
-        scrollToBottom();
+        await pingRequest.submit(ping({ event: props.event.slug, user: userId }));
+        router.reload({ only: ['connections', 'incomingPings'] });
     } catch {
         // silently fail
     }
 }
 
-function closeChat() {
-    activeChat.value = null;
-    messages.value = [];
-    activeCall.value = null;
-}
-
-async function handleSend() {
-    if (!activeChat.value || !messageForm.body.trim()) {
-        return;
-    }
-
-    try {
-        await messageForm.submit(sendMessage(activeChat.value));
-
-        const response = (await chatRequest.submit(
-            fetchMessages(activeChat.value),
-        )) as { data: Message[] };
-
-        messages.value = response.data;
-        messageForm.reset();
-        await nextTick();
-        scrollToBottom();
-    } catch {
-        // silently fail
-    }
-}
-
-async function handleStartCall() {
-    if (!activeChat.value) {
-        return;
-    }
-
-    try {
-        const response = (await callRequest.submit(
-            startCall(activeChat.value),
-        )) as { call_id: number; room_id: string; expires_at: string };
-
-        activeCall.value = {
-            callId: response.call_id,
-            roomId: response.room_id,
-            expiresAt: response.expires_at,
-        };
-    } catch {
-        // silently fail
-    }
-}
-
-async function handleEndCall() {
-    if (!activeChat.value || !activeCall.value) {
-        return;
-    }
-
-    try {
-        await callRequest.submit(
-            endCall({ connection: activeChat.value, call: activeCall.value.callId }),
-        );
-
-        activeCall.value = null;
-    } catch {
-        // silently fail
-    }
-}
-
-function scrollToBottom() {
-    if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
-}
-
-function formatTime(iso: string): string {
-    return new Intl.DateTimeFormat('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-    }).format(new Date(iso));
+function timeAgo(iso: string): string {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (diff < 1) return 'Gerade eben';
+    if (diff < 60) return `Vor ${diff} Min.`;
+    return `Vor ${Math.floor(diff / 60)} Std.`;
 }
 </script>
 
@@ -136,104 +55,39 @@ function formatTime(iso: string): string {
         <Head :title="`${event.name} - Connections`" />
 
         <div class="space-y-1">
-            <h1 class="text-2xl font-bold text-neutral-900">Connections</h1>
-            <p class="text-sm text-neutral-500">{{ connections.length }} people you've matched with</p>
+            <h1 class="text-2xl font-bold text-neutral-900">Verbindungen</h1>
+            <p class="text-sm text-neutral-500">{{ connections.length }} Personen, mit denen Sie gematcht haben</p>
         </div>
 
-        <!-- Chat overlay -->
-        <div
-            v-if="activeChat"
-            class="fixed inset-0 z-50 flex flex-col bg-background md:inset-auto md:bottom-4 md:right-4 md:h-[32rem] md:w-96 md:rounded-2xl md:border md:border-border/70 md:shadow-lg"
-        >
-            <div class="flex items-center justify-between border-b border-border/70 p-4">
-                <h3 class="font-semibold">
-                    {{
-                        connections.find((c) => c.connection_id === activeChat)
-                            ?.user.name ?? 'Chat'
-                    }}
-                </h3>
-                <div class="flex items-center gap-2">
-                    <Button
-                        v-if="!activeCall"
-                        size="icon"
-                        variant="ghost"
-                        class="size-8"
-                        :disabled="callRequest.processing"
-                        @click="handleStartCall"
-                    >
-                        <Phone class="size-4" />
-                    </Button>
-                    <Button
-                        v-else
-                        size="icon"
-                        variant="destructive"
-                        class="size-8"
-                        :disabled="callRequest.processing"
-                        @click="handleEndCall"
-                    >
-                        <PhoneOff class="size-4" />
-                    </Button>
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        class="size-8"
-                        @click="closeChat"
-                    >
-                        <X class="size-4" />
-                    </Button>
-                </div>
-            </div>
-
-            <div
-                v-if="activeCall"
-                class="border-b border-border/70 bg-primary/5 px-4 py-2 text-sm"
-            >
-                Call active — Room: <code class="text-xs">{{ activeCall.roomId.slice(0, 8) }}...</code>
-            </div>
-
-            <div
-                ref="messagesContainer"
-                class="flex-1 space-y-3 overflow-y-auto p-4"
-            >
-                <div v-if="chatRequest.processing" class="text-center text-sm text-muted-foreground">
-                    Loading...
-                </div>
+        <!-- Incoming pings section -->
+        <div v-if="incomingPings.length > 0">
+            <p class="mb-2 text-[11px] font-semibold tracking-wider text-indigo-600 uppercase">
+                👋 {{ incomingPings.length }} {{ incomingPings.length === 1 ? 'Person hat' : 'Personen haben' }} dich gepingt
+            </p>
+            <div class="space-y-2">
                 <div
-                    v-for="msg in messages"
-                    :key="msg.id"
-                    class="space-y-0.5"
+                    v-for="p in incomingPings"
+                    :key="p.ping_id"
+                    class="flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 px-4 py-3"
                 >
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-xs font-medium">{{ msg.sender_name }}</span>
-                        <span class="text-[10px] text-muted-foreground">{{ formatTime(msg.created_at) }}</span>
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                        {{ p.user.name.split(' ').map((n: string) => n[0]).join('') }}
                     </div>
-                    <p class="text-sm">{{ msg.body }}</p>
-                </div>
-                <div
-                    v-if="!chatRequest.processing && messages.length === 0"
-                    class="text-center text-sm text-muted-foreground"
-                >
-                    No messages yet. Say hello!
-                </div>
-            </div>
 
-            <div class="border-t border-border/70 p-3">
-                <div class="flex gap-2">
-                    <input
-                        v-model="messageForm.body"
-                        type="text"
-                        placeholder="Type a message..."
-                        class="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                        @keydown.enter="handleSend"
-                    />
-                    <Button
-                        size="icon"
-                        class="shrink-0"
-                        :disabled="messageForm.processing || !messageForm.body.trim()"
-                        @click="handleSend"
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-semibold text-neutral-900">{{ p.user.name }}</p>
+                        <p class="text-xs text-neutral-500">
+                            {{ p.user.role_title || p.user.company }} · {{ timeAgo(p.created_at) }}
+                        </p>
+                    </div>
+
+                    <button
+                        class="shrink-0 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                        :disabled="pingRequest.processing"
+                        @click="handlePingBack(p.user.id)"
                     >
-                        <Send class="size-4" />
-                    </Button>
+                        👋 Zurückpingen
+                    </button>
                 </div>
             </div>
         </div>
@@ -243,15 +97,16 @@ function formatTime(iso: string): string {
             <div
                 v-for="connection in connections"
                 :key="connection.connection_id"
-                class="flex items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+                class="flex cursor-pointer items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+                @click="openChat(connection.connection_id)"
             >
                 <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700">
                     {{ connection.user.name.split(' ').map((n: string) => n[0]).join('') }}
                 </div>
 
                 <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold text-neutral-900">{{ connection.user.name }}</p>
-                    <p class="truncate text-sm text-neutral-500">
+                    <p class="text-sm font-semibold text-neutral-900">{{ connection.user.name }}</p>
+                    <p class="text-xs text-neutral-500">
                         {{ connection.user.company }}{{ connection.context ? ` · ${connection.context}` : '' }}
                     </p>
                 </div>
@@ -259,12 +114,13 @@ function formatTime(iso: string): string {
                 <div class="flex shrink-0 items-center gap-2">
                     <button
                         class="flex size-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50"
-                        @click="openChat(connection.connection_id)"
+                        @click.stop="openChat(connection.connection_id)"
                     >
                         <MessageCircle class="size-4" />
                     </button>
                     <button
                         class="flex size-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50"
+                        @click.stop="openChat(connection.connection_id)"
                     >
                         <Phone class="size-4" />
                     </button>
@@ -272,8 +128,8 @@ function formatTime(iso: string): string {
             </div>
         </div>
 
-        <p v-if="connections.length === 0" class="py-8 text-center text-sm text-neutral-400">
-            No connections yet. Start meeting people!
+        <p v-if="connections.length === 0 && incomingPings.length === 0" class="py-8 text-center text-sm text-neutral-400">
+            Noch keine Verbindungen. Lernen Sie neue Leute kennen!
         </p>
     </div>
 </template>

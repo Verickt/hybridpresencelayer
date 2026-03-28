@@ -96,7 +96,7 @@ const answeredThreads = computed(() =>
 
 function formatTimestamp(timestamp: string | null): string {
     if (!timestamp) {
-        return 'Just now';
+        return 'Gerade eben';
     }
 
     return new Intl.DateTimeFormat([], {
@@ -112,16 +112,16 @@ async function copyToClipboard(value: string, label: string): Promise<void> {
     copyError.value = null;
 
     if (!navigator?.clipboard) {
-        copyError.value = 'Clipboard access is not available in this browser.';
+        copyError.value = 'Zwischenablage-Zugriff ist in diesem Browser nicht verfügbar.';
 
         return;
     }
 
     try {
         await navigator.clipboard.writeText(value);
-        copyMessage.value = `${label} copied.`;
+        copyMessage.value = `${label} kopiert.`;
     } catch {
-        copyError.value = `Unable to copy the ${label.toLowerCase()}.`;
+        copyError.value = `${label} konnte nicht kopiert werden.`;
     }
 }
 
@@ -237,8 +237,8 @@ onUnmounted(() => {
             <CardContent class="space-y-4 p-6">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <Heading
-                        :title="`${booth.name} Tablet Console`"
-                        description="Run the booth board from the booth itself: start demos, surface the QR, and answer questions in one place."
+                        :title="`${booth.name} Tablet-Konsole`"
+                        description="Verwalten Sie das Stand-Board direkt vom Stand: Demos starten, QR-Code anzeigen und Fragen an einem Ort beantworten."
                     />
 
                     <Button as-child variant="outline">
@@ -250,7 +250,7 @@ onUnmounted(() => {
                                 })
                             "
                         >
-                            Back to booth page
+                            Zurück zur Stand-Seite
                         </Link>
                     </Button>
                 </div>
@@ -258,27 +258,27 @@ onUnmounted(() => {
                 <div class="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
                     <div class="flex items-center gap-2">
                         <TabletSmartphone class="size-4" />
-                        Staff-only booth console
+                        Nur für Stand-Mitarbeiter
                     </div>
                     <div class="flex items-center gap-2">
                         <MicVocal class="size-4" />
-                        {{ active_demo ? 'Live demo running' : 'Demo idle' }}
+                        {{ active_demo ? 'Live-Demo läuft' : 'Demo inaktiv' }}
                     </div>
                     <div class="flex items-center gap-2">
                         <ExternalLink class="size-4" />
-                        QR expires {{ formatTimestamp(qr.expires_at) }}
+                        QR läuft ab {{ formatTimestamp(qr.expires_at) }}
                     </div>
                 </div>
             </CardContent>
         </Card>
 
         <Alert v-if="copyError" variant="destructive">
-            <AlertTitle>Copy failed</AlertTitle>
+            <AlertTitle>Kopieren fehlgeschlagen</AlertTitle>
             <AlertDescription>{{ copyError }}</AlertDescription>
         </Alert>
 
         <Alert v-else-if="copyMessage">
-            <AlertTitle>Copied</AlertTitle>
+            <AlertTitle>Kopiert</AlertTitle>
             <AlertDescription>{{ copyMessage }}</AlertDescription>
         </Alert>
 
@@ -289,7 +289,7 @@ onUnmounted(() => {
                         <Badge
                             class="rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[0.12em] uppercase"
                         >
-                            Booth QR
+                            Stand-QR
                         </Badge>
 
                         <div
@@ -299,26 +299,26 @@ onUnmounted(() => {
                         </div>
 
                         <p class="text-center text-sm text-muted-foreground">
-                            Physical attendees scan this in the app to land on the booth board in checked-in state.
+                            Vor-Ort-Teilnehmer scannen diesen Code in der App, um direkt eingecheckt auf dem Stand-Board zu landen.
                         </p>
 
                         <div class="grid w-full gap-3">
                             <Button
                                 variant="outline"
                                 class="justify-start"
-                                @click="copyToClipboard(qr.payload, 'Booth QR link')"
+                                @click="copyToClipboard(qr.payload, 'Stand-QR-Link')"
                             >
                                 <Copy class="size-4" />
-                                Copy booth QR payload
+                                Stand-QR-Payload kopieren
                             </Button>
 
                             <Button
                                 variant="outline"
                                 class="justify-start"
-                                @click="copyToClipboard(qr.booth_url, 'Booth page link')"
+                                @click="copyToClipboard(qr.booth_url, 'Stand-Seitenlink')"
                             >
                                 <Copy class="size-4" />
-                                Copy booth page link
+                                Stand-Seitenlink kopieren
                             </Button>
                         </div>
                     </CardContent>
@@ -329,10 +329,10 @@ onUnmounted(() => {
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
                                 <MessageSquareText class="size-4 text-muted-foreground" />
-                                <h2 class="text-lg font-semibold">Live demo controls</h2>
+                                <h2 class="text-lg font-semibold">Live-Demo-Steuerung</h2>
                             </div>
                             <p class="text-sm text-muted-foreground">
-                                Start a booth demo when staff begins talking, or end it when the booth flow returns to asynchronous Q&A.
+                                Starten Sie eine Stand-Demo, wenn Mitarbeiter beginnen zu sprechen, oder beenden Sie sie, wenn der Stand zum asynchronen Q&A zurückkehrt.
                             </p>
                         </div>
 
@@ -343,7 +343,7 @@ onUnmounted(() => {
                             <div class="space-y-1">
                                 <p class="font-medium">{{ active_demo.title }}</p>
                                 <p class="text-sm text-muted-foreground">
-                                    Started {{ formatTimestamp(active_demo.starts_at) }}
+                                    Gestartet {{ formatTimestamp(active_demo.starts_at) }}
                                 </p>
                             </div>
 
@@ -353,7 +353,7 @@ onUnmounted(() => {
                             >
                                 <div class="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] uppercase text-primary">
                                     <MicVocal class="size-3.5" />
-                                    Live prompt
+                                    Live-Prompt
                                 </div>
                                 <p class="mt-2 text-sm font-medium">
                                     {{ active_demo.prompt_thread.body }}
@@ -361,7 +361,7 @@ onUnmounted(() => {
                             </div>
 
                             <Button class="rounded-full" variant="outline" @click="endDemo(active_demo.id)">
-                                End demo
+                                Demo beenden
                             </Button>
                         </div>
 
@@ -372,11 +372,11 @@ onUnmounted(() => {
                         >
                             <Input
                                 v-model="demoForm.title"
-                                placeholder="Optional live demo title"
+                                placeholder="Optionaler Live-Demo-Titel"
                                 class="flex-1"
                             />
                             <Button type="submit" class="rounded-full" :disabled="demoForm.processing">
-                                Start demo
+                                Demo starten
                             </Button>
                         </form>
 
@@ -389,14 +389,14 @@ onUnmounted(() => {
                 <CardContent class="space-y-5 p-6">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="space-y-1">
-                            <h2 class="text-lg font-semibold">Question queue</h2>
+                            <h2 class="text-lg font-semibold">Fragen-Warteschlange</h2>
                             <p class="text-sm text-muted-foreground">
-                                Unanswered questions stay on top so booth staff can work through them from the tablet.
+                                Unbeantwortete Fragen bleiben oben, damit Stand-Mitarbeiter sie vom Tablet aus abarbeiten können.
                             </p>
                         </div>
 
                         <Badge variant="outline" class="rounded-full px-2.5 py-1 text-[11px]">
-                            {{ unansweredThreads.length }} waiting
+                            {{ unansweredThreads.length }} wartend
                         </Badge>
                     </div>
 
@@ -404,13 +404,13 @@ onUnmounted(() => {
                         v-if="!threads.length"
                         class="rounded-2xl border border-dashed border-border/70 bg-muted/30 p-6 text-sm text-muted-foreground"
                     >
-                        No booth questions yet. Leave the QR open and the queue will fill as visitors join.
+                        Noch keine Stand-Fragen. Lassen Sie den QR-Code offen und die Warteschlange füllt sich, wenn Besucher beitreten.
                     </div>
 
                     <div v-else class="space-y-6">
                         <section v-if="unansweredThreads.length" class="space-y-3">
                             <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                                Waiting for answer
+                                Wartet auf Antwort
                             </h3>
 
                             <article
@@ -427,7 +427,7 @@ onUnmounted(() => {
                                                 class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
                                             >
                                                 <Pin class="mr-1 size-3" />
-                                                Pinned
+                                                Angeheftet
                                             </Badge>
                                             <span class="text-xs text-muted-foreground">
                                                 {{ thread.user.name }} · {{ formatTimestamp(thread.last_activity_at) }}
@@ -440,7 +440,7 @@ onUnmounted(() => {
                                     </div>
 
                                     <Badge variant="secondary" class="rounded-full">
-                                        {{ thread.votes_count }} votes
+                                        {{ thread.votes_count }} Stimmen
                                     </Badge>
                                 </div>
 
@@ -459,7 +459,7 @@ onUnmounted(() => {
                                                 v-if="reply.is_staff_answer"
                                                 class="text-primary"
                                             >
-                                                · staff
+                                                · Mitarbeiter
                                             </span>
                                         </p>
                                         <p class="text-muted-foreground">{{ reply.body }}</p>
@@ -469,15 +469,15 @@ onUnmounted(() => {
                                 <div class="flex flex-wrap gap-2">
                                     <Button variant="outline" class="rounded-full" @click="startReply(thread.id)">
                                         <Send class="size-4" />
-                                        Reply
+                                        Antworten
                                     </Button>
                                     <Button variant="outline" class="rounded-full" @click="markAnswered(thread.id)">
                                         <CheckCircle2 class="size-4" />
-                                        Mark answered
+                                        Als beantwortet markieren
                                     </Button>
                                     <Button variant="outline" class="rounded-full" @click="togglePin(thread.id)">
                                         <Pin class="size-4" />
-                                        {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
+                                        {{ thread.is_pinned ? 'Lösen' : 'Anheften' }}
                                     </Button>
                                 </div>
 
@@ -488,11 +488,11 @@ onUnmounted(() => {
                                 >
                                     <Input
                                         v-model="replyForm.body"
-                                        placeholder="Answer from booth staff"
+                                        placeholder="Antwort vom Stand-Mitarbeiter"
                                     />
                                     <div class="flex flex-wrap gap-2">
                                         <Button type="submit" class="rounded-full" :disabled="replyForm.processing">
-                                            Send answer
+                                            Antwort senden
                                         </Button>
                                         <Button
                                             type="button"
@@ -500,7 +500,7 @@ onUnmounted(() => {
                                             class="rounded-full"
                                             @click="replyingThreadId = null"
                                         >
-                                            Cancel
+                                            Abbrechen
                                         </Button>
                                     </div>
                                     <InputError :message="replyForm.errors.body" />
@@ -510,7 +510,7 @@ onUnmounted(() => {
 
                         <section v-if="answeredThreads.length" class="space-y-3">
                             <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                                Recently answered
+                                Kürzlich beantwortet
                             </h3>
 
                             <article
@@ -522,7 +522,7 @@ onUnmounted(() => {
                                     <div class="space-y-1">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <Badge class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase">
-                                                Answered
+                                                Beantwortet
                                             </Badge>
                                             <Badge
                                                 v-if="thread.is_pinned"
@@ -530,7 +530,7 @@ onUnmounted(() => {
                                                 class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
                                             >
                                                 <Pin class="mr-1 size-3" />
-                                                Pinned
+                                                Angeheftet
                                             </Badge>
                                         </div>
                                         <p class="font-medium">{{ thread.body }}</p>

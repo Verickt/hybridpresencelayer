@@ -34,7 +34,7 @@ test('sends a magic link email to an existing participant', function () {
         'event_slug' => $event->slug,
     ]);
 
-    $response->assertOk();
+    $response->assertRedirect();
     Notification::assertSentTo($user, MagicLinkNotification::class);
 });
 
@@ -48,7 +48,7 @@ test('does not reveal whether an email exists for a closed event', function () {
         'event_slug' => $event->slug,
     ]);
 
-    $response->assertOk();
+    $response->assertRedirect();
     Notification::assertNothingSent();
     expect(User::where('email', 'unknown@example.com')->exists())->toBeFalse();
 });
@@ -64,7 +64,7 @@ test('creates a new participant for an open registration event without a passwor
         'name' => 'New Participant',
     ]);
 
-    $response->assertOk();
+    $response->assertRedirect();
 
     $user = User::where('email', 'new@example.com')->first();
 
@@ -117,13 +117,13 @@ test('reuses the same participant record for repeated open-registration requests
         'name' => 'Repeat User',
         'email' => $email,
         'event_slug' => $event->slug,
-    ])->assertOk();
+    ])->assertRedirect();
 
     $this->post(route('magic-link.send'), [
         'name' => 'Repeat User',
         'email' => $email,
         'event_slug' => $event->slug,
-    ])->assertOk();
+    ])->assertRedirect();
 
     expect(User::where('email', $email)->count())->toBe(1)
         ->and($event->participants()->where('email', $email)->count())->toBe(1);

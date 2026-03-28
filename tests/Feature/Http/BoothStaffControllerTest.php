@@ -83,7 +83,7 @@ it('dispatches booth announcements for staff members', function () {
             'message' => 'Live demo starting in five minutes.',
         ])
         ->assertSuccessful()
-        ->assertJsonPath('message', 'Announcement sent');
+        ->assertJsonPath('message', 'Ankündigung gesendet');
 
     EventBus::assertDispatched(BoothAnnouncement::class, function (BoothAnnouncement $announcement): bool {
         return $announcement->booth->is($this->booth)
@@ -122,7 +122,7 @@ it('exports only visible leads as csv for staff members', function () {
     $response->assertSuccessful();
     expect($response->headers->get('content-type'))->toContain('text/csv');
     expect($response->streamedContent())
-        ->toContain('Name,Email,Company,Role,Type,"Duration (min)","Visited At"')
+        ->toContain('Name,E-Mail,Unternehmen,Rolle,Typ,"Dauer (Min.)","Besucht am"')
         ->toContain('CSV Lead')
         ->not->toContain('Hidden Lead');
 });

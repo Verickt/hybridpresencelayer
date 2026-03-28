@@ -118,22 +118,22 @@ function submit() {
 }
 
 const stepLabels = [
-    'Event Details',
-    'Interest Tags',
-    'Icebreakers',
+    'Event-Details',
+    'Interesse-Tags',
+    'Eisbrecher',
     'Sessions',
-    'Booths',
-    'Review & Launch',
+    'Stände',
+    'Überprüfen & Starten',
 ];
 </script>
 
 <template>
     <div class="min-h-screen bg-background">
-        <Head title="Create Event" />
+        <Head title="Event erstellen" />
 
         <div class="mx-auto max-w-3xl px-4 py-8">
             <h1 class="mb-8 text-3xl font-bold text-foreground">
-                Create Event
+                Event erstellen
             </h1>
 
             <!-- Step indicator -->
@@ -156,7 +156,7 @@ const stepLabels = [
             <!-- Step 1: Event Details -->
             <div v-show="currentStep === 1" class="space-y-4">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Event Details
+                    Event-Details
                 </h2>
 
                 <div>
@@ -168,7 +168,7 @@ const stepLabels = [
                         v-model="form.name"
                         type="text"
                         class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="My Conference 2026"
+                        placeholder="Meine Konferenz 2026"
                     />
                     <p
                         v-if="form.errors.name"
@@ -181,26 +181,26 @@ const stepLabels = [
                 <div>
                     <label
                         class="mb-1 block text-sm font-medium text-foreground"
-                        >Description</label
+                        >Beschreibung</label
                     >
                     <textarea
                         v-model="form.description"
                         rows="3"
                         class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="What is this event about?"
+                        placeholder="Worum geht es bei diesem Event?"
                     />
                 </div>
 
                 <div>
                     <label
                         class="mb-1 block text-sm font-medium text-foreground"
-                        >Venue</label
+                        >Veranstaltungsort</label
                     >
                     <input
                         v-model="form.venue"
                         type="text"
                         class="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="Convention Center, City"
+                        placeholder="Kongresszentrum, Stadt"
                     />
                 </div>
 
@@ -208,7 +208,7 @@ const stepLabels = [
                     <div>
                         <label
                             class="mb-1 block text-sm font-medium text-foreground"
-                            >Starts At *</label
+                            >Beginn *</label
                         >
                         <input
                             v-model="form.starts_at"
@@ -219,7 +219,7 @@ const stepLabels = [
                     <div>
                         <label
                             class="mb-1 block text-sm font-medium text-foreground"
-                            >Ends At *</label
+                            >Ende *</label
                         >
                         <input
                             v-model="form.ends_at"
@@ -235,17 +235,17 @@ const stepLabels = [
                         type="checkbox"
                         class="rounded border-border"
                     />
-                    Allow open registration
+                    Offene Registrierung erlauben
                 </label>
             </div>
 
             <!-- Step 2: Interest Tags -->
             <div v-show="currentStep === 2" class="space-y-4">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Interest Tags
+                    Interesse-Tags
                 </h2>
                 <p class="text-sm text-muted-foreground">
-                    Add tags that participants can use to find each other.
+                    Fügen Sie Tags hinzu, mit denen Teilnehmer einander finden können.
                 </p>
 
                 <div class="flex gap-2">
@@ -253,14 +253,14 @@ const stepLabels = [
                         v-model="newTag"
                         type="text"
                         class="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="e.g. AI, DevOps, Frontend"
+                        placeholder="z.B. KI, DevOps, Frontend"
                         @keydown.enter.prevent="addTag"
                     />
                     <button
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         @click="addTag"
                     >
-                        Add
+                        Hinzufügen
                     </button>
                 </div>
 
@@ -284,17 +284,17 @@ const stepLabels = [
                     v-if="tags.length === 0"
                     class="text-sm text-muted-foreground"
                 >
-                    No tags added yet.
+                    Noch keine Tags hinzugefügt.
                 </p>
             </div>
 
             <!-- Step 3: Icebreaker Questions -->
             <div v-show="currentStep === 3" class="space-y-4">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Icebreaker Questions
+                    Eisbrecher-Fragen
                 </h2>
                 <p class="text-sm text-muted-foreground">
-                    Questions shown to participants to spark conversation.
+                    Fragen, die Teilnehmern angezeigt werden, um Gespräche anzuregen.
                 </p>
 
                 <div class="flex gap-2">
@@ -302,14 +302,14 @@ const stepLabels = [
                         v-model="newIcebreaker"
                         type="text"
                         class="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-primary focus:ring-1 focus:ring-primary"
-                        placeholder="What brought you to this event?"
+                        placeholder="Was hat Sie zu diesem Event geführt?"
                         @keydown.enter.prevent="addIcebreaker"
                     />
                     <button
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         @click="addIcebreaker"
                     >
-                        Add
+                        Hinzufügen
                     </button>
                 </div>
 
@@ -324,7 +324,7 @@ const stepLabels = [
                             class="text-sm text-muted-foreground hover:text-destructive"
                             @click="removeIcebreaker(i)"
                         >
-                            Remove
+                            Entfernen
                         </button>
                     </li>
                 </ul>
@@ -333,14 +333,14 @@ const stepLabels = [
                     v-if="icebreakers.length === 0"
                     class="text-sm text-muted-foreground"
                 >
-                    No icebreaker questions yet.
+                    Noch keine Eisbrecher-Fragen.
                 </p>
             </div>
 
             <!-- Step 4: Sessions -->
             <div v-show="currentStep === 4" class="space-y-4">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Session Schedule
+                    Session-Programm
                 </h2>
 
                 <div
@@ -350,25 +350,25 @@ const stepLabels = [
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Title</label
+                                >Titel</label
                             >
                             <input
                                 v-model="newSession.title"
                                 type="text"
                                 class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                                placeholder="Session title"
+                                placeholder="Session-Titel"
                             />
                         </div>
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Speaker</label
+                                >Referent</label
                             >
                             <input
                                 v-model="newSession.speaker"
                                 type="text"
                                 class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                                placeholder="Speaker name"
+                                placeholder="Name des Referenten"
                             />
                         </div>
                     </div>
@@ -376,19 +376,19 @@ const stepLabels = [
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Room</label
+                                >Raum</label
                             >
                             <input
                                 v-model="newSession.room"
                                 type="text"
                                 class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                                placeholder="Room A"
+                                placeholder="Raum A"
                             />
                         </div>
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Starts</label
+                                >Beginn</label
                             >
                             <input
                                 v-model="newSession.starts_at"
@@ -399,7 +399,7 @@ const stepLabels = [
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Ends</label
+                                >Ende</label
                             >
                             <input
                                 v-model="newSession.ends_at"
@@ -412,7 +412,7 @@ const stepLabels = [
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         @click="addSession"
                     >
-                        Add Session
+                        Session hinzufügen
                     </button>
                 </div>
 
@@ -434,7 +434,7 @@ const stepLabels = [
                             class="text-sm text-muted-foreground hover:text-destructive"
                             @click="removeSession(i)"
                         >
-                            Remove
+                            Entfernen
                         </button>
                     </li>
                 </ul>
@@ -443,14 +443,14 @@ const stepLabels = [
                     v-if="sessions.length === 0"
                     class="text-sm text-muted-foreground"
                 >
-                    No sessions added yet.
+                    Noch keine Sessions hinzugefügt.
                 </p>
             </div>
 
             <!-- Step 5: Booths -->
             <div v-show="currentStep === 5" class="space-y-4">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Booth Setup
+                    Stand-Einrichtung
                 </h2>
 
                 <div
@@ -460,45 +460,45 @@ const stepLabels = [
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Booth Name</label
+                                >Standname</label
                             >
                             <input
                                 v-model="newBooth.name"
                                 type="text"
                                 class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                                placeholder="Booth name"
+                                placeholder="Standname"
                             />
                         </div>
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-muted-foreground"
-                                >Company</label
+                                >Unternehmen</label
                             >
                             <input
                                 v-model="newBooth.company"
                                 type="text"
                                 class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                                placeholder="Company name"
+                                placeholder="Unternehmensname"
                             />
                         </div>
                     </div>
                     <div>
                         <label
                             class="mb-1 block text-xs font-medium text-muted-foreground"
-                            >Description</label
+                            >Beschreibung</label
                         >
                         <textarea
                             v-model="newBooth.description"
                             rows="2"
                             class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                            placeholder="What does this booth showcase?"
+                            placeholder="Was präsentiert dieser Stand?"
                         />
                     </div>
                     <button
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                         @click="addBooth"
                     >
-                        Add Booth
+                        Stand hinzufügen
                     </button>
                 </div>
 
@@ -520,7 +520,7 @@ const stepLabels = [
                             class="text-sm text-muted-foreground hover:text-destructive"
                             @click="removeBooth(i)"
                         >
-                            Remove
+                            Entfernen
                         </button>
                     </li>
                 </ul>
@@ -529,14 +529,14 @@ const stepLabels = [
                     v-if="booths.length === 0"
                     class="text-sm text-muted-foreground"
                 >
-                    No booths added yet.
+                    Noch keine Stände hinzugefügt.
                 </p>
             </div>
 
             <!-- Step 6: Review & Launch -->
             <div v-show="currentStep === 6" class="space-y-6">
                 <h2 class="text-xl font-semibold text-foreground">
-                    Review & Launch
+                    Überprüfen & Starten
                 </h2>
 
                 <div class="space-y-4 rounded-lg border border-border p-4">
@@ -545,10 +545,10 @@ const stepLabels = [
                             Event
                         </h3>
                         <p class="text-lg font-semibold text-foreground">
-                            {{ form.name || '(no name)' }}
+                            {{ form.name || '(kein Name)' }}
                         </p>
                         <p class="text-sm text-muted-foreground">
-                            {{ form.venue || 'No venue' }}
+                            {{ form.venue || 'Kein Veranstaltungsort' }}
                         </p>
                         <p class="text-sm text-muted-foreground">
                             {{ form.starts_at }} &mdash; {{ form.ends_at }}
@@ -569,7 +569,7 @@ const stepLabels = [
                             <span
                                 v-if="tags.length === 0"
                                 class="text-xs text-muted-foreground"
-                                >None</span
+                                >Keine</span
                             >
                         </div>
                     </div>
@@ -641,7 +641,7 @@ const stepLabels = [
                     class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                     @click="submit"
                 >
-                    {{ form.processing ? 'Creating...' : 'Launch Event' }}
+                    {{ form.processing ? 'Wird erstellt...' : 'Event starten' }}
                 </button>
             </div>
 
@@ -652,7 +652,7 @@ const stepLabels = [
                     class="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
                     @click="prevStep"
                 >
-                    Previous
+                    Zurück
                 </button>
                 <div v-else />
 
@@ -661,7 +661,7 @@ const stepLabels = [
                     class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     @click="nextStep"
                 >
-                    Next
+                    Weiter
                 </button>
             </div>
         </div>

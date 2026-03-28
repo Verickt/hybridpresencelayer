@@ -25,11 +25,11 @@ class BoothDemoController extends Controller
 
         if ($booth->demos()->where('status', 'live')->exists()) {
             throw ValidationException::withMessages([
-                'title' => 'A live demo is already active for this booth.',
+                'title' => 'Es läuft bereits eine Live-Demo für diesen Stand.',
             ]);
         }
 
-        $title = $validated['title'] ?: 'Live booth demo';
+        $title = $validated['title'] ?: 'Live-Stand-Demo';
 
         $demo = BoothDemo::create([
             'booth_id' => $booth->id,

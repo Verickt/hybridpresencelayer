@@ -23,14 +23,14 @@ function submit() {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-white px-6 pt-6 pb-8">
-        <Head :title="`${event.name} - How are you attending?`" />
+    <div class="flex h-fit flex-col bg-white px-6 pt-6 pb-8">
+        <Head :title="`${event.name} - Wie nehmen Sie teil?`" />
 
-        <StepProgress :current-step="1" :total-steps="4" />
+        <StepProgress :current-step="1" :total-steps="5" />
 
         <div class="mt-8">
-            <h1 class="text-2xl font-bold text-neutral-900">Welcome, {{ userName.split(' ')[0] }}!</h1>
-            <p class="mt-1 text-sm text-neutral-500">How are you attending today?</p>
+            <h1 class="text-2xl font-bold text-neutral-900">Willkommen, {{ userName.split(' ')[0] }}!</h1>
+            <p class="mt-1 text-sm text-neutral-500">Wie nehmen Sie heute teil?</p>
         </div>
 
         <div class="mt-6 space-y-3">
@@ -45,8 +45,8 @@ function submit() {
                     📍
                 </div>
                 <div class="flex-1">
-                    <p class="font-semibold text-neutral-900">I'm here in person</p>
-                    <p class="text-sm text-neutral-500">At the venue</p>
+                    <p class="font-semibold text-neutral-900">Ich bin persönlich vor Ort</p>
+                    <p class="text-sm text-neutral-500">Am Veranstaltungsort</p>
                 </div>
                 <div
                     v-if="form.participant_type === 'physical'"
@@ -67,8 +67,8 @@ function submit() {
                     🌐
                 </div>
                 <div class="flex-1">
-                    <p class="font-semibold text-neutral-900">I'm joining remotely</p>
-                    <p class="text-sm text-neutral-500">Watching the livestream</p>
+                    <p class="font-semibold text-neutral-900">Ich nehme remote teil</p>
+                    <p class="text-sm text-neutral-500">Über den Livestream</p>
                 </div>
                 <div
                     v-if="form.participant_type === 'remote'"
@@ -80,7 +80,7 @@ function submit() {
         </div>
 
         <p class="mt-4 text-center text-xs text-neutral-400">
-            You can switch anytime during the event
+            Sie können jederzeit während des Events wechseln
         </p>
 
         <div class="mt-auto pt-6">
@@ -89,7 +89,7 @@ function submit() {
                 class="w-full rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
-                Continue
+                Weiter
             </button>
         </div>
     </div>

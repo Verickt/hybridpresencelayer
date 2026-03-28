@@ -27,13 +27,13 @@ class QrResolveController extends Controller
 
         // Reject external or malformed payloads
         if (! str_starts_with($payload, '/')) {
-            return response()->json(['message' => 'Invalid QR payload.'], 422);
+            return response()->json(['message' => 'Ungültiger QR-Code.'], 422);
         }
 
         // Verify the user is a participant of this event
         $isParticipant = $event->participants()->where('user_id', $request->user()->id)->exists();
         if (! $isParticipant) {
-            return response()->json(['message' => 'Not a participant of this event.'], 403);
+            return response()->json(['message' => 'Kein Teilnehmer dieser Veranstaltung.'], 403);
         }
 
         // Build a fake request for signature validation
@@ -47,24 +47,24 @@ class QrResolveController extends Controller
         $hasNotExpired = URL::signatureHasNotExpired($fakeRequest);
 
         if (! $hasNotExpired && $hasValidSignature) {
-            return response()->json(['message' => 'QR code has expired.'], 410);
+            return response()->json(['message' => 'QR-Code abgelaufen.'], 410);
         }
 
         if (! $hasValidSignature) {
             // It might be expired — check ignoring expiry
             $fakeRequestForExpiry = Request::create(url($payload), 'GET');
             if (URL::hasCorrectSignature($fakeRequestForExpiry, false, ['expires'])) {
-                return response()->json(['message' => 'QR code has expired.'], 410);
+                return response()->json(['message' => 'QR-Code abgelaufen.'], 410);
             }
 
-            return response()->json(['message' => 'Invalid QR payload.'], 422);
+            return response()->json(['message' => 'Ungültiger QR-Code.'], 422);
         }
 
         // Resolve the route from the payload
         $matchedRoute = $this->resolveRoute($payload);
 
         if (! $matchedRoute) {
-            return response()->json(['message' => 'Invalid QR payload.'], 422);
+            return response()->json(['message' => 'Ungültiger QR-Code.'], 422);
         }
 
         $routeName = $matchedRoute->getName();
@@ -77,7 +77,7 @@ class QrResolveController extends Controller
             : $payloadEvent;
 
         if (! $payloadEventSlug || $payloadEventSlug !== $event->slug) {
-            return response()->json(['message' => 'QR code belongs to a different event.'], 422);
+            return response()->json(['message' => 'QR-Code gehört zu einer anderen Veranstaltung.'], 422);
         }
 
         return match ($routeName) {
@@ -91,7 +91,7 @@ class QrResolveController extends Controller
                 Booth::where('event_id', $event->id)->findOrFail($this->normalizeRouteKey($rawParams['booth'])),
                 $presenceService,
             ),
-            default => response()->json(['message' => 'Unsupported QR action.'], 422),
+            default => response()->json(['message' => 'Nicht unterstützte QR-Aktion.'], 422),
         };
     }
 
@@ -100,7 +100,7 @@ class QrResolveController extends Controller
         $presenceService->checkInToSession($request->user(), $event, $session);
 
         return response()->json([
-            'message' => 'Checked in',
+            'message' => 'Eingecheckt',
             'action' => 'session_check_in',
             'redirect_to' => route('event.sessions.show', [$event, $session], false),
             'target' => [
@@ -140,7 +140,7 @@ class QrResolveController extends Controller
         $presenceService->checkInToBooth($request->user(), $event, $booth);
 
         return response()->json([
-            'message' => 'Checked in',
+            'message' => 'Eingecheckt',
             'action' => 'booth_check_in',
             'redirect_to' => route('event.booths.show', [$event, $booth], false),
             'target' => [

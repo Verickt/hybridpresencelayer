@@ -6,17 +6,18 @@ use App\Models\Block;
 use App\Models\BoothVisit;
 use App\Models\Event;
 use App\Models\SessionCheckIn;
+use App\Models\SessionEngagementEdge;
 use App\Models\Suggestion;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
 class MatchingService
 {
-    private float $w1 = 0.4;  // interest overlap
+    private float $w1 = 0.3;  // interest overlap
 
-    private float $w2 = 0.35; // context match
+    private float $w2 = 0.25; // context match
 
-    private float $w3 = 0.25; // availability
+    private float $w3 = 0.25; // session affinity
 
     private const STATUS_SCORES = [
         'available' => 1.0,
@@ -30,10 +31,11 @@ class MatchingService
     {
         $interestOverlap = $this->interestOverlap($userA, $userB, $event);
         $contextMatch = $this->contextMatch($userA, $userB, $event);
+        $sessionAffinity = $this->sessionAffinity($userA, $userB, $event);
         $availability = $this->availability($userA, $userB, $event);
 
         // Availability multiplies relevance — busy users (0.0) are effectively filtered out
-        $relevance = ($this->w1 * $interestOverlap) + ($this->w2 * $contextMatch);
+        $relevance = ($this->w1 * $interestOverlap) + ($this->w2 * $contextMatch) + ($this->w3 * $sessionAffinity);
 
         return $relevance * max($availability, 0.05);
     }
@@ -70,15 +72,16 @@ class MatchingService
             })
             ->pluck('suggested_user_id');
 
-        return $participants
+        $scored = $participants
             ->reject(fn (User $p) => $excludeIds->contains($p->id))
             ->map(fn (User $p) => [
                 'user' => $p,
                 'score' => $this->score($user, $p, $event),
-            ])
-            ->sortByDesc('score')
-            ->take($limit)
-            ->values();
+            ]);
+
+        $sorted = $scored->sortByDesc('score')->values();
+
+        return $this->rerankForCrossWorld($sorted, $user, $event, $limit);
     }
 
     public function serendipityMatch(User $user, Event $event): ?User
@@ -103,6 +106,58 @@ class MatchingService
                 return self::STATUS_SCORES[$candidate->pivot->status ?? 'away'] ?? 0;
             })
             ->first();
+    }
+
+    private function sessionAffinity(User $userA, User $userB, Event $event): float
+    {
+        $userAId = min($userA->id, $userB->id);
+        $userBId = max($userA->id, $userB->id);
+
+        $edge = SessionEngagementEdge::where('user_a_id', $userAId)
+            ->where('user_b_id', $userBId)
+            ->whereHas('eventSession', fn ($q) => $q->where('event_id', $event->id))
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $edge) {
+            return 0.0;
+        }
+
+        return $edge->score();
+    }
+
+    private function rerankForCrossWorld(Collection $sorted, User $user, Event $event, int $limit): Collection
+    {
+        $top = $sorted->take($limit);
+        $rest = $sorted->skip($limit);
+
+        $userType = $event->participants()->where('user_id', $user->id)->first()?->pivot->participant_type;
+
+        if (! $userType) {
+            return $top;
+        }
+
+        $hasCrossWorld = $top->contains(function ($match) use ($event, $userType) {
+            $matchType = $event->participants()->where('user_id', $match['user']->id)->first()?->pivot->participant_type;
+
+            return $matchType && $matchType !== $userType;
+        });
+
+        if ($hasCrossWorld || $top->count() < $limit) {
+            return $top;
+        }
+
+        $crossWorldCandidate = $rest->first(function ($match) use ($event, $userType) {
+            $matchType = $event->participants()->where('user_id', $match['user']->id)->first()?->pivot->participant_type;
+
+            return $matchType && $matchType !== $userType;
+        });
+
+        if ($crossWorldCandidate) {
+            $top = $top->take($limit - 1)->push($crossWorldCandidate);
+        }
+
+        return $top;
     }
 
     private function interestOverlap(User $a, User $b, Event $event): float

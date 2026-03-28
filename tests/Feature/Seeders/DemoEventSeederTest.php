@@ -17,7 +17,7 @@ it('seeds a useful demo dataset for browsing the current app', function () {
     $event = Event::where('slug', DemoEventSeeder::EVENT_SLUG)->firstOrFail();
     $organizer = User::where('email', DemoEventSeeder::ORGANIZER_EMAIL)->firstOrFail();
     $participant = User::where('email', DemoEventSeeder::PARTICIPANT_EMAIL)->firstOrFail();
-    $liveSession = $event->sessions()->where('title', 'Zero Trust Architecture in 2026')->firstOrFail();
+    $liveSession = $event->sessions()->where('title', 'Zero-Trust-Architektur im Jahr 2026')->firstOrFail();
     $cyberBooth = $event->booths()->where('name', 'CyberDefense AG Booth')->firstOrFail();
 
     expect($organizer->is_organizer)->toBeTrue()
@@ -40,7 +40,7 @@ it('seeds a useful demo dataset for browsing the current app', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Event/Feed')
-            ->has('participants', 12)
+            ->has('participants', 11)
             ->where('event.slug', DemoEventSeeder::EVENT_SLUG)
             ->etc()
         );
@@ -51,7 +51,7 @@ it('seeds a useful demo dataset for browsing the current app', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Event/Sessions')
             ->has('sessions', 5)
-            ->where('sessions.1.title', 'Zero Trust Architecture in 2026')
+            ->where('sessions.1.title', 'Zero-Trust-Architektur im Jahr 2026')
             ->where('sessions.1.attendee_count', 3)
             ->etc()
         );
@@ -61,7 +61,7 @@ it('seeds a useful demo dataset for browsing the current app', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Event/SessionDetail')
-            ->where('session.title', 'Zero Trust Architecture in 2026')
+            ->where('session.title', 'Zero-Trust-Architektur im Jahr 2026')
             ->has('participants', 3)
             ->has('questions', 2)
             ->where('questions.0.votes_count', 3)
@@ -85,7 +85,7 @@ it('seeds a useful demo dataset for browsing the current app', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Event/BoothDetail')
             ->where('booth.name', 'CyberDefense AG Booth')
-            ->where('booth.content_links.0.label', 'Incident response playbook')
+            ->where('booth.content_links.0.label', 'Incident-Response-Playbook')
             ->where('booth.content_links.0.url', 'https://demo.test/cyberdefense/playbook')
             ->has('visitors', 2)
             ->etc()

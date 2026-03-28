@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Head, useHttp } from '@inertiajs/vue3';
+import { Head, router, useHttp } from '@inertiajs/vue3';
 import { Camera } from 'lucide-vue-next';
 import { ref } from 'vue';
 import QrScanner from '@/components/qr/QrScanner.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { resolve as qrResolve } from '@/routes/event/qr';
+import { notificationPrefs } from '@/routes/event';
+import { invisible } from '@/routes/event/status';
 
 const props = defineProps<{
     event: { id: number; name: string; slug: string };
@@ -24,6 +26,38 @@ const props = defineProps<{
     };
     interestTags: string[];
 }>();
+
+const isInvisible = ref(props.user.is_invisible);
+const notificationMode = ref(props.user.notification_mode);
+const invisibleRequest = useHttp();
+const notifRequest = useHttp();
+
+async function toggleInvisible() {
+    isInvisible.value = !isInvisible.value;
+    try {
+        await invisibleRequest.submit(
+            invisible(props.event.slug),
+        );
+        router.reload({ only: ['user'] });
+    } catch {
+        isInvisible.value = !isInvisible.value;
+    }
+}
+
+async function toggleDnd() {
+    const newMode = notificationMode.value === 'dnd' ? 'normal' : 'dnd';
+    notificationMode.value = newMode;
+    try {
+        await notifRequest.submit({
+            url: notificationPrefs(props.event.slug).url,
+            method: 'patch' as const,
+            data: { notification_mode: newMode },
+        });
+        router.reload({ only: ['user'] });
+    } catch {
+        notificationMode.value = notificationMode.value === 'dnd' ? 'normal' : 'dnd';
+    }
+}
 
 const showScanner = ref(false);
 const scanResult = ref<string | null>(null);
@@ -48,7 +82,7 @@ async function handleScan(data: string) {
         scanResult.value = response.message;
         showScanner.value = false;
     } catch {
-        scanError.value = 'Invalid or expired QR code.';
+        scanError.value = 'Ungültiger oder abgelaufener QR-Code.';
     }
 }
 </script>
@@ -65,7 +99,7 @@ async function handleScan(data: string) {
             <h1 class="mt-3 text-xl font-bold text-neutral-900">{{ user.name }}</h1>
             <p class="text-sm text-neutral-500">{{ user.role_title }} · {{ user.company }}</p>
             <p class="mt-1 text-sm text-neutral-400">
-                📍 {{ user.participant_type === 'physical' ? 'Physical' : 'Remote' }} · {{ user.status === 'available' ? 'Available' : user.status.replace('_', ' ') }}
+                📍 {{ user.participant_type === 'physical' ? 'Vor Ort' : 'Remote' }} · {{ user.status === 'available' ? 'Verfügbar' : user.status.replace('_', ' ') }}
             </p>
 
             <div class="mt-3 flex flex-wrap justify-center gap-2">
@@ -78,47 +112,57 @@ async function handleScan(data: string) {
                 </span>
             </div>
 
-            <button class="mt-4 rounded-full border border-neutral-200 px-6 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50">
-                Edit Profile
+            <button
+                class="mt-4 rounded-full border border-neutral-200 px-6 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+                @click="router.visit('/settings/profile')"
+            >
+                Profil bearbeiten
             </button>
         </div>
 
         <!-- Availability section -->
         <div class="space-y-1">
-            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Availability</p>
+            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Verfügbarkeit</p>
             <div class="divide-y divide-neutral-100">
                 <div class="flex items-center justify-between py-3">
-                    <span class="text-sm text-neutral-700">Serendipity Mode</span>
-                    <div class="relative h-6 w-11 rounded-full bg-orange-600">
-                        <div class="absolute right-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
-                    </div>
+                    <span class="text-sm text-neutral-700">Unsichtbarer Modus</span>
+                    <button
+                        class="relative h-6 w-11 rounded-full transition"
+                        :class="isInvisible ? 'bg-orange-600' : 'bg-neutral-200'"
+                        @click="toggleInvisible"
+                    >
+                        <div
+                            class="absolute top-0.5 size-5 rounded-full bg-white shadow transition"
+                            :class="isInvisible ? 'right-0.5' : 'left-0.5'"
+                        />
+                    </button>
                 </div>
-                <div class="flex items-center justify-between py-3">
-                    <span class="text-sm text-neutral-700">Invisible Mode</span>
-                    <div class="relative h-6 w-11 rounded-full bg-neutral-200">
-                        <div class="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
-                    </div>
-                </div>
-                <div class="flex items-center justify-between py-3">
-                    <span class="text-sm text-neutral-700">Attending as</span>
-                    <span class="text-sm text-neutral-500">📍 {{ user.participant_type === 'physical' ? 'Physical' : 'Remote' }} ›</span>
-                </div>
+                <button
+                    class="flex w-full items-center justify-between py-3"
+                    @click="router.visit(`/event/${event.slug}/onboarding/type`)"
+                >
+                    <span class="text-sm text-neutral-700">Teilnahme als</span>
+                    <span class="text-sm text-neutral-500">📍 {{ user.participant_type === 'physical' ? 'Vor Ort' : 'Remote' }} ›</span>
+                </button>
             </div>
         </div>
 
         <!-- Notifications section -->
         <div class="space-y-1">
-            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Notifications</p>
+            <p class="text-xs font-semibold tracking-wider text-neutral-400 uppercase">Benachrichtigungen</p>
             <div class="divide-y divide-neutral-100">
                 <div class="flex items-center justify-between py-3">
-                    <span class="text-sm text-neutral-700">Do Not Disturb</span>
-                    <div class="relative h-6 w-11 rounded-full bg-neutral-200">
-                        <div class="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition" />
-                    </div>
-                </div>
-                <div class="flex items-center justify-between py-3">
-                    <span class="text-sm text-neutral-700">Notification Preferences</span>
-                    <span class="text-sm text-neutral-400">›</span>
+                    <span class="text-sm text-neutral-700">Bitte nicht stören</span>
+                    <button
+                        class="relative h-6 w-11 rounded-full transition"
+                        :class="notificationMode === 'dnd' ? 'bg-orange-600' : 'bg-neutral-200'"
+                        @click="toggleDnd"
+                    >
+                        <div
+                            class="absolute top-0.5 size-5 rounded-full bg-white shadow transition"
+                            :class="notificationMode === 'dnd' ? 'right-0.5' : 'left-0.5'"
+                        />
+                    </button>
                 </div>
             </div>
         </div>
@@ -127,19 +171,19 @@ async function handleScan(data: string) {
         <Card class="shadow-sm">
             <CardContent class="space-y-3 p-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="font-semibold">QR Scanner</h3>
+                    <h3 class="font-semibold">QR-Scanner</h3>
                     <Button
                         size="sm"
                         :variant="showScanner ? 'outline' : 'default'"
                         @click="showScanner = !showScanner"
                     >
                         <Camera class="mr-1 size-4" />
-                        {{ showScanner ? 'Close' : 'Scan QR' }}
+                        {{ showScanner ? 'Schliessen' : 'QR scannen' }}
                     </Button>
                 </div>
 
                 <p class="text-sm text-muted-foreground">
-                    Scan session or booth QR codes to check in instantly.
+                    Scannen Sie Session- oder Stand-QR-Codes, um sich sofort einzuchecken.
                 </p>
 
                 <QrScanner

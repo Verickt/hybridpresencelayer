@@ -1,12 +1,15 @@
 <?php
 
+use App\Jobs\SessionEndedJob;
 use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\SessionCheckIn;
-use App\Models\Suggestion;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 
-it('generates suggestions for participants of recently ended sessions', function () {
+it('dispatches SessionEndedJob for participants of recently ended sessions', function () {
+    Queue::fake();
+
     $event = Event::factory()->live()->create();
 
     $session = EventSession::factory()->create([
@@ -42,10 +45,12 @@ it('generates suggestions for participants of recently ended sessions', function
     $this->artisan('matching:post-session')
         ->assertSuccessful();
 
-    expect(Suggestion::count())->toBeGreaterThanOrEqual(1);
+    Queue::assertPushed(SessionEndedJob::class, fn ($job) => $job->session->id === $session->id);
 });
 
 it('ignores sessions that ended more than 15 minutes ago', function () {
+    Queue::fake();
+
     $event = Event::factory()->live()->create();
 
     $session = EventSession::factory()->create([
@@ -70,5 +75,5 @@ it('ignores sessions that ended more than 15 minutes ago', function () {
     $this->artisan('matching:post-session')
         ->assertSuccessful();
 
-    expect(Suggestion::count())->toBe(0);
+    Queue::assertNotPushed(SessionEndedJob::class);
 });

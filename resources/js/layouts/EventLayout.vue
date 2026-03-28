@@ -20,10 +20,31 @@ const matchData = ref<{
     icebreaker?: string;
 } | null>(null);
 
+// Ping notification state
+const pingNotification = ref<{ senderName: string } | null>(null);
+let pingTimeout: ReturnType<typeof setTimeout> | undefined;
+
+function showPingNotification(senderName: string) {
+    clearTimeout(pingTimeout);
+    pingNotification.value = { senderName };
+    pingTimeout = setTimeout(() => {
+        pingNotification.value = null;
+    }, 5000);
+}
+
+// Force light mode for event pages — they use hardcoded light colors
+const wasDark = ref(false);
 onMounted(() => {
+    wasDark.value = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.remove('dark');
+    (window as any).__eventSlug = eventSlug.value;
+
     if (!window.Echo || !currentUser.value?.id) return;
 
     window.Echo.private(`user.${currentUser.value.id}.notifications`)
+        .listen('PingReceived', (data: any) => {
+            showPingNotification(data.sender?.name ?? 'Someone');
+        })
         .listen('MutualMatchCreated', (data: any) => {
             const otherUser = data.user_a.id === currentUser.value.id
                 ? data.user_b
@@ -31,7 +52,11 @@ onMounted(() => {
 
             matchData.value = {
                 connectionId: data.connection_id,
-                user: { name: otherUser.name },
+                user: {
+                    name: otherUser.name,
+                    role_title: otherUser.role_title,
+                    company: otherUser.company,
+                },
                 sharedTags: data.shared_tags ?? [],
                 icebreaker: data.icebreaker ?? undefined,
             };
@@ -40,6 +65,11 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    // Restore dark mode if it was active before entering event pages
+    if (wasDark.value) {
+        document.documentElement.classList.add('dark');
+    }
+
     if (currentUser.value?.id) {
         window.Echo?.leave(`user.${currentUser.value.id}.notifications`);
     }
@@ -55,6 +85,27 @@ onUnmounted(() => {
                 <NotificationBell />
             </div>
         </header>
+
+        <!-- Ping notification toast -->
+        <Transition
+            enter-active-class="transition duration-300 ease-out"
+            enter-from-class="-translate-y-full opacity-0"
+            enter-to-class="translate-y-0 opacity-100"
+            leave-active-class="transition duration-200 ease-in"
+            leave-from-class="translate-y-0 opacity-100"
+            leave-to-class="-translate-y-full opacity-0"
+        >
+            <div
+                v-if="pingNotification"
+                class="fixed inset-x-0 top-0 z-50 flex items-center justify-center px-4 pt-[calc(env(safe-area-inset-top)+4px)]"
+            >
+                <div class="flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-sm font-medium text-white shadow-lg">
+                    <span class="text-lg">👋</span>
+                    <span><strong>{{ pingNotification.senderName }}</strong> pinged you!</span>
+                    <button class="ml-2 text-white/70 hover:text-white" @click="pingNotification = null">✕</button>
+                </div>
+            </div>
+        </Transition>
 
         <!-- Main content -->
         <main>

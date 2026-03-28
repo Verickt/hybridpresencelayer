@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Block;
 use App\Models\Event;
+use App\Models\Ping;
+use App\Models\Suggestion;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +27,9 @@ class PresenceFeedController extends Controller
             ->where('event_id', $event->id)
             ->pluck('blocker_id');
 
-        $excludeIds = $blockedIds->merge($blockedByIds)->unique();
+        $excludeIds = $blockedIds->merge($blockedByIds)
+            ->push($request->user()->id)
+            ->unique();
 
         $query = $event->participants()
             ->where('users.is_invisible', false)
@@ -67,6 +71,43 @@ class PresenceFeedController extends Controller
                 'interest_tags' => $participant->interestTags->pluck('name'),
             ]);
 
+        $topSuggestion = Suggestion::forUser($request->user())
+            ->where('event_id', $event->id)
+            ->active()
+            ->orderByDesc('score')
+            ->with(['suggestedUser.interestTags' => fn ($q) => $q->wherePivot('event_id', $event->id)])
+            ->first();
+
+        $suggestion = null;
+        if ($topSuggestion) {
+            $suggestedUser = $topSuggestion->suggestedUser;
+            $myTags = $request->user()->interestTags()
+                ->wherePivot('event_id', $event->id)
+                ->pluck('name');
+            $theirTags = $suggestedUser->interestTags->pluck('name');
+            $sharedTags = $myTags->intersect($theirTags)->values()->all();
+
+            $pivot = $suggestedUser->events()->where('event_id', $event->id)->first()?->pivot;
+
+            $suggestion = [
+                'id' => $suggestedUser->id,
+                'suggestion_id' => $topSuggestion->id,
+                'name' => $suggestedUser->name,
+                'company' => $suggestedUser->company,
+                'role_title' => $suggestedUser->role_title,
+                'participant_type' => $pivot?->participant_type ?? 'physical',
+                'status' => $pivot?->status ?? 'available',
+                'interest_tags' => $theirTags->all(),
+                'shared_tags' => $sharedTags,
+            ];
+        }
+
+        // Get IDs of users who have pinged the current user (pending, active)
+        $incomingPingUserIds = Ping::where('receiver_id', $request->user()->id)
+            ->where('event_id', $event->id)
+            ->active()
+            ->pluck('sender_id');
+
         return Inertia::render('Event/Feed', [
             'event' => [
                 'id' => $event->id,
@@ -74,6 +115,8 @@ class PresenceFeedController extends Controller
                 'slug' => $event->slug,
             ],
             'participants' => $participants,
+            'suggestion' => $suggestion,
+            'incomingPingUserIds' => $incomingPingUserIds->values(),
             'filters' => [
                 'type' => $type,
                 'status' => $status,

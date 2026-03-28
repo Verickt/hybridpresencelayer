@@ -22,15 +22,19 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizerActionController;
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\QrResolveController;
+use App\Http\Controllers\QuickJoinController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SessionModerateController;
 use App\Http\Controllers\SessionQrDisplayController;
 use App\Http\Controllers\SessionQuestionController;
+use App\Http\Controllers\SessionQuestionReplyController;
 use App\Http\Controllers\SessionReactionController;
 use App\Http\Controllers\SharedInterestController;
 use App\Http\Controllers\StatusController;
@@ -47,6 +51,9 @@ Route::post('/magic-link', [MagicLinkController::class, 'send'])
     ->name('magic-link.send');
 Route::get('/magic-link/{token}', [MagicLinkController::class, 'authenticate'])->name('magic-link.authenticate');
 
+Route::get('/event/{event:slug}/join', [QuickJoinController::class, 'show'])->name('event.join');
+Route::post('/event/{event:slug}/join', [QuickJoinController::class, 'store'])->name('event.join.store');
+
 Route::middleware(['auth'])->group(function () {
     // Onboarding wizard
     Route::get('/event/{event:slug}/onboarding/type', [OnboardingController::class, 'typeSelection'])->name('event.onboarding.type');
@@ -55,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/event/{event:slug}/onboarding/tags', [OnboardingController::class, 'saveTags']);
     Route::get('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'icebreaker'])->name('event.onboarding.icebreaker');
     Route::post('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'saveIcebreaker']);
+    Route::get('/event/{event:slug}/onboarding/email', [OnboardingController::class, 'email'])->name('event.onboarding.email');
+    Route::post('/event/{event:slug}/onboarding/email', [OnboardingController::class, 'saveEmail'])->name('event.onboarding.email.save');
     Route::get('/event/{event:slug}/onboarding/ready', [OnboardingController::class, 'ready'])->name('event.onboarding.ready');
 
     Route::get('/event/{event:slug}/feed', PresenceFeedController::class)->name('event.feed');
@@ -87,6 +96,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/sessions', [SessionController::class, 'index'])->name('event.sessions');
     Route::get('/event/{event:slug}/sessions/{session}', [SessionController::class, 'show'])->name('event.sessions.show')->scopeBindings();
+    Route::get('/event/{event:slug}/sessions/{session}/moderate', [SessionController::class, 'moderate'])->name('event.sessions.moderate')->scopeBindings();
+    Route::get('/event/{event:slug}/sessions/{session}/connections', [SessionController::class, 'postSession'])
+        ->name('event.sessions.post-session')->scopeBindings();
     Route::get('/event/{event:slug}/sessions/{session}/qr-display', SessionQrDisplayController::class)->name('event.sessions.qr-display')->scopeBindings();
     Route::post('/event/{event:slug}/sessions', [SessionController::class, 'store'])->name('event.sessions.store');
     Route::delete('/event/{event:slug}/sessions/{session}', [SessionController::class, 'destroy'])->name('event.sessions.destroy')->scopeBindings();
@@ -100,6 +112,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/event/{event:slug}/sessions/{session}/questions', [SessionQuestionController::class, 'store'])->name('event.sessions.questions.store')->scopeBindings();
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/vote', [SessionQuestionController::class, 'vote'])->name('event.sessions.questions.vote')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies', [SessionQuestionReplyController::class, 'store'])->name('event.sessions.questions.replies.store')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies/{reply}/vote', [SessionQuestionReplyController::class, 'vote'])->name('event.sessions.questions.replies.vote')->scopeBindings();
+
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/pin', [SessionModerateController::class, 'pin'])->name('event.sessions.questions.pin')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/hide', [SessionModerateController::class, 'hide'])->name('event.sessions.questions.hide')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/answer', [SessionModerateController::class, 'answer'])->name('event.sessions.questions.answer')->scopeBindings();
 
     Route::get('/event/{event:slug}/suggestions', [SuggestionController::class, 'index'])->name('event.suggestions');
     Route::patch('/event/{event:slug}/suggestions/{suggestion}/decline', [SuggestionController::class, 'decline'])->name('event.suggestions.decline');
@@ -116,6 +134,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/event/{event:slug}/qr/resolve', QrResolveController::class)->name('event.qr.resolve');
 
     Route::get('/event/{event:slug}/connections', ConnectionListController::class)->name('event.connections');
+    Route::get('/event/{event:slug}/participants', [ParticipantController::class, 'index'])->name('event.participants');
+    Route::delete('/event/{event:slug}/participants/{user}', [ParticipantController::class, 'destroy'])->name('event.participants.destroy');
     Route::get('/event/{event:slug}/profile', EventProfileController::class)->name('event.profile');
 
     Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');

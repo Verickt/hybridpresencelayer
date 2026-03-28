@@ -29,6 +29,11 @@ class EventSession extends Model
         return $this->belongsTo(Event::class);
     }
 
+    public function speakerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'speaker_user_id');
+    }
+
     public function checkIns(): HasMany
     {
         return $this->hasMany(SessionCheckIn::class);
@@ -42,6 +47,11 @@ class EventSession extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(SessionQuestion::class);
+    }
+
+    public function engagementEdges(): HasMany
+    {
+        return $this->hasMany(SessionEngagementEdge::class);
     }
 
     public function isLive(): bool

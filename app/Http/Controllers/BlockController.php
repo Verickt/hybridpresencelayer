@@ -20,7 +20,7 @@ class BlockController extends Controller
             'reason' => $request->input('reason'),
         ]);
 
-        return response()->json(['message' => 'User blocked']);
+        return response()->json(['message' => 'Benutzer blockiert']);
     }
 
     public function destroy(Request $request, Event $event, User $user): JsonResponse
@@ -30,6 +30,6 @@ class BlockController extends Controller
             ->where('event_id', $event->id)
             ->delete();
 
-        return response()->json(['message' => 'User unblocked']);
+        return response()->json(['message' => 'Benutzer freigegeben']);
     }
 }
