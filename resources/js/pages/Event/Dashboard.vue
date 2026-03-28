@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { Activity, Handshake, LayoutGrid, Megaphone, Sparkles, Users } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
+import ParticipantController from '@/actions/App/Http/Controllers/ParticipantController';
 
 defineOptions({ layout: AppLayout });
 import { Button } from '@/components/ui/button';
@@ -109,7 +110,7 @@ function getCsrfToken(): string {
 
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-                <p class="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Organizer</p>
+                <p class="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Organisator</p>
                 <h1 class="text-2xl font-bold">{{ event.name }} Dashboard</h1>
             </div>
             <div class="flex gap-2">
@@ -118,7 +119,7 @@ function getCsrfToken(): string {
                     @click="triggerSerendipityWave"
                 >
                     <Sparkles class="mr-1 size-4" />
-                    Serendipity Wave
+                    Zufalls-Welle
                 </Button>
                 <Button
                     variant="outline"
@@ -126,7 +127,16 @@ function getCsrfToken(): string {
                     @click="showAnnounce = !showAnnounce"
                 >
                     <Megaphone class="mr-1 size-4" />
-                    Announce
+                    Ankündigen
+                </Button>
+                <Button
+                    variant="outline"
+                    class="rounded-full"
+                    as="a"
+                    :href="ParticipantController.index.url({ event: event.slug })"
+                >
+                    <Users class="mr-1 size-4" />
+                    Teilnehmer
                 </Button>
             </div>
         </div>
@@ -137,14 +147,14 @@ function getCsrfToken(): string {
                 v-model="announcementText"
                 type="text"
                 maxlength="500"
-                placeholder="Type an event-wide announcement..."
+                placeholder="Event-weite Ankündigung eingeben..."
                 class="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 @keydown.enter="sendAnnouncement"
             />
-            <Button @click="sendAnnouncement" :disabled="!announcementText.trim()">Send</Button>
+            <Button @click="sendAnnouncement" :disabled="!announcementText.trim()">Senden</Button>
         </div>
-        <p v-if="announcementSent" class="text-sm text-green-600">Announcement sent!</p>
-        <p v-if="waveSent" class="text-sm text-green-600">Serendipity wave triggered!</p>
+        <p v-if="announcementSent" class="text-sm text-green-600">Ankündigung gesendet!</p>
+        <p v-if="waveSent" class="text-sm text-green-600">Zufalls-Welle ausgelöst!</p>
 
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Card class="border-border/70 py-0 shadow-sm">
@@ -153,7 +163,7 @@ function getCsrfToken(): string {
                         class="flex items-center gap-2 text-sm text-muted-foreground"
                     >
                         <Users class="size-4" />
-                        Total active
+                        Gesamt aktiv
                     </div>
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.total_active }}
@@ -167,7 +177,7 @@ function getCsrfToken(): string {
                         class="flex items-center gap-2 text-sm text-muted-foreground"
                     >
                         <Handshake class="size-4" />
-                        Connections
+                        Verbindungen
                     </div>
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.total_connections }}
@@ -181,7 +191,7 @@ function getCsrfToken(): string {
                         class="flex items-center gap-2 text-sm text-muted-foreground"
                     >
                         <Activity class="size-4" />
-                        Interaction rate
+                        Interaktionsrate
                     </div>
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.interaction_rate }}%
@@ -195,7 +205,7 @@ function getCsrfToken(): string {
                         class="flex items-center gap-2 text-sm text-muted-foreground"
                     >
                         <LayoutGrid class="size-4" />
-                        Cross-pollination
+                        Quervernetzung
                     </div>
                     <p class="text-3xl font-semibold tracking-tight">
                         {{ overview.cross_pollination_rate }}%
@@ -207,15 +217,15 @@ function getCsrfToken(): string {
         <div class="grid gap-6 xl:grid-cols-2">
             <Card class="border-border/70 py-0 shadow-sm">
                 <CardContent class="space-y-4 p-6">
-                    <h2 class="text-lg font-semibold">Session analytics</h2>
+                    <h2 class="text-lg font-semibold">Session-Analytik</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-border/50 text-left text-muted-foreground">
                                     <th class="pb-2 font-medium">Session</th>
                                     <th class="pb-2 font-medium text-center">Check-ins</th>
-                                    <th class="pb-2 font-medium text-center">Reactions</th>
-                                    <th class="pb-2 font-medium text-center">Questions</th>
+                                    <th class="pb-2 font-medium text-center">Reaktionen</th>
+                                    <th class="pb-2 font-medium text-center">Fragen</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -226,7 +236,7 @@ function getCsrfToken(): string {
                                     <td class="py-3 text-center">{{ session.questions_count }}</td>
                                 </tr>
                                 <tr v-if="sessionAnalytics.length === 0">
-                                    <td colspan="4" class="py-6 text-center text-muted-foreground">No sessions yet.</td>
+                                    <td colspan="4" class="py-6 text-center text-muted-foreground">Noch keine Sessions.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -236,14 +246,14 @@ function getCsrfToken(): string {
 
             <Card class="border-border/70 py-0 shadow-sm">
                 <CardContent class="space-y-4 p-6">
-                    <h2 class="text-lg font-semibold">Booth performance</h2>
+                    <h2 class="text-lg font-semibold">Stand-Performance</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-border/50 text-left text-muted-foreground">
-                                    <th class="pb-2 font-medium">Booth</th>
-                                    <th class="pb-2 font-medium">Company</th>
-                                    <th class="pb-2 font-medium text-center">Visitors</th>
+                                    <th class="pb-2 font-medium">Stand</th>
+                                    <th class="pb-2 font-medium">Unternehmen</th>
+                                    <th class="pb-2 font-medium text-center">Besucher</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -253,7 +263,7 @@ function getCsrfToken(): string {
                                     <td class="py-3 text-center">{{ booth.visitor_count }}</td>
                                 </tr>
                                 <tr v-if="boothPerformance.length === 0">
-                                    <td colspan="3" class="py-6 text-center text-muted-foreground">No booths yet.</td>
+                                    <td colspan="3" class="py-6 text-center text-muted-foreground">Noch keine Stände.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -266,23 +276,23 @@ function getCsrfToken(): string {
         <Card class="border-border/70 py-0 shadow-sm">
             <CardContent class="space-y-4 p-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">Manage Sessions</h2>
+                    <h2 class="text-lg font-semibold">Sessions verwalten</h2>
                     <Button @click="showAddSession = !showAddSession" size="sm">
-                        {{ showAddSession ? 'Cancel' : '+ Add Session' }}
+                        {{ showAddSession ? 'Abbrechen' : '+ Session hinzufügen' }}
                     </Button>
                 </div>
 
                 <div v-if="showAddSession" class="grid gap-3 rounded-lg border border-border/50 p-4">
                     <div class="grid gap-3 md:grid-cols-2">
-                        <input v-model="newSession.title" placeholder="Session title" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
-                        <input v-model="newSession.speaker" placeholder="Speaker name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
-                        <input v-model="newSession.room" placeholder="Room" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
-                        <input v-model="newSession.description" placeholder="Description" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.title" placeholder="Session-Titel" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.speaker" placeholder="Name des Referenten" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.room" placeholder="Raum" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newSession.description" placeholder="Beschreibung" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
                         <input v-model="newSession.starts_at" type="datetime-local" class="rounded-md border border-border bg-background px-3 py-2 text-sm" />
                         <input v-model="newSession.ends_at" type="datetime-local" class="rounded-md border border-border bg-background px-3 py-2 text-sm" />
                     </div>
                     <Button @click="addSession" :disabled="!newSession.title || !newSession.starts_at || !newSession.ends_at">
-                        Create Session
+                        Session erstellen
                     </Button>
                 </div>
 
@@ -293,10 +303,10 @@ function getCsrfToken(): string {
                             <p class="text-xs text-muted-foreground">{{ session.speaker }} &middot; {{ session.room }}</p>
                         </div>
                         <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="deleteSession(session.id)">
-                            Delete
+                            Löschen
                         </Button>
                     </div>
-                    <p v-if="sessions.length === 0" class="text-sm text-muted-foreground">No sessions yet.</p>
+                    <p v-if="sessions.length === 0" class="text-sm text-muted-foreground">Noch keine Sessions.</p>
                 </div>
             </CardContent>
         </Card>
@@ -305,20 +315,20 @@ function getCsrfToken(): string {
         <Card class="border-border/70 py-0 shadow-sm">
             <CardContent class="space-y-4 p-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">Manage Booths</h2>
+                    <h2 class="text-lg font-semibold">Stände verwalten</h2>
                     <Button @click="showAddBooth = !showAddBooth" size="sm">
-                        {{ showAddBooth ? 'Cancel' : '+ Add Booth' }}
+                        {{ showAddBooth ? 'Abbrechen' : '+ Stand hinzufügen' }}
                     </Button>
                 </div>
 
                 <div v-if="showAddBooth" class="grid gap-3 rounded-lg border border-border/50 p-4">
                     <div class="grid gap-3 md:grid-cols-2">
-                        <input v-model="newBooth.name" placeholder="Booth name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
-                        <input v-model="newBooth.company" placeholder="Company name" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newBooth.name" placeholder="Standname" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                        <input v-model="newBooth.company" placeholder="Unternehmensname" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
                     </div>
-                    <input v-model="newBooth.description" placeholder="Description" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
+                    <input v-model="newBooth.description" placeholder="Beschreibung" class="rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground" />
                     <Button @click="addBooth" :disabled="!newBooth.name || !newBooth.company">
-                        Create Booth
+                        Stand erstellen
                     </Button>
                 </div>
 
@@ -329,10 +339,10 @@ function getCsrfToken(): string {
                             <p class="text-xs text-muted-foreground">{{ booth.company }} <span v-if="booth.staff.length"> &middot; Staff: {{ booth.staff.join(', ') }}</span></p>
                         </div>
                         <Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="deleteBooth(booth.id)">
-                            Delete
+                            Löschen
                         </Button>
                     </div>
-                    <p v-if="booths.length === 0" class="text-sm text-muted-foreground">No booths yet.</p>
+                    <p v-if="booths.length === 0" class="text-sm text-muted-foreground">Noch keine Stände.</p>
                 </div>
             </CardContent>
         </Card>
