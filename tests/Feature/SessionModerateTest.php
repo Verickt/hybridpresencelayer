@@ -92,6 +92,31 @@ it('rejects moderation from non-organizer non-speaker', function () {
     $response->assertForbidden();
 });
 
+it('renders the session moderate page for organizers', function () {
+    $organizer = User::factory()->create();
+    $event = Event::factory()->create(['organizer_id' => $organizer->id]);
+    $session = EventSession::factory()->for($event)->live()->create();
+
+    $response = $this->actingAs($organizer)->get(
+        route('event.sessions.moderate', [$event, $session])
+    );
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->component('Event/SessionModerate'));
+});
+
+it('rejects non-organizer from moderate page', function () {
+    $user = User::factory()->create();
+    $event = Event::factory()->create();
+    $session = EventSession::factory()->for($event)->live()->create();
+
+    $response = $this->actingAs($user)->get(
+        route('event.sessions.moderate', [$event, $session])
+    );
+
+    $response->assertForbidden();
+});
+
 it('session question has moderation fields', function () {
     $organizer = User::factory()->create();
     $event = Event::factory()->create(['organizer_id' => $organizer->id]);

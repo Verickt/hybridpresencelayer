@@ -141,6 +141,94 @@ class SessionController extends Controller
         ]);
     }
 
+    public function moderate(Request $request, Event $event, EventSession $session): Response
+    {
+        abort_unless($event->organizer_id === $request->user()->id, 403);
+
+        $questions = $session->questions()
+            ->with(['user:id,name', 'replies' => fn ($q) => $q->with('user:id,name')->withCount('votes'), 'votes'])
+            ->withCount('votes')
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('votes_count')
+            ->get()
+            ->map(fn ($q) => [
+                'id' => $q->id,
+                'body' => $q->body,
+                'user' => ['id' => $q->user->id, 'name' => $q->user->name],
+                'votes_count' => $q->votes_count,
+                'is_answered' => $q->is_answered,
+                'is_pinned' => $q->is_pinned,
+                'is_hidden' => $q->is_hidden,
+                'answered_by' => $q->answered_by,
+                'replies' => $q->replies->map(fn ($r) => [
+                    'id' => $r->id,
+                    'body' => $r->body,
+                    'user' => ['id' => $r->user->id, 'name' => $r->user->name],
+                    'votes_count' => $r->votes_count,
+                    'is_speaker' => $session->speaker_user_id === $r->user_id,
+                    'is_organizer' => $event->organizer_id === $r->user_id,
+                    'created_at' => $r->created_at->toISOString(),
+                ]),
+            ]);
+
+        $driver = $session->reactions()->getQuery()->getConnection()->getDriverName();
+        $startsAt = $session->starts_at->toDateTimeString();
+
+        if ($driver === 'sqlite') {
+            $reactionBuckets = $session->reactions()
+                ->selectRaw('CAST((julianday(created_at) - julianday(?)) * 86400 / 30 AS INTEGER) as time_window, type, COUNT(*) as count', [$startsAt])
+                ->groupBy('time_window', 'type')
+                ->orderBy('time_window')
+                ->get();
+        } else {
+            $reactionBuckets = $session->reactions()
+                ->selectRaw('FLOOR(TIMESTAMPDIFF(SECOND, ?, created_at) / 30) as time_window, type, COUNT(*) as count', [$startsAt])
+                ->groupBy('time_window', 'type')
+                ->orderBy('time_window')
+                ->get();
+        }
+
+        $checkIns = $session->checkIns()->with('user:id,name')->get();
+        $physicalCount = 0;
+        $remoteCount = 0;
+        $participants = $checkIns->map(function ($ci) use ($event, &$physicalCount, &$remoteCount) {
+            $type = $event->participants()->where('user_id', $ci->user_id)->first()?->pivot->participant_type;
+            if ($type === 'physical') {
+                $physicalCount++;
+            } else {
+                $remoteCount++;
+            }
+
+            return [
+                'id' => $ci->user->id,
+                'name' => $ci->user->name,
+                'participant_type' => $type,
+                'is_active' => $ci->checked_out_at === null,
+            ];
+        });
+
+        return Inertia::render('Event/SessionModerate', [
+            'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
+            'session' => [
+                'id' => $session->id,
+                'title' => $session->title,
+                'speaker' => $session->speaker,
+                'starts_at' => $session->starts_at->toISOString(),
+                'ends_at' => $session->ends_at->toISOString(),
+                'is_live' => $session->isLive(),
+            ],
+            'questions' => $questions,
+            'reactionBuckets' => $reactionBuckets,
+            'stats' => [
+                'total_reactions' => $session->reactions()->count(),
+                'total_questions' => $session->questions()->where('is_hidden', false)->count(),
+                'physical_count' => $physicalCount,
+                'remote_count' => $remoteCount,
+                'total_participants' => $participants->count(),
+            ],
+        ]);
+    }
+
     public function store(Request $request, Event $event): RedirectResponse
     {
         abort_unless($request->user()->id === $event->organizer_id, 403);
