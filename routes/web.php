@@ -135,6 +135,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/event/{event:slug}/connections', ConnectionListController::class)->name('event.connections');
     Route::get('/event/{event:slug}/participants', [ParticipantController::class, 'index'])->name('event.participants');
+    Route::delete('/event/{event:slug}/participants/{user}', [ParticipantController::class, 'destroy'])->name('event.participants.destroy');
     Route::get('/event/{event:slug}/profile', EventProfileController::class)->name('event.profile');
 
     Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');

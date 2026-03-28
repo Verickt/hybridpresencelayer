@@ -41,3 +41,35 @@ it('denies non-organizer access to participants list', function () {
         ->get(route('event.participants', $this->event))
         ->assertForbidden();
 });
+
+it('allows organizer to delete a participant', function () {
+    $this->actingAs($this->organizer)
+        ->delete(route('event.participants.destroy', [$this->event, $this->participant]))
+        ->assertRedirect(route('event.participants', $this->event));
+
+    $this->assertDatabaseMissing('users', ['id' => $this->participant->id]);
+    $this->assertDatabaseMissing('event_user', ['user_id' => $this->participant->id]);
+});
+
+it('prevents organizer from deleting themselves', function () {
+    $this->event->participants()->attach($this->organizer, [
+        'participant_type' => 'physical',
+        'status' => 'available',
+    ]);
+
+    $this->actingAs($this->organizer)
+        ->delete(route('event.participants.destroy', [$this->event, $this->organizer]))
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('users', ['id' => $this->organizer->id]);
+});
+
+it('prevents non-organizer from deleting participants', function () {
+    $nonOrganizer = User::factory()->create();
+
+    $this->actingAs($nonOrganizer)
+        ->delete(route('event.participants.destroy', [$this->event, $this->participant]))
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('users', ['id' => $this->participant->id]);
+});
