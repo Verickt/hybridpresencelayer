@@ -31,6 +31,7 @@ use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionQrDisplayController;
 use App\Http\Controllers\SessionQuestionController;
+use App\Http\Controllers\SessionQuestionReplyController;
 use App\Http\Controllers\SessionReactionController;
 use App\Http\Controllers\SharedInterestController;
 use App\Http\Controllers\StatusController;
@@ -100,6 +101,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/event/{event:slug}/sessions/{session}/questions', [SessionQuestionController::class, 'store'])->name('event.sessions.questions.store')->scopeBindings();
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/vote', [SessionQuestionController::class, 'vote'])->name('event.sessions.questions.vote')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies', [SessionQuestionReplyController::class, 'store'])->name('event.sessions.questions.replies.store')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies/{reply}/vote', [SessionQuestionReplyController::class, 'vote'])->name('event.sessions.questions.replies.vote')->scopeBindings();
 
     Route::get('/event/{event:slug}/suggestions', [SuggestionController::class, 'index'])->name('event.suggestions');
     Route::patch('/event/{event:slug}/suggestions/{suggestion}/decline', [SuggestionController::class, 'decline'])->name('event.suggestions.decline');
