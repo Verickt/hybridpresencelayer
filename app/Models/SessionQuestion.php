@@ -15,12 +15,21 @@ class SessionQuestion extends Model
 
     protected function casts(): array
     {
-        return ['is_answered' => 'boolean'];
+        return [
+            'is_answered' => 'boolean',
+            'is_pinned' => 'boolean',
+            'is_hidden' => 'boolean',
+        ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function answeredByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'answered_by');
     }
 
     public function eventSession(): BelongsTo
