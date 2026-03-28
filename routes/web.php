@@ -61,6 +61,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/event/{event:slug}/onboarding/tags', [OnboardingController::class, 'saveTags']);
     Route::get('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'icebreaker'])->name('event.onboarding.icebreaker');
     Route::post('/event/{event:slug}/onboarding/icebreaker', [OnboardingController::class, 'saveIcebreaker']);
+    Route::get('/event/{event:slug}/onboarding/email', [OnboardingController::class, 'email'])->name('event.onboarding.email');
+    Route::post('/event/{event:slug}/onboarding/email', [OnboardingController::class, 'saveEmail'])->name('event.onboarding.email.save');
     Route::get('/event/{event:slug}/onboarding/ready', [OnboardingController::class, 'ready'])->name('event.onboarding.ready');
 
     Route::get('/event/{event:slug}/feed', PresenceFeedController::class)->name('event.feed');

@@ -80,7 +80,7 @@ class OnboardingController extends Controller
             'event' => $this->eventProps($event),
             'questions' => $event->icebreakerQuestions()->get()->map(fn ($q) => [
                 'id' => $q->id,
-                'text' => $q->text,
+                'text' => $q->question,
             ]),
             'currentAnswer' => $pivot?->icebreaker_answer,
         ]);
@@ -95,6 +95,27 @@ class OnboardingController extends Controller
         $request->user()->events()->updateExistingPivot($event->id, [
             'icebreaker_answer' => $validated['icebreaker_answer'],
         ]);
+
+        return redirect()->route('event.onboarding.email', $event);
+    }
+
+    public function email(Request $request, Event $event): Response
+    {
+        return Inertia::render('Event/Onboarding/EmailCollection', [
+            'event' => $this->eventProps($event),
+            'currentEmail' => $request->user()->email,
+        ]);
+    }
+
+    public function saveEmail(Request $request, Event $event): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$request->user()->id],
+        ]);
+
+        if ($validated['email']) {
+            $request->user()->update(['email' => $validated['email']]);
+        }
 
         return redirect()->route('event.onboarding.ready', $event);
     }
