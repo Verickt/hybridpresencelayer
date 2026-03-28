@@ -18,7 +18,7 @@ class EventLandingController extends Controller
                 ?? $user->organizedEvents()->latest()->first();
 
             if (! $event) {
-                return Inertia::render('JoinEvent', ['event' => null]);
+                return Inertia::render('JoinEvent', ['event' => null, 'joinUrl' => null]);
             }
 
             if ($user->id === $event->organizer_id) {
@@ -38,6 +38,7 @@ class EventLandingController extends Controller
                 'starts_at' => $event->starts_at?->toISOString(),
                 'ends_at' => $event->ends_at?->toISOString(),
             ] : null,
+            'joinUrl' => $event ? route('event.join', $event) : null,
         ]);
     }
 }

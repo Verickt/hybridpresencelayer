@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
+import QRCode from 'qrcode';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { initializeTheme } from '@/composables/useAppearance';
 
 const props = defineProps<{
     event: {
@@ -11,22 +11,24 @@ const props = defineProps<{
         ends_at: string;
         venue: string;
     } | null;
+    joinUrl: string | null;
 }>();
 
-const form = useForm({
-    email: '',
-    event_slug: props.event?.slug ?? '',
-    name: '',
-});
+const qrDataUrl = ref<string | null>(null);
 
-const sent = ref(false);
-
-onMounted(() => {
+onMounted(async () => {
     document.documentElement.classList.remove('dark');
+    if (props.joinUrl) {
+        qrDataUrl.value = await QRCode.toDataURL(props.joinUrl, {
+            width: 280,
+            margin: 2,
+            color: { dark: '#171717', light: '#ffffff' },
+        });
+    }
 });
 
 onUnmounted(() => {
-    initializeTheme();
+    // Theme restored by next page
 });
 
 const formattedDate = computed(() => {
@@ -37,15 +39,6 @@ const formattedDate = computed(() => {
     const timeOpts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
     return `${start.toLocaleDateString(undefined, dateOpts)} · ${start.toLocaleTimeString(undefined, timeOpts)}–${end.toLocaleTimeString(undefined, timeOpts)}`;
 });
-
-function submit() {
-    form.post('/magic-link', {
-        preserveState: true,
-        onSuccess: () => {
-            sent.value = true;
-        },
-    });
-}
 </script>
 
 <template>
@@ -53,78 +46,37 @@ function submit() {
         <Head :title="event?.name ?? 'Join Event'" />
 
         <template v-if="event">
-            <!-- Event branding -->
-            <div class="flex size-16 items-center justify-center rounded-2xl bg-orange-600 text-2xl font-bold text-white">
+            <div class="flex size-20 items-center justify-center rounded-2xl bg-orange-600 text-3xl font-bold text-white">
                 {{ event.name.charAt(0) }}
             </div>
 
-            <h2 class="mt-4 text-xl font-bold text-neutral-900">{{ event.name }}</h2>
-            <p class="text-sm text-neutral-500">
+            <h1 class="mt-6 text-center text-3xl font-bold text-neutral-900">{{ event.name }}</h1>
+            <p class="mt-1 text-sm text-neutral-500">
                 {{ formattedDate }}<template v-if="event.venue"> · {{ event.venue }}</template>
             </p>
 
-            <template v-if="!sent">
-                <!-- Join form -->
-                <h1 class="mt-8 text-center text-2xl font-bold text-neutral-900">
-                    Join the conversation
-                </h1>
-                <p class="mt-2 text-center text-sm text-neutral-500">
-                    Enter your email to get a magic link. No password needed.
-                </p>
+            <p class="mt-8 text-center text-lg font-medium text-neutral-700">
+                Scan to join
+            </p>
 
-                <form class="mt-6 w-full max-w-sm space-y-3" @submit.prevent="submit">
-                    <div>
-                        <input
-                            v-model="form.name"
-                            type="text"
-                            placeholder="Your name"
-                            class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        />
-                        <p v-if="form.errors.name" class="mt-1 text-sm text-red-500">
-                            {{ form.errors.name }}
-                        </p>
-                    </div>
-                    <div>
-                        <input
-                            v-model="form.email"
-                            type="email"
-                            placeholder="your@email.com"
-                            required
-                            class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        />
-                        <p v-if="form.errors.email" class="mt-1 text-sm text-red-500">
-                            {{ form.errors.email }}
-                        </p>
-                    </div>
-
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="mt-3 w-full rounded-xl bg-orange-600 py-3 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50"
-                    >
-                        Send Magic Link
-                    </button>
-                </form>
-
-                <div class="mt-6 flex items-center gap-3">
-                    <div class="h-px flex-1 bg-neutral-100" />
-                    <span class="text-xs text-neutral-400">or scan your invitation QR code</span>
-                    <div class="h-px flex-1 bg-neutral-100" />
+            <div class="mt-4 rounded-2xl border-2 border-neutral-100 p-4">
+                <img
+                    v-if="qrDataUrl"
+                    :src="qrDataUrl"
+                    alt="Scan to join event"
+                    class="size-[280px]"
+                />
+                <div v-else class="flex size-[280px] items-center justify-center text-sm text-neutral-400">
+                    Loading...
                 </div>
-            </template>
+            </div>
 
-            <template v-else>
-                <!-- Success state -->
-                <div class="mt-8 text-center">
-                    <div class="mx-auto flex size-16 items-center justify-center rounded-full bg-green-100">
-                        <span class="text-3xl">✉️</span>
-                    </div>
-                    <h1 class="mt-4 text-2xl font-bold text-neutral-900">Check your email</h1>
-                    <p class="mt-2 text-sm text-neutral-500">
-                        We sent a magic link to <strong>{{ form.email }}</strong>. Click it to join the event.
-                    </p>
-                </div>
-            </template>
+            <a
+                :href="`/event/${event.slug}/join`"
+                class="mt-8 text-sm font-medium text-orange-600 transition hover:text-orange-700"
+            >
+                Joining remotely? Tap here →
+            </a>
         </template>
 
         <template v-else>
