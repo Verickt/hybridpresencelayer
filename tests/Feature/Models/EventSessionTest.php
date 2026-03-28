@@ -2,6 +2,7 @@
 
 use App\Models\Event;
 use App\Models\EventSession;
+use App\Models\User;
 use Carbon\CarbonInterface;
 
 it('belongs to an event', function () {
@@ -72,4 +73,17 @@ it('keeps the session title and room visible', function () {
 
     expect($session->title)->toBe('Zero Trust Keynote')
         ->and($session->room)->toBe('Main Stage');
+});
+
+it('has a speaker user relationship', function () {
+    $user = User::factory()->create();
+    $session = EventSession::factory()->create(['speaker_user_id' => $user->id]);
+
+    expect($session->speakerUser->id)->toBe($user->id);
+});
+
+it('allows null speaker_user_id', function () {
+    $session = EventSession::factory()->create(['speaker_user_id' => null]);
+
+    expect($session->speakerUser)->toBeNull();
 });

@@ -29,6 +29,11 @@ class EventSession extends Model
         return $this->belongsTo(Event::class);
     }
 
+    public function speakerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'speaker_user_id');
+    }
+
     public function checkIns(): HasMany
     {
         return $this->hasMany(SessionCheckIn::class);
