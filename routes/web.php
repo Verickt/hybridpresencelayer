@@ -90,6 +90,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/event/{event:slug}/sessions', [SessionController::class, 'index'])->name('event.sessions');
     Route::get('/event/{event:slug}/sessions/{session}', [SessionController::class, 'show'])->name('event.sessions.show')->scopeBindings();
     Route::get('/event/{event:slug}/sessions/{session}/moderate', [SessionController::class, 'moderate'])->name('event.sessions.moderate')->scopeBindings();
+    Route::get('/event/{event:slug}/sessions/{session}/connections', [SessionController::class, 'postSession'])
+        ->name('event.sessions.post-session')->scopeBindings();
     Route::get('/event/{event:slug}/sessions/{session}/qr-display', SessionQrDisplayController::class)->name('event.sessions.qr-display')->scopeBindings();
     Route::post('/event/{event:slug}/sessions', [SessionController::class, 'store'])->name('event.sessions.store');
     Route::delete('/event/{event:slug}/sessions/{session}', [SessionController::class, 'destroy'])->name('event.sessions.destroy')->scopeBindings();

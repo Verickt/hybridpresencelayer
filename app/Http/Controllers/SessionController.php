@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\SessionCheckIn;
+use App\Models\Suggestion;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -226,6 +227,43 @@ class SessionController extends Controller
                 'remote_count' => $remoteCount,
                 'total_participants' => $participants->count(),
             ],
+        ]);
+    }
+
+    public function postSession(Request $request, Event $event, EventSession $session): Response
+    {
+        abort_unless(
+            $session->ends_at?->isPast() && $session->ends_at->diffInMinutes(now()) <= 15,
+            404
+        );
+
+        $attended = SessionCheckIn::where('user_id', $request->user()->id)
+            ->where('event_session_id', $session->id)
+            ->exists();
+        abort_unless($attended, 404);
+
+        $suggestions = Suggestion::where('suggested_to_id', $request->user()->id)
+            ->where('event_id', $event->id)
+            ->where('trigger', 'session_affinity')
+            ->active()
+            ->with('suggestedUser:id,name')
+            ->orderByDesc('score')
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'user' => [
+                    'id' => $s->suggestedUser->id,
+                    'name' => $s->suggestedUser->name,
+                    'participant_type' => $event->participants()->where('user_id', $s->suggested_user_id)->first()?->pivot->participant_type,
+                ],
+                'score' => $s->score,
+                'reason' => $s->reason,
+            ]);
+
+        return Inertia::render('Event/PostSessionConnections', [
+            'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
+            'session' => ['id' => $session->id, 'title' => $session->title],
+            'suggestions' => $suggestions,
         ]);
     }
 
