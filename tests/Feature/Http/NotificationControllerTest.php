@@ -75,7 +75,7 @@ test('marks a notification as read', function () {
         ->patch(route('notifications.read', $notification->id))
         ->assertOk()
         ->assertJson([
-            'message' => 'Marked as read',
+            'message' => 'Als gelesen markiert',
         ]);
 
     expect($notification->fresh()->read_at)->not->toBeNull();
@@ -165,7 +165,7 @@ test('updates notification preferences for an attached participant', function ()
         ])
         ->assertOk()
         ->assertJson([
-            'message' => 'Preferences updated',
+            'message' => 'Einstellungen aktualisiert',
         ]);
 
     $pivot = $this->user->events()->where('event_id', $this->event->id)->first()->pivot;

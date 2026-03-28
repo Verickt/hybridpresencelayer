@@ -35,7 +35,7 @@ it('submits a question', function () {
         ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', 'Question submitted');
+        ->assertJsonPath('message', 'Frage eingereicht');
 
     expect(SessionQuestion::count())->toBe(1);
 });
@@ -75,7 +75,7 @@ it('upvotes a question', function () {
         ->post(route('event.sessions.questions.vote', [$this->event, $this->session, $question]));
 
     $response->assertOk()
-        ->assertJsonPath('message', 'Vote recorded');
+        ->assertJsonPath('message', 'Stimme erfasst');
 
     expect(SessionQuestionVote::count())->toBe(1);
 });

@@ -114,7 +114,7 @@ it('rejects signed payloads that do not map to supported qr actions', function (
         ])
         ->assertUnprocessable()
         ->assertJson([
-            'message' => 'Unsupported QR action.',
+            'message' => 'Nicht unterstützte QR-Aktion.',
         ]);
 });
 
@@ -133,7 +133,7 @@ it('resolves a valid signed session qr payload into a real session check-in', fu
 
     $response->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('message', 'Checked in')
+            ->where('message', 'Eingecheckt')
             ->where('action', 'session_check_in')
             ->where('redirect_to', route('event.sessions.show', [$this->event, $this->session], false))
             ->has('target', fn (AssertableJson $target) => $target
@@ -168,7 +168,7 @@ it('resolves a valid signed booth qr payload into a real booth visit', function 
 
     $response->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
-            ->where('message', 'Checked in')
+            ->where('message', 'Eingecheckt')
             ->where('action', 'booth_check_in')
             ->where('redirect_to', route('event.booths.show', [$this->event, $this->booth], false))
             ->has('target', fn (AssertableJson $target) => $target

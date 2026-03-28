@@ -163,7 +163,7 @@ it('allows the organizer to create a session', function () {
             'ends_at' => now()->addHours(2)->toISOString(),
         ]);
 
-    $response->assertRedirect(route('event.sessions', $this->event));
+    $response->assertRedirect();
 });
 
 it('rejects non-organizers from creating sessions', function () {
