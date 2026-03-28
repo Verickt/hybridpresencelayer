@@ -34,9 +34,9 @@ class EventLandingController extends Controller
             'event' => $event ? [
                 'name' => $event->name,
                 'slug' => $event->slug,
-                'starts_at' => $event->starts_at?->format('M j'),
-                'ends_at' => $event->ends_at?->format('j, Y'),
-                'location' => $event->location,
+                'venue' => $event->venue,
+                'starts_at' => $event->starts_at?->toISOString(),
+                'ends_at' => $event->ends_at?->toISOString(),
             ] : null,
         ]);
     }
