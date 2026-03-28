@@ -2,15 +2,15 @@
 
 use App\Models\User;
 
-test('guests are redirected to the login page', function () {
-    $response = $this->get(route('dashboard'));
-    $response->assertRedirect(route('login'));
+test('home page renders for guests', function () {
+    $response = $this->get(route('home'));
+    $response->assertOk();
 });
 
-test('authenticated users without events are redirected to home', function () {
+test('home page renders for authenticated users', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $response = $this->get(route('dashboard'));
-    $response->assertRedirect('/');
+    $response = $this->get(route('home'));
+    $response->assertOk();
 });

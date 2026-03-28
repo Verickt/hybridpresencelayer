@@ -42,25 +42,6 @@ Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name
 
 Route::get('/', EventLandingController::class)->name('home');
 
-Route::middleware(['auth'])->group(function () {
-    // Redirect /dashboard to the user's event — participants should never see a generic dashboard
-    Route::get('dashboard', function () {
-        $user = auth()->user();
-        $event = $user->events()->latest('event_user.created_at')->first()
-            ?? $user->organizedEvents()->latest()->first();
-
-        if (! $event) {
-            return redirect('/');
-        }
-
-        if ($user->id === $event->organizer_id) {
-            return redirect()->route('event.dashboard', $event);
-        }
-
-        return redirect()->route('event.feed', $event);
-    })->name('dashboard');
-});
-
 Route::post('/magic-link', [MagicLinkController::class, 'send'])
     ->middleware('throttle:5,1')
     ->name('magic-link.send');

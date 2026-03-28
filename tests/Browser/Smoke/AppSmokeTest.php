@@ -20,12 +20,12 @@ it('renders public entry pages without browser smoke issues', function () {
     visit($routes)->assertNoSmoke();
 });
 
-it('renders the authenticated dashboard without browser smoke issues', function () {
+it('renders the home page for authenticated users without browser smoke issues', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user);
 
-    visit(route('dashboard', absolute: false))
-        ->assertPathIs('/dashboard')
+    visit(route('home', absolute: false))
+        ->assertPathIs('/')
         ->assertNoSmoke();
 });

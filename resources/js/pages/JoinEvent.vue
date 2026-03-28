@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { initializeTheme } from '@/composables/useAppearance';
 
 const props = defineProps<{
     event: {
@@ -8,7 +9,7 @@ const props = defineProps<{
         slug: string;
         starts_at: string;
         ends_at: string;
-        location: string;
+        venue: string;
     } | null;
 }>();
 
@@ -19,6 +20,23 @@ const form = useForm({
 });
 
 const sent = ref(false);
+
+onMounted(() => {
+    document.documentElement.classList.remove('dark');
+});
+
+onUnmounted(() => {
+    initializeTheme();
+});
+
+const formattedDate = computed(() => {
+    if (!props.event) return '';
+    const start = new Date(props.event.starts_at);
+    const end = new Date(props.event.ends_at);
+    const dateOpts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const timeOpts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+    return `${start.toLocaleDateString(undefined, dateOpts)} · ${start.toLocaleTimeString(undefined, timeOpts)}–${end.toLocaleTimeString(undefined, timeOpts)}`;
+});
 
 function submit() {
     form.post('/magic-link', {
@@ -42,7 +60,7 @@ function submit() {
 
             <h2 class="mt-4 text-xl font-bold text-neutral-900">{{ event.name }}</h2>
             <p class="text-sm text-neutral-500">
-                {{ event.starts_at }}–{{ event.ends_at }} · {{ event.location }}
+                {{ formattedDate }}<template v-if="event.venue"> · {{ event.venue }}</template>
             </p>
 
             <template v-if="!sent">
@@ -54,17 +72,30 @@ function submit() {
                     Enter your email to get a magic link. No password needed.
                 </p>
 
-                <form class="mt-6 w-full max-w-sm" @submit.prevent="submit">
-                    <input
-                        v-model="form.email"
-                        type="email"
-                        placeholder="your@email.com"
-                        required
-                        class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                    />
-                    <p v-if="form.errors.email" class="mt-1 text-sm text-red-500">
-                        {{ form.errors.email }}
-                    </p>
+                <form class="mt-6 w-full max-w-sm space-y-3" @submit.prevent="submit">
+                    <div>
+                        <input
+                            v-model="form.name"
+                            type="text"
+                            placeholder="Your name"
+                            class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                        <p v-if="form.errors.name" class="mt-1 text-sm text-red-500">
+                            {{ form.errors.name }}
+                        </p>
+                    </div>
+                    <div>
+                        <input
+                            v-model="form.email"
+                            type="email"
+                            placeholder="your@email.com"
+                            required
+                            class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                        />
+                        <p v-if="form.errors.email" class="mt-1 text-sm text-red-500">
+                            {{ form.errors.email }}
+                        </p>
+                    </div>
 
                     <button
                         type="submit"
