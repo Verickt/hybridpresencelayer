@@ -29,6 +29,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SessionModerateController;
 use App\Http\Controllers\SessionQrDisplayController;
 use App\Http\Controllers\SessionQuestionController;
 use App\Http\Controllers\SessionQuestionReplyController;
@@ -103,6 +104,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/vote', [SessionQuestionController::class, 'vote'])->name('event.sessions.questions.vote')->scopeBindings();
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies', [SessionQuestionReplyController::class, 'store'])->name('event.sessions.questions.replies.store')->scopeBindings();
     Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/replies/{reply}/vote', [SessionQuestionReplyController::class, 'vote'])->name('event.sessions.questions.replies.vote')->scopeBindings();
+
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/pin', [SessionModerateController::class, 'pin'])->name('event.sessions.questions.pin')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/hide', [SessionModerateController::class, 'hide'])->name('event.sessions.questions.hide')->scopeBindings();
+    Route::post('/event/{event:slug}/sessions/{session}/questions/{question}/answer', [SessionModerateController::class, 'answer'])->name('event.sessions.questions.answer')->scopeBindings();
 
     Route::get('/event/{event:slug}/suggestions', [SuggestionController::class, 'index'])->name('event.suggestions');
     Route::patch('/event/{event:slug}/suggestions/{suggestion}/decline', [SuggestionController::class, 'decline'])->name('event.suggestions.decline');
