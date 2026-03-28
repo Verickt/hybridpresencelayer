@@ -49,6 +49,11 @@ class EventSession extends Model
         return $this->hasMany(SessionQuestion::class);
     }
 
+    public function engagementEdges(): HasMany
+    {
+        return $this->hasMany(SessionEngagementEdge::class);
+    }
+
     public function isLive(): bool
     {
         return now()->between($this->starts_at, $this->ends_at);
