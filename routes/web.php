@@ -22,6 +22,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizerActionController;
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\QrResolveController;
@@ -133,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/event/{event:slug}/qr/resolve', QrResolveController::class)->name('event.qr.resolve');
 
     Route::get('/event/{event:slug}/connections', ConnectionListController::class)->name('event.connections');
+    Route::get('/event/{event:slug}/participants', [ParticipantController::class, 'index'])->name('event.participants');
     Route::get('/event/{event:slug}/profile', EventProfileController::class)->name('event.profile');
 
     Route::post('/event/{event:slug}/ping/{user}', [PingController::class, 'store'])->name('event.ping');

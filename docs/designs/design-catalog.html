@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hybrid Presence Platform — Design System & Screens</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      padding: 48px 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 48px;
+      max-width: 720px;
+      line-height: 1.6;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e5e5;
+    }
+    .section { margin-bottom: 56px; }
+    .row {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+    }
+    .card {
+      flex-shrink: 0;
+    }
+    .card-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    .placeholder {
+      background: #fafafa;
+      border: 2px dashed #d4d4d4;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #888;
+      font-size: 13px;
+      text-align: center;
+      padding: 24px;
+    }
+    .placeholder strong {
+      font-size: 15px;
+      color: #555;
+    }
+    .placeholder .dims {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .mobile { width: 390px; height: 844px; }
+    .desktop { width: 100%; max-width: 1440px; height: 900px; }
+    .desktop-scaled {
+      width: 100%;
+      max-width: 720px;
+      height: 450px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Hybrid Presence Platform — Design System & Screens</h1>
+  <p class="subtitle">
+    This catalog documents all 19 artboards in the design file. Each screen is represented as a placeholder below.
+    For the live, pixel-perfect designs, open the project in Paper. Artboard dimensions and section groupings are preserved here for reference.
+  </p>
+
+  <!-- Design System -->
+  <div class="section">
+    <h2>Design System</h2>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="card">
+        <div class="card-label">DS — Typography & Colors</div>
+        <div class="placeholder desktop">
+          <strong>DS — Typography & Colors</strong>
+          <span class="dims">1440 &times; 900</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">DS — Primitives A</div>
+        <div class="placeholder desktop">
+          <strong>DS — Primitives A</strong>
+          <span class="dims">1440 &times; 900</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">DS — Primitives B</div>
+        <div class="placeholder desktop">
+          <strong>DS — Primitives B</strong>
+          <span class="dims">1440 &times; 900</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding Flow -->
+  <div class="section">
+    <h2>Onboarding Flow</h2>
+    <div class="row">
+      <div class="card">
+        <div class="card-label">01 — Magic Link Entry</div>
+        <div class="placeholder mobile">
+          <strong>01 — Magic Link Entry</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">02 — Type Selection</div>
+        <div class="placeholder mobile">
+          <strong>02 — Type Selection</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">03 — Interest Tags</div>
+        <div class="placeholder mobile">
+          <strong>03 — Interest Tags</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">04 — Icebreaker Selection</div>
+        <div class="placeholder mobile">
+          <strong>04 — Icebreaker Selection</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">05 — Ready Screen</div>
+        <div class="placeholder mobile">
+          <strong>05 — Ready Screen</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Experience -->
+  <div class="section">
+    <h2>Core Experience</h2>
+    <div class="row">
+      <div class="card">
+        <div class="card-label">06 — Presence Feed</div>
+        <div class="placeholder mobile">
+          <strong>06 — Presence Feed</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">07 — Participant Detail</div>
+        <div class="placeholder mobile">
+          <strong>07 — Participant Detail</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">08 — Mutual Match</div>
+        <div class="placeholder mobile">
+          <strong>08 — Mutual Match</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">09 — Sessions Schedule</div>
+        <div class="placeholder mobile">
+          <strong>09 — Sessions Schedule</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">10 — Session Detail</div>
+        <div class="placeholder mobile">
+          <strong>10 — Session Detail</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Communication -->
+  <div class="section">
+    <h2>Communication</h2>
+    <div class="row">
+      <div class="card">
+        <div class="card-label">11 — Connections List</div>
+        <div class="placeholder mobile">
+          <strong>11 — Connections List</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">12 — Chat</div>
+        <div class="placeholder mobile">
+          <strong>12 — Chat</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">13 — Video Call</div>
+        <div class="placeholder mobile">
+          <strong>13 — Video Call</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Discovery & Profile -->
+  <div class="section">
+    <h2>Discovery & Profile</h2>
+    <div class="row">
+      <div class="card">
+        <div class="card-label">14 — Booth Discovery</div>
+        <div class="placeholder mobile">
+          <strong>14 — Booth Discovery</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">15 — Profile & Settings</div>
+        <div class="placeholder mobile">
+          <strong>15 — Profile & Settings</strong>
+          <span class="dims">390 &times; 844</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">16 — Organizer Dashboard</div>
+        <div class="placeholder desktop-scaled">
+          <strong>16 — Organizer Dashboard</strong>
+          <span class="dims">1440 &times; 900 (scaled to fit)</span>
+          <span>See Paper design file for live version</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
