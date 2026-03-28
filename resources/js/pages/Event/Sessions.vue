@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { show } from '@/routes/event/sessions';
+
+const remindedSessions = ref<Set<number>>(new Set());
+
+function remindSession(sessionId: number, event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    remindedSessions.value.add(sessionId);
+}
 
 const props = defineProps<{
     event: { id: number; name: string; slug: string };
@@ -71,7 +80,7 @@ const today = new Date().toLocaleDateString([], { weekday: 'long', month: 'long'
                 <!-- Title + speaker -->
                 <h2 class="mt-2 text-base font-semibold text-neutral-900">{{ session.title }}</h2>
                 <p class="mt-0.5 text-sm text-neutral-500">
-                    {{ session.speaker || 'Speaker TBA' }} · {{ session.room || 'Room TBA' }}
+                    {{ session.speaker || 'Referent folgt' }} · {{ session.room || 'Raum folgt' }}
                 </p>
 
                 <!-- Bottom row: counts + action -->
@@ -89,13 +98,20 @@ const today = new Date().toLocaleDateString([], { weekday: 'long', month: 'long'
                         v-if="session.is_checked_in"
                         class="rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white"
                     >
-                        ✓ Checked in
+                        ✓ Eingecheckt
                     </span>
-                    <span
-                        v-else-if="!session.is_live"
-                        class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600"
+                    <button
+                        v-else-if="!session.is_live && !remindedSessions.has(session.id)"
+                        class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-50"
+                        @click="remindSession(session.id, $event)"
                     >
-                        Remind me
+                        Erinnern
+                    </button>
+                    <span
+                        v-else-if="!session.is_live && remindedSessions.has(session.id)"
+                        class="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-600"
+                    >
+                        ✓ Erinnerung gesetzt
                     </span>
                 </div>
             </Link>
@@ -104,7 +120,7 @@ const today = new Date().toLocaleDateString([], { weekday: 'long', month: 'long'
                 v-if="sessions.length === 0"
                 class="py-12 text-center text-sm text-neutral-400"
             >
-                No sessions are scheduled yet.
+                Noch keine Sessions geplant.
             </p>
         </div>
     </div>

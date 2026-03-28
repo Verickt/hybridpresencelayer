@@ -53,8 +53,8 @@ function handlePing(userId: number) {
         <Head :title="`${event.name} - Search`" />
 
         <Heading
-            title="Search participants"
-            :description="`Find people by name, company, or interest at ${event.name}.`"
+            title="Teilnehmer suchen"
+            :description="`Finden Sie Personen nach Name, Unternehmen oder Interesse bei ${event.name}.`"
         />
 
         <div class="relative">
@@ -64,7 +64,7 @@ function handlePing(userId: number) {
             <input
                 v-model="searchTerm"
                 type="text"
-                placeholder="Search by name, company, or interest..."
+                placeholder="Suche nach Name, Unternehmen oder Interesse..."
                 class="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm shadow-xs transition outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
         </div>
@@ -72,9 +72,9 @@ function handlePing(userId: number) {
         <div v-if="query && results.length === 0">
             <Card class="border-dashed border-border/70 bg-card/80 py-0 shadow-sm">
                 <CardContent class="py-12 text-center">
-                    <p class="font-medium">No participants found.</p>
+                    <p class="font-medium">Keine Teilnehmer gefunden.</p>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        Try a different search term.
+                        Versuchen Sie einen anderen Suchbegriff.
                     </p>
                 </CardContent>
             </Card>
@@ -108,7 +108,7 @@ function handlePing(userId: number) {
                                             :is="result.participant_type === 'physical' ? MapPin : Globe"
                                             class="size-3"
                                         />
-                                        {{ result.participant_type === 'physical' ? 'Physical' : 'Remote' }}
+                                        {{ result.participant_type === 'physical' ? 'Vor Ort' : 'Remote' }}
                                     </Badge>
                                 </div>
                                 <p

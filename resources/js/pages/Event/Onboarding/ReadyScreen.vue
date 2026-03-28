@@ -35,11 +35,12 @@ const initials = props.user.name
             </p>
         </div>
 
-        <div class="mt-10 flex flex-col items-center">
-            <div class="flex size-40 items-center justify-center rounded-2xl bg-neutral-50 text-sm text-neutral-400">
-                Ihr persönlicher QR-Code
-            </div>
-            <p class="mt-2 text-xs text-neutral-400">Andere können scannen, um sich mit Ihnen zu verbinden</p>
+        <div class="mt-10 flex flex-col items-center rounded-2xl bg-neutral-50 px-6 py-5">
+            <div class="flex size-10 items-center justify-center rounded-full bg-orange-100 text-lg">📱</div>
+            <p class="mt-3 text-center text-sm font-medium text-neutral-700">So vernetzen Sie sich</p>
+            <p class="mt-1 text-center text-xs text-neutral-500">
+                Treffen Sie jemanden? Öffnen Sie Ihr Profil und zeigen Sie Ihren QR-Code — die andere Person scannt ihn und Sie sind verbunden.
+            </p>
         </div>
 
         <div class="mt-auto w-full pt-6">

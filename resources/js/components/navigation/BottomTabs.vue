@@ -9,7 +9,6 @@ const props = defineProps<{
 const page = usePage();
 const currentUrl = computed(() => page.url);
 const base = computed(() => `/event/${props.eventSlug}`);
-const today = new Date().getDate();
 
 const tabs = computed(() => [
     {
@@ -23,7 +22,6 @@ const tabs = computed(() => [
         href: `${base.value}/sessions`,
         active: currentUrl.value.includes('/sessions'),
         icon: 'sessions',
-        badge: String(today),
     },
     {
         name: 'Connections',

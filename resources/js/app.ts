@@ -14,9 +14,14 @@ createInertiaApp({
     layout: (name) => {
         switch (true) {
             case name === 'Welcome':
+            case name === 'JoinEvent':
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
+            case name === 'Event/Chat':
+            case name === 'Event/VideoCall':
+            case name === 'Event/SessionQrDisplay':
+                return null;
             case name.startsWith('Event/'):
                 return EventLayout;
             case name.startsWith('settings/'):

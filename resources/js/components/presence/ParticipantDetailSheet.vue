@@ -8,7 +8,7 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { useHaptics } from '@/composables/useHaptics';
-import { ping } from '@/routes/event';
+import { block, ping, report } from '@/routes/event';
 
 const props = defineProps<{
     participant: {
@@ -51,6 +51,33 @@ const statusColors: Record<string, string> = {
     busy: 'bg-amber-500',
     away: 'bg-neutral-400',
 };
+
+const blockRequest = useHttp();
+const reportRequest = useHttp();
+
+async function handleBlock() {
+    if (!props.participant) return;
+    try {
+        await blockRequest.submit(
+            block({ event: props.eventSlug, user: props.participant.id }),
+        );
+        emit('update:open', false);
+    } catch {
+        // silently fail
+    }
+}
+
+async function handleReport() {
+    if (!props.participant) return;
+    try {
+        await reportRequest.submit(
+            report({ event: props.eventSlug, user: props.participant.id }),
+        );
+        emit('update:open', false);
+    } catch {
+        // silently fail
+    }
+}
 
 async function handlePing() {
     if (!props.participant) return;
@@ -156,8 +183,8 @@ const initials = (name: string) =>
 
                 <!-- Block / Report -->
                 <div class="mt-3 flex items-center justify-center gap-6 text-xs text-neutral-400">
-                    <button class="transition hover:text-neutral-600">Block</button>
-                    <button class="transition hover:text-neutral-600">Report</button>
+                    <button class="transition hover:text-neutral-600" @click="handleBlock">Blockieren</button>
+                    <button class="transition hover:text-neutral-600" @click="handleReport">Melden</button>
                 </div>
             </template>
         </SheetContent>

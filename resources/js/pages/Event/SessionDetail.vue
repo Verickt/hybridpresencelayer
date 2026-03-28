@@ -3,6 +3,7 @@ import { Head, router, useHttp } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { getInitials } from '@/composables/useInitials';
+import { ping } from '@/routes/event';
 import { checkin, checkout } from '@/routes/event/sessions';
 import { store as storeQuestion, vote as voteQuestion } from '@/routes/event/sessions/questions';
 import { store as storeReaction } from '@/routes/event/sessions/reactions';
@@ -75,6 +76,15 @@ const reactionRequest = useHttp<{ type: ReactionType }>({ type: 'clap' });
 const questionRequest = useHttp<{ body: string }>({ body: '' });
 const voteRequest = useHttp();
 const replyRequest = useHttp<{ body: string }>({ body: '' });
+const pingRequest = useHttp();
+
+async function handlePing(userId: number) {
+    try {
+        await pingRequest.submit(
+            ping({ event: props.event.slug, user: userId }),
+        );
+    } catch { /* */ }
+}
 const expandedQuestionId = ref<number | null>(null);
 
 const physicalParticipants = computed(() => props.participants.filter((p) => p.participant_type === 'physical'));
@@ -334,7 +344,7 @@ onUnmounted(() => {
                                 {{ getInitials(p.name) }}
                             </div>
                             <span class="text-sm font-medium text-neutral-900">{{ p.name }}</span>
-                            <span class="ml-auto text-lg">👋</span>
+                            <button class="ml-auto text-lg" @click="handlePing(p.id)">👋</button>
                         </div>
                     </div>
                 </div>
@@ -354,7 +364,7 @@ onUnmounted(() => {
                                 {{ getInitials(p.name) }}
                             </div>
                             <span class="text-sm font-medium text-neutral-900">{{ p.name }}</span>
-                            <span class="ml-auto text-lg">👋</span>
+                            <button class="ml-auto text-lg" @click="handlePing(p.id)">👋</button>
                         </div>
                     </div>
                 </div>

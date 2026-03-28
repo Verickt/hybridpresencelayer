@@ -60,16 +60,16 @@ function timeRemaining(expiresAt: string): string {
     const diff = new Date(expiresAt).getTime() - Date.now();
 
     if (diff <= 0) {
-        return 'Expired';
+        return 'Abgelaufen';
     }
 
     const minutes = Math.floor(diff / 60_000);
 
     if (minutes < 60) {
-        return `${minutes}m left`;
+        return `${minutes} Min. übrig`;
     }
 
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m left`;
+    return `${Math.floor(minutes / 60)} Std. ${minutes % 60} Min. übrig`;
 }
 </script>
 
@@ -83,8 +83,8 @@ function timeRemaining(expiresAt: string): string {
             <CardContent class="space-y-4 p-6">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <Heading
-                        title="People you should meet"
-                        :description="`Curated suggestions based on shared interests at ${event.name}.`"
+                        title="Personen, die Sie treffen sollten"
+                        :description="`Kuratierte Vorschläge basierend auf gemeinsamen Interessen bei ${event.name}.`"
                     />
 
                     <Badge
@@ -97,7 +97,7 @@ function timeRemaining(expiresAt: string): string {
 
                 <div class="flex items-center gap-2 text-sm text-muted-foreground">
                     <Users class="size-4" />
-                    {{ suggestions.length }} suggestion{{ suggestions.length !== 1 ? 's' : '' }} available
+                    {{ suggestions.length }} Vorschlag{{ suggestions.length !== 1 ? 'e' : '' }} verfügbar
                 </div>
             </CardContent>
         </Card>
@@ -105,10 +105,10 @@ function timeRemaining(expiresAt: string): string {
         <div v-if="suggestions.length === 0">
             <Card class="border-dashed border-border/70 bg-card/80 py-0 shadow-sm">
                 <CardContent class="py-12 text-center">
-                    <p class="font-medium">No suggestions right now.</p>
+                    <p class="font-medium">Derzeit keine Vorschläge.</p>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        Check back later — new matches appear as more people join
-                        the event.
+                        Schauen Sie später noch einmal vorbei — neue Matches erscheinen,
+                        wenn mehr Personen dem Event beitreten.
                     </p>
                 </CardContent>
             </Card>
@@ -147,7 +147,7 @@ function timeRemaining(expiresAt: string): string {
                                 >
                                     {{
                                         suggestion.suggested_user.participant_type === 'physical'
-                                            ? 'Physical'
+                                            ? 'Vor Ort'
                                             : 'Remote'
                                     }}
                                 </Badge>
@@ -172,7 +172,7 @@ function timeRemaining(expiresAt: string): string {
                                         @click="handleDecline(suggestion)"
                                     >
                                         <ThumbsDown class="mr-1 size-3.5" />
-                                        Pass
+                                        Überspringen
                                     </Button>
                                     <Button
                                         size="sm"
@@ -181,7 +181,7 @@ function timeRemaining(expiresAt: string): string {
                                         @click="handleAccept(suggestion)"
                                     >
                                         <ThumbsUp class="mr-1 size-3.5" />
-                                        Connect
+                                        Verbinden
                                     </Button>
                                 </div>
                             </div>

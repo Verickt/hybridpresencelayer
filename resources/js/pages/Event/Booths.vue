@@ -48,13 +48,13 @@ function tagColor(tag: string) {
             <button class="text-neutral-400" @click="router.visit(`/event/${event.slug}/feed`)">
                 <ArrowLeft class="size-5" />
             </button>
-            <h1 class="text-2xl font-bold text-neutral-900">Booths</h1>
+            <h1 class="text-2xl font-bold text-neutral-900">Stände</h1>
         </div>
 
         <!-- Recommended section -->
         <div v-if="recommended.length > 0">
             <p class="mb-2 text-[11px] font-semibold tracking-wider text-indigo-500 uppercase">
-                Recommended for you
+                Empfohlen für Sie
             </p>
 
             <Link
@@ -86,11 +86,11 @@ function tagColor(tag: string) {
                                 {{ tag }}
                             </span>
                             <span v-if="booth.staff.length > 0" class="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
-                                ✓ Staff available
+                                ✓ Mitarbeiter verfügbar
                             </span>
                         </div>
                         <button class="mt-3 w-full rounded-full bg-indigo-600 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                            Visit Booth
+                            Stand besuchen
                         </button>
                     </div>
                 </div>
@@ -100,7 +100,7 @@ function tagColor(tag: string) {
         <!-- Popular section -->
         <div v-if="popular.length > 0">
             <p class="mb-2 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
-                Popular now
+                Beliebt gerade
             </p>
             <div class="space-y-2">
                 <Link
@@ -126,7 +126,7 @@ function tagColor(tag: string) {
         <!-- All booths section -->
         <div v-if="rest.length > 0">
             <p class="mb-2 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
-                All booths
+                Alle Stände
             </p>
             <div class="space-y-2">
                 <Link
@@ -173,7 +173,7 @@ function tagColor(tag: string) {
         </div>
 
         <p v-if="booths.length === 0" class="py-12 text-center text-sm text-neutral-400">
-            No booths are listed yet.
+            Noch keine Stände eingetragen.
         </p>
     </div>
 </template>

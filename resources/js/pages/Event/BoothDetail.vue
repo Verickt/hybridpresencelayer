@@ -127,7 +127,7 @@ const replyingThreadId = ref<number | null>(null);
 
 function formatTimestamp(timestamp: string | null): string {
     if (!timestamp) {
-        return 'Just now';
+        return 'Gerade eben';
     }
 
     return new Intl.DateTimeFormat([], {
@@ -313,7 +313,7 @@ onUnmounted(() => {
                         v-if="active_demo"
                         class="rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.16em] uppercase"
                     >
-                        Live Demo
+                        Live-Demo
                     </Badge>
                 </div>
 
@@ -329,7 +329,7 @@ onUnmounted(() => {
                 </div>
 
                 <div v-if="resourceLinks.length" class="space-y-2">
-                    <p class="text-sm font-medium">Resources</p>
+                    <p class="text-sm font-medium">Ressourcen</p>
                     <a
                         v-for="link in resourceLinks"
                         :key="link.url"
@@ -359,7 +359,7 @@ onUnmounted(() => {
                             })
                         "
                     >
-                        Open tablet console
+                        Tablet-Konsole öffnen
                     </Link>
                 </Button>
             </CardContent>
@@ -375,11 +375,11 @@ onUnmounted(() => {
                             <MessageSquareText
                                 class="size-4 text-muted-foreground"
                             />
-                            <h2 class="text-lg font-semibold">Booth Board</h2>
+                            <h2 class="text-lg font-semibold">Stand-Board</h2>
                         </div>
                         <p class="text-sm text-muted-foreground">
-                            Ask questions live during a demo or follow up after
-                            you leave the booth.
+                            Stellen Sie Fragen live während einer Demo oder im Nachgang,
+                            nachdem Sie den Stand verlassen haben.
                         </p>
                     </div>
 
@@ -387,7 +387,7 @@ onUnmounted(() => {
                         variant="outline"
                         class="rounded-full px-2.5 py-1 text-[11px]"
                     >
-                        {{ viewer.is_staff ? 'Staff console' : 'Visitor view' }}
+                        {{ viewer.is_staff ? 'Mitarbeiter-Konsole' : 'Besucheransicht' }}
                     </Badge>
                 </div>
 
@@ -397,7 +397,7 @@ onUnmounted(() => {
                 >
                     <div class="flex items-center gap-2">
                         <MicVocal class="size-4 text-primary" />
-                        <p class="font-medium">Live demo controls</p>
+                        <p class="font-medium">Live-Demo-Steuerung</p>
                     </div>
 
                     <div
@@ -407,7 +407,7 @@ onUnmounted(() => {
                         <div class="space-y-1">
                             <p class="font-medium">{{ active_demo.title }}</p>
                             <p class="text-sm text-muted-foreground">
-                                Started
+                                Gestartet
                                 {{ formatTimestamp(active_demo.starts_at) }}
                             </p>
                         </div>
@@ -417,7 +417,7 @@ onUnmounted(() => {
                             class="rounded-full"
                             @click="endDemo(active_demo.id)"
                         >
-                            End demo
+                            Demo beenden
                         </Button>
                     </div>
 
@@ -428,7 +428,7 @@ onUnmounted(() => {
                     >
                         <Input
                             v-model="demoForm.title"
-                            placeholder="Optional live demo title"
+                            placeholder="Optionaler Live-Demo-Titel"
                             class="flex-1"
                         />
                         <Button
@@ -436,7 +436,7 @@ onUnmounted(() => {
                             class="rounded-full"
                             :disabled="demoForm.processing"
                         >
-                            Start demo
+                            Demo starten
                         </Button>
                     </form>
 
@@ -449,12 +449,12 @@ onUnmounted(() => {
                     @submit.prevent="submitQuestion"
                 >
                     <label class="block space-y-2">
-                        <span class="text-sm font-medium">Ask the booth</span>
+                        <span class="text-sm font-medium">Fragen Sie den Stand</span>
                         <textarea
                             v-model="questionForm.body"
                             rows="3"
                             class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-xl border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-[3px]"
-                            placeholder="What would you like the booth team to answer?"
+                            placeholder="Was möchten Sie das Stand-Team fragen?"
                         />
                     </label>
 
@@ -467,14 +467,14 @@ onUnmounted(() => {
                             :disabled="questionForm.processing"
                         >
                             <Send class="mr-2 size-4" />
-                            Ask question
+                            Frage stellen
                         </Button>
                     </div>
                 </form>
 
                 <p v-else class="text-sm text-muted-foreground">
-                    Join the event as a participant to post questions on the
-                    booth board.
+                    Treten Sie dem Event als Teilnehmer bei, um Fragen auf dem
+                    Stand-Board zu stellen.
                 </p>
             </CardContent>
         </Card>
@@ -508,10 +508,10 @@ onUnmounted(() => {
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
                             <Pin class="size-4 text-amber-600" />
-                            <p class="font-semibold">Pinned question</p>
+                            <p class="font-semibold">Angeheftete Frage</p>
                         </div>
                         <p class="text-sm text-muted-foreground">
-                            {{ pinned_thread.user.name }} asked
+                            {{ pinned_thread.user.name }} fragte
                             {{ formatTimestamp(pinned_thread.last_activity_at) }}
                         </p>
                     </div>
@@ -522,14 +522,14 @@ onUnmounted(() => {
                             variant="secondary"
                             class="rounded-full px-2.5 py-1 text-[11px]"
                         >
-                            Answered
+                            Beantwortet
                         </Badge>
                         <Badge
                             variant="outline"
                             class="rounded-full px-2.5 py-1 text-[11px]"
                         >
-                            {{ pinned_thread.votes_count }} vote{{
-                                pinned_thread.votes_count !== 1 ? 's' : ''
+                            {{ pinned_thread.votes_count }} Stimme{{
+                                pinned_thread.votes_count !== 1 ? 'n' : ''
                             }}
                         </Badge>
                     </div>
@@ -589,21 +589,21 @@ onUnmounted(() => {
                                 class="rounded-full px-2.5 py-1 text-[11px]"
                             >
                                 <CheckCircle2 class="mr-1 size-3.5" />
-                                Answered
+                                Beantwortet
                             </Badge>
                             <Badge
                                 v-if="thread.follow_up_requested_at"
                                 variant="outline"
                                 class="rounded-full px-2.5 py-1 text-[11px]"
                             >
-                                Follow-up requested
+                                Nachverfolgung angefragt
                             </Badge>
                             <Badge
                                 variant="outline"
                                 class="rounded-full px-2.5 py-1 text-[11px]"
                             >
-                                {{ thread.votes_count }} vote{{
-                                    thread.votes_count !== 1 ? 's' : ''
+                                {{ thread.votes_count }} Stimme{{
+                                    thread.votes_count !== 1 ? 'n' : ''
                                 }}
                             </Badge>
                         </div>
@@ -640,7 +640,7 @@ onUnmounted(() => {
                             @click="voteForThread(thread.id)"
                         >
                             <ThumbsUp class="mr-2 size-4" />
-                            {{ thread.viewer_has_voted ? 'Voted' : 'Upvote' }}
+                            {{ thread.viewer_has_voted ? 'Abgestimmt' : 'Abstimmen' }}
                         </Button>
 
                         <Button
@@ -649,7 +649,7 @@ onUnmounted(() => {
                             class="rounded-full"
                             @click="requestFollowUp(thread.id)"
                         >
-                            Request follow-up
+                            Nachverfolgung anfordern
                         </Button>
 
                         <template v-if="viewer.can_moderate">
@@ -658,7 +658,7 @@ onUnmounted(() => {
                                 class="rounded-full"
                                 @click="startReply(thread.id)"
                             >
-                                Answer
+                                Antworten
                             </Button>
 
                             <Button
@@ -667,7 +667,7 @@ onUnmounted(() => {
                                 class="rounded-full"
                                 @click="markAnswered(thread.id)"
                             >
-                                Mark answered
+                                Als beantwortet markieren
                             </Button>
 
                             <Button
@@ -675,7 +675,7 @@ onUnmounted(() => {
                                 class="rounded-full"
                                 @click="togglePin(thread.id)"
                             >
-                                {{ thread.is_pinned ? 'Unpin' : 'Pin' }}
+                                {{ thread.is_pinned ? 'Lösen' : 'Anheften' }}
                             </Button>
                         </template>
                     </div>
@@ -687,13 +687,13 @@ onUnmounted(() => {
                     >
                         <label class="block space-y-2">
                             <span class="text-sm font-medium">
-                                Staff reply
+                                Mitarbeiter-Antwort
                             </span>
                             <textarea
                                 v-model="replyForm.body"
                                 rows="3"
                                 class="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-xl border bg-transparent px-3 py-2 text-sm outline-none focus-visible:ring-[3px]"
-                                placeholder="Answer publicly so future visitors can benefit."
+                                placeholder="Antworten Sie öffentlich, damit zukünftige Besucher davon profitieren."
                             />
                         </label>
 
@@ -706,14 +706,14 @@ onUnmounted(() => {
                                 class="rounded-full"
                                 @click="replyingThreadId = null"
                             >
-                                Cancel
+                                Abbrechen
                             </Button>
                             <Button
                                 type="submit"
                                 class="rounded-full"
                                 :disabled="replyForm.processing"
                             >
-                                Publish answer
+                                Antwort veröffentlichen
                             </Button>
                         </div>
                     </form>
@@ -725,10 +725,10 @@ onUnmounted(() => {
                 class="border-dashed border-border/70 bg-card/80 py-0 shadow-sm"
             >
                 <CardContent class="py-12 text-center">
-                    <p class="font-medium">No questions yet.</p>
+                    <p class="font-medium">Noch keine Fragen.</p>
                     <p class="mt-2 text-sm text-muted-foreground">
-                        Use the board to collect reusable answers from both
-                        remote and physical visitors.
+                        Nutzen Sie das Board, um wiederverwendbare Antworten von
+                        Remote- und Vor-Ort-Besuchern zu sammeln.
                     </p>
                 </CardContent>
             </Card>
@@ -739,7 +739,7 @@ onUnmounted(() => {
                 <CardContent class="space-y-4 p-6">
                     <div class="flex items-center gap-2">
                         <Users class="size-4 text-muted-foreground" />
-                        <h2 class="text-lg font-semibold">Visitors</h2>
+                        <h2 class="text-lg font-semibold">Besucher</h2>
                     </div>
 
                     <div v-if="visitors.length > 0" class="space-y-3">
@@ -771,7 +771,7 @@ onUnmounted(() => {
                             >
                                 {{
                                     visitor.participant_type === 'physical'
-                                        ? 'Physical'
+                                        ? 'Vor Ort'
                                         : 'Remote'
                                 }}
                             </Badge>
@@ -779,14 +779,14 @@ onUnmounted(() => {
                     </div>
 
                     <p v-else class="text-sm text-muted-foreground">
-                        No visible visitors right now.
+                        Derzeit keine sichtbaren Besucher.
                     </p>
                 </CardContent>
             </Card>
 
             <Card class="border-border/70 py-0 shadow-sm">
                 <CardContent class="space-y-4 p-6">
-                    <h2 class="text-lg font-semibold">Staff</h2>
+                    <h2 class="text-lg font-semibold">Mitarbeiter</h2>
 
                     <div v-if="staff.length > 0" class="space-y-3">
                         <div
@@ -814,7 +814,7 @@ onUnmounted(() => {
                     </div>
 
                     <p v-else class="text-sm text-muted-foreground">
-                        No booth staff listed yet.
+                        Noch keine Stand-Mitarbeiter eingetragen.
                     </p>
                 </CardContent>
             </Card>
