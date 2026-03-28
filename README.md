@@ -159,7 +159,6 @@ Was die Plattform speichert: nicht den exakten Standort, sondern Kontext — Ses
 |----------|------|
 | Präsentation (Slidev, 11 Folien) | [`presentation/`](presentation/) |
 | App-Screenshots (Flows) | [`presentation/slide-*.png`](presentation/) |
-| Design-Katalog (alle UI-Screens) | [`docs/designs/design-catalog.html`](docs/designs/design-catalog.html) |
 | Präsentations-Brief für die Jury | [`docs/mvp/PRESENTATION-BRIEF.md`](docs/mvp/PRESENTATION-BRIEF.md) |
 | Demo-Script | [`docs/mvp/DEMO-SCRIPT.md`](docs/mvp/DEMO-SCRIPT.md) |
 | MVP-Scope (Build vs. Stub) | [`docs/mvp/13-mvp-scope.md`](docs/mvp/13-mvp-scope.md) |
@@ -169,38 +168,79 @@ Was die Plattform speichert: nicht den exakten Standort, sondern Kontext — Ses
 
 ## MVP-Status: Feature-Prüfung
 
-Jede in dieser README erwähnte Aktion wurde gegen den aktuellen Codestand geprüft.
+Jede in dieser README erwähnte Aktion wurde konservativ gegen den aktuellen Codestand geprüft. ✅ = funktioniert End-to-End, ⚠️ = Backend vorhanden aber Frontend unvollständig, ❌ = nicht funktional.
+
+### Einstieg & Onboarding
 
 | Feature | Status | Details |
 |---------|--------|---------|
-| Magic Link (passwortlos) | ✅ Implementiert | SHA-256-Token, 1h Throttling, automatische Weiterleitung |
-| Onboarding (Typ + Tags + Icebreaker) | ✅ Implementiert | 4-Schritt-Wizard, 3–5 Tags, event-spezifisch |
-| PWA (kein App Store) | ⚠️ Teilweise | Dynamisches Manifest pro Event; kein Service Worker für Offline |
-| Präsenz-Feed (RIGHT NOW) | ✅ Implementiert | Tag-Intersection-Scoring, Filter nach Typ/Status/Tags |
-| Kontextbasierte Vorschläge | ✅ Implementiert | SuggestionService mit Session-Affinität und Tag-Overlap |
-| One-Tap Ping | ✅ Implementiert | Rate-Limiting (10/h), Duplikat-Schutz, Block-Check, 3-Ignore-Cooldown |
-| Gegenseitiger Match | ✅ Implementiert | Erzeugt automatisch Connection, Broadcast an beide Seiten |
-| Chat nach Match | ✅ Implementiert | Echtzeit-Nachrichten über WebSocket-Kanal |
-| 3-Minuten-Videocall | ✅ Implementiert | WebRTC, Countdown-Timer, Room-UUID |
-| Call-Verlängerung (max. 9 Min) | ✅ Implementiert | Bis zu 2 Extensions mit Tracking |
-| Icebreaker-Frage im Call | ✅ Implementiert | Erfasst im Onboarding, angezeigt im Call |
-| Digitale Kontaktkarten | ⚠️ Teilweise | Model existiert; automatischer Austausch nach Call nicht explizit verkabelt |
-| Session-Check-in (QR) | ✅ Implementiert | Signatur-Validierung, Check-in/Check-out mit Statusupdate |
-| Live-Reaktionen | ✅ Implementiert | 5 Typen, Echtzeit-Broadcast, Moderations-Graph |
-| Q&A mit Upvoting | ✅ Implementiert | Fragen, Replies, Votes, Pinning/Hiding durch Moderatoren |
-| Post-Session-Matching (15 Min) | ✅ Implementiert | Engagement-Score (60% Reactions, 40% Q&A), automatisches Expiry |
-| Booth-Besuche (physisch + remote) | ✅ Implementiert | Visit-Tracking, anonyme + benannte Besuche |
-| Booth-Staff-Tools (Leads, Ping) | ✅ Implementiert | Lead-Capture, CSV-Export, Announcements, Visitor-Dashboard |
-| Organizer-Dashboard | ✅ Implementiert | Overview-Stats, Session-Analytics, Booth-Performance |
-| Serendipity-Wave | ✅ Implementiert | Mass-Suggestion für alle aktiven Teilnehmenden |
-| Serendipity-Modus (Opt-in) | ✅ Implementiert | Cross-Discipline-Matching über SuggestionService |
-| Booth-Boost | ✅ Implementiert | Organizer-Aktion für unterdurchschnittliche Booths |
-| Anti-Harassment (Block/Report) | ✅ Implementiert | Block-Model, Report-Model, Rate-Limiting, Cooldown |
-| Invisible-Modus | ✅ Implementiert | Toggle mit Broadcast, Feed filtert unsichtbare User |
-| WebSockets (Reverb) | ✅ Implementiert | 18 Events, 6 Kanaltypen |
-| Cross-World-Gleichheit | ✅ Implementiert | `is_cross_world` auf Connections, gleiche Feeds/Booths/Sessions |
+| Magic Link (passwortlos) | ✅ | SHA-256-Token, 1h Throttling, automatische Weiterleitung |
+| Onboarding (Typ + Tags + Icebreaker) | ✅ | 4-Schritt-Wizard, 3–5 Tags, event-spezifisch |
+| PWA (kein App Store) | ⚠️ | Dynamisches Manifest pro Event vorhanden; kein Service Worker für Offline |
 
-**Ergebnis: 24 von 26 Features voll implementiert, 2 teilweise (PWA-Offline, Kontaktkarten-Automatik).**
+### Entdecken & Verbinden
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Präsenz-Feed (RIGHT NOW) | ✅ | Tag-Intersection-Scoring, Filter nach Typ/Status/Tags |
+| Kontextbasierte Vorschläge | ✅ | Gewichteter Algorithmus (Interessen 30%, Kontext 25%, Session-Affinität 25%, Verfügbarkeit 20%) |
+| One-Tap Ping | ✅ | Rate-Limiting (10/h), Duplikat-Schutz, Block-Check, 3-Ignore-Cooldown |
+| Gegenseitiger Match | ✅ | Erzeugt automatisch Connection, Broadcast an beide Seiten |
+
+### Interaktion
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Chat nach Match | ✅ | Echtzeit via Echo — HTTP + WebSocket, Typing-Indicator, funktioniert End-to-End |
+| 3-Minuten-Videocall | ❌ | **UI-Shell vorhanden** (Kamera, Timer, Extensions), aber **kein WebRTC-Signaling** — zwei Browser können sich nicht verbinden. Nur lokale Kamera sichtbar. |
+| Call-Verlängerung (max. 9 Min) | ⚠️ | HTTP-basierte Metadaten-Verwaltung funktioniert, aber ohne funktionierenden Call irrelevant |
+| Icebreaker-Frage | ✅ | Erfasst im Onboarding, angezeigt im Call-UI |
+| Digitale Kontaktkarten | ❌ | Model existiert, aber **kein Controller, keine Route, kein UI** — nicht implementiert |
+
+### Sessions
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Session-Check-in (QR) | ✅ | Signatur-Validierung, Check-in/Check-out mit Statusupdate |
+| Live-Reaktionen | ✅ | 5 Typen, Echtzeit-Broadcast via Echo, Cluster-Erkennung funktioniert End-to-End |
+| Q&A mit Upvoting | ✅ | Fragen, Replies, Votes, Pinning/Hiding durch Moderatoren |
+| Post-Session-Matching (15 Min) | ✅ | Automatisiert via Scheduled Command, Engagement-Score, 15-Min-Fenster |
+
+### Booths
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Booth-Besuche | ✅ | Visit-Tracking, anonyme + benannte Besuche, Thread-Broadcasting funktioniert |
+| Booth-Staff: Leads & Export | ✅ | Lead-Liste, CSV-Export |
+| Booth-Staff: Echtzeit-Besucher | ⚠️ | Visitor-Liste nur bei Page-Load, keine Echtzeit-Updates wenn jemand kommt/geht |
+| Booth-Staff: Besucher pingen | ❌ | Kein Ping-Endpoint für Booth-Staff vorhanden |
+
+### Organizer
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Dashboard Metriken | ⚠️ | Daten werden bei Page-Load geladen, aber **keine Echtzeit-Updates** — Organizer muss manuell refreshen |
+| Serendipity-Wave | ⚠️ | Backend-Endpoint funktioniert, aber keine Echtzeit-Benachrichtigung an Teilnehmende |
+| Serendipity-Modus (Opt-in) | ❌ | Matching-Logik existiert im Backend, aber **kein UI-Toggle** für Teilnehmende |
+| Booth-Boost | ⚠️ | Endpoint vorhanden, Effekt auf Teilnehmende unklar |
+| Ankündigungen | ⚠️ | Backend dispatcht Event, aber **kein Frontend-Listener** — Ankündigungen kommen nie an |
+
+### Sicherheit & Infrastruktur
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Anti-Harassment (Block/Report) | ✅ | Block-Model, Report-Model, Rate-Limiting, Cooldown |
+| Invisible-Modus | ✅ | Toggle funktioniert, Feed filtert unsichtbare User |
+| WebSockets (Reverb) | ⚠️ | Infrastruktur funktioniert für Chat, Reactions, Booth-Threads. Viele Broadcast-Events haben aber **keinen Frontend-Listener** |
+| Cross-World-Gleichheit | ✅ | Remote-Teilnehmende in Feed, Booths, Sessions gleichgestellt |
+
+### Zusammenfassung
+
+| | Anzahl |
+|---|--------|
+| ✅ Funktioniert End-to-End | 15 |
+| ⚠️ Teilweise (Backend ok, Frontend fehlt) | 8 |
+| ❌ Nicht funktional | 4 (Videocall, Kontaktkarten, Serendipity-Opt-in, Booth-Staff-Ping) |
 
 ---
 
@@ -212,6 +252,6 @@ Sichtbarkeit / Relevanz / Verbindungen.
 
 ---
 
-*Rick / Maerz 2026 — riccardo.previti@uoiea.ch*
+*Rick / März 2026 — riccardo.previti@uoiea.ch*
 
 *Gebaut mit Laravel, Vue 3, Inertia.js, Laravel Reverb und WebRTC.*
