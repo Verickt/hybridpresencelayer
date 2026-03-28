@@ -14,6 +14,34 @@ Sessions collect rich behavioral signals (reactions, questions, upvotes) but non
 
 ---
 
+## 0. Prerequisites — Schema & Channel Fixes
+
+These must be addressed before building the features below.
+
+### Speaker Identity
+
+`event_sessions.speaker` is currently a free-text field. Add a nullable `speaker_user_id` FK to `event_sessions`. When set, that user gets the "Speaker" badge on replies and can mark questions as answered. When null, only the event organizer can moderate.
+
+### WebSocket Channel Authorization
+
+The `session.{sessionId}` private channel currently only authorizes users with an active check-in (`checked_out_at IS NULL`). This breaks two things:
+
+1. **Organizer moderation** — the organizer needs channel access without checking in
+2. **Post-session window** — participants who check out lose access immediately
+
+Fix: authorize the channel for any user who (a) is the event organizer, (b) has an active check-in, OR (c) has a check-in record for this session and the session ended within the last 15 minutes.
+
+### Durable Attendance
+
+Manual checkout or session end currently removes post-session eligibility. Add a `SessionEndedJob` dispatched when a session's `ends_at` passes. This job:
+- Auto-stamps `checked_out_at` on all remaining active check-ins for that session
+- Broadcasts `SessionEnded` event on `session.{sessionId}`
+- Triggers pre-computation of engagement summaries (see Section 5)
+
+Post-session eligibility = "has any `SessionCheckIn` record for this session" regardless of checkout timing.
+
+---
+
 ## 1. Enhanced Reactions — From Decoration to Connection Signal
 
 ### During Session (Awareness Only)
@@ -26,23 +54,30 @@ When a participant reacts, the system groups reactions within ~30-second windows
 - Badge auto-dismisses after 15 seconds if the moment passes
 - Creates anticipation: "I want to meet these people after"
 
+**Computation:** Client-side. The frontend already receives all reaction broadcasts on `session.{sessionId}`. The client tracks reactions in 30-second windows locally and shows the badge count. No additional server events needed.
+
 ### Post-Session (Full Connection Flow)
 
 All reaction affinity data feeds into the Post-Session Connection Screen (Section 4). Reaction clusters become a match reason: "You both 🔥'd 4 moments."
 
 ### Data Model
 
-No new tables. Moment clusters are computed by querying `session_reactions` grouped by `event_session_id` + time window (~30 seconds) + reaction type. Grouping is computed on-the-fly, not stored.
+No new tables. Moment clusters are computed from `session_reactions` grouped by `event_session_id` + time window (~30 seconds). The `SessionEndedJob` pre-computes per-user "moment fingerprints" (which 30-sec windows did each user react in) for efficient pairwise comparison at matching time (see Section 5).
 
 ---
 
 ## 2. Q&A Becomes a Discussion Thread
 
+### Pattern Reuse
+
+Booths already have threaded replies, votes, pinning, and moderation. Session Q&A follows the **same data and controller patterns** to avoid building a parallel system. The UX differs (sessions are live and time-bound vs. booths are persistent), but the underlying CRUD, voting, and moderation logic is shared.
+
 ### Threaded Replies
 
 - Any participant can **reply** to a question (not just speaker/organizer)
 - Replies are **one level deep** — no nested replies, keeps it simple
-- Speaker and organizer replies get a visual badge ("Speaker" / "Organizer")
+- Speaker replies get a "Speaker" badge (requires `speaker_user_id` on session)
+- Organizer replies get an "Organizer" badge (checked via `event.organizer_id`)
 - Questions remain sortable by vote count
 
 ### Reply Voting
@@ -108,7 +143,7 @@ Unique constraint on `(session_question_reply_id, user_id)`.
 
 - Organizers see a **"Moderate"** button on the session detail page
 - New page: `SessionModerate.vue`
-- No new roles needed — uses existing organizer role on `event_user` pivot
+- Organizer identified via `event.organizer_id` (no new roles needed)
 
 ### Layout — Three Panels
 
@@ -136,7 +171,7 @@ Unique constraint on `(session_question_reply_id, user_id)`.
 
 ### Real-Time
 
-- Organizer subscribes to existing `session.{sessionId}` WebSocket channel
+- Organizer subscribes to `session.{sessionId}` channel (authorized via organizer check — see Section 0)
 - Receives all reaction and question events
 - New broadcast event: `SessionQuestionPinned` — notifies participants when a question is pinned
 
@@ -152,9 +187,15 @@ Unique constraint on `(session_question_reply_id, user_id)`.
 
 ### Trigger
 
-- When a session ends, checked-in participants see a transition screen
-- Not a push notification — it's the natural next page after the session
+- `SessionEndedJob` broadcasts `SessionEnded` event on `session.{sessionId}`
+- Frontend listens for this event and transitions checked-in participants to the post-session screen
 - Available for **15 minutes** after session ends (matches existing suggestion TTL)
+
+### Integration with Existing Suggestion System
+
+Post-session connections are **not a new matching stack**. They are `Suggestion` records created by the existing `SuggestionService` with a new trigger type `'session_affinity'` and session-specific reasons. This reuses the existing TTL, ranking, exclusion logic, and decline/accept lifecycle.
+
+The `PostSessionConnections.vue` page renders suggestions filtered by `trigger = 'session_affinity'` for the relevant session.
 
 ### What Participants See
 
@@ -169,12 +210,16 @@ Each person shows:
 - Name, avatar, interest tags
 - Participant type badge ("Remote" / "In the room")
 - **Match reason** — "You both 🔥'd 4 moments" or "You discussed the same question"
-- One-tap ping button (existing ping flow)
+- One-tap ping button (existing ping flow — accepting a suggestion sends a ping)
 
-### Cross-World Emphasis
+### Cross-World Reranking
 
-- At least 1 of top 3 suggestions must cross physical ↔ remote (existing rule)
-- Visual callout with prominent participant type badges
+The "at least 1 of top 3 must cross physical ↔ remote" rule cannot be satisfied by weighting alone. After scoring, a **reranking step** ensures the quota:
+1. Sort all candidates by score descending
+2. Take top 3
+3. If none cross physical ↔ remote, swap the lowest-scored same-world suggestion for the highest-scored cross-world candidate
+
+This reranking applies to all suggestion generation, not just post-session.
 
 ### Fallback
 
@@ -182,19 +227,9 @@ If no strong matches exist:
 - Serendipity fallback: 1-2 random participants from the session
 - Reason: "You were in the same session — say hi?"
 
-### Data Model
-
-No new tables. Session affinity is computed on-the-fly from:
-- `session_reactions` timestamps (moment cluster overlap)
-- `session_question_replies` (who replied to whom)
-- `session_question_reply_votes` (who upvoted whose replies)
-- `session_question_votes` (who upvoted the same questions)
-
-15-minute window is short enough that live computation is fine.
-
 ### New Page
 
-`PostSessionConnections.vue` — shown automatically when session ends for checked-in participants.
+`PostSessionConnections.vue` — shown automatically when `SessionEnded` event is received.
 
 ---
 
@@ -212,16 +247,41 @@ relevance = (0.40 × interest_overlap + 0.35 × context_match) × availability
 relevance = (0.30 × interest_overlap + 0.25 × context_match + 0.25 × session_affinity) × availability
 ```
 
+Note: weights sum to 0.80 (up from 0.75). The additional 0.05 reflects the richer signal set — session behavioral data adds real information. When `session_affinity = 0` (no shared session), the effective weights are 0.30 + 0.25 = 0.55, which is lower than today's 0.75 — this is intentional, as non-session matches have less signal confidence.
+
+### Session Affinity — Pre-Computed
+
+Session affinity is **not computed on-the-fly**. The `SessionEndedJob` pre-computes:
+
+1. **Per-user moment fingerprints** — which 30-second windows did each user react in? Stored as a set of window indices per user.
+2. **Q&A interaction edges** — for each user pair: did they reply to each other? Upvote each other? Upvote the same questions?
+
+These are stored in a `session_engagement_edges` table:
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | bigint PK | |
+| event_session_id | FK | |
+| user_a_id | FK | Lower ID first (same convention as connections) |
+| user_b_id | FK | Higher ID |
+| reaction_sync_score | float | 0-1, normalized moment overlap |
+| qa_interaction_score | float | 0-1, normalized Q&A interaction |
+| created_at | timestamp | |
+
+Unique constraint on `(event_session_id, user_a_id, user_b_id)`.
+
+This makes matching O(1) per pair — just look up the pre-computed edge.
+
 ### Session Affinity Breakdown
 
-- **Reaction sync (60% of session_affinity)** — How many "moments" (30-sec windows) did both users react in? Normalized by total moments in the session.
-- **Q&A interaction (40% of session_affinity)** — Replies to each other's questions, upvotes on each other's replies, upvotes on the same questions.
+- **Reaction sync (60%)** — `|shared_windows| / max(user_a_windows, user_b_windows)`
+- **Q&A interaction (40%)** — Weighted sum: replied to each other (0.4), upvoted each other's replies (0.3), upvoted same questions (0.3). Normalized to 0-1.
 
 ### When It Applies
 
-- Session affinity only scores > 0 when both users attended the same session
+- Session affinity only scores > 0 when both users attended the same session and an engagement edge exists
 - Outside sessions, old weights effectively apply (session_affinity = 0)
-- During post-session window, availability multiplier overridden to **1.0** for recent session participants (they just finished, they're available)
+- During post-session window, availability multiplier overridden to **1.0** for recent session participants
 
 ### Serendipity Mode
 
@@ -234,25 +294,35 @@ Unchanged — still deliberately matches zero-overlap users for cross-disciplina
 ### New Tables
 - `session_question_replies`
 - `session_question_reply_votes`
+- `session_engagement_edges` (pre-computed affinity scores per user pair per session)
 
 ### Modified Tables
+- `event_sessions` — add `speaker_user_id` (nullable FK)
 - `session_questions` — add `is_pinned`, `is_hidden`, `answered_by`
 
 ### New Pages
 - `SessionModerate.vue` — organizer live moderation dashboard
-- `PostSessionConnections.vue` — post-session connection screen
+- `PostSessionConnections.vue` — post-session connection screen (renders session-affinity suggestions)
 
 ### Modified Files
-- `MatchingService.php` — new `session_affinity` weight + `computeSessionAffinity()` method
-- `SessionDetail.vue` — reaction cluster badge, threaded Q&A with replies
+- `MatchingService.php` — new `session_affinity` weight, reads from `session_engagement_edges`
+- `SuggestionService.php` — new trigger type `'session_affinity'`, session-specific reason generation
+- `SessionDetail.vue` — client-side reaction cluster badge, threaded Q&A with replies
 - `SessionQuestionController.php` — reply CRUD, pin/hide/answer actions
-- `SessionController.php` — moderate view, post-session redirect
+- `SessionController.php` — moderate view
+- `routes/channels.php` — expanded `session.{sessionId}` authorization (organizer + post-session grace)
+
+### New Jobs
+- `SessionEndedJob` — auto-checkout, compute engagement edges, broadcast `SessionEnded`, trigger suggestion generation
 
 ### New Events (WebSocket)
+- `SessionEnded` — triggers post-session transition on frontend
 - `SessionQuestionReplyPosted`
 - `SessionQuestionPinned`
 
 ### New Controllers/Methods
 - `SessionQuestionReplyController` — store reply, vote on reply
 - `SessionModerateController` — pin, hide, mark answered
-- `PostSessionConnectionController` — fetch session-affinity-ranked suggestions
+
+### Cross-Cutting Fix
+- Cross-world reranking constraint in `MatchingService.topMatches()` — applies to all suggestion generation
