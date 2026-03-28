@@ -14,6 +14,7 @@ const props = defineProps<{
         context_badge: string | null;
         interest_tags: string[];
     };
+    hasPingedYou?: boolean;
 }>();
 
 defineEmits<{
@@ -54,6 +55,7 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
     <div
         :dusk="`presence-row-${participant.id}`"
         class="flex cursor-pointer items-center gap-3 border-b border-neutral-100 py-3 last:border-b-0"
+        :class="hasPingedYou ? 'bg-indigo-50/50' : ''"
         @click="$emit('select', participant.id)"
     >
         <div class="relative shrink-0">
@@ -81,7 +83,13 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
                 </span>
             </div>
             <span
-                v-if="participant.context_badge"
+                v-if="hasPingedYou"
+                class="mt-0.5 inline-block rounded bg-indigo-100 px-1.5 py-0.5 text-[11px] font-semibold text-indigo-700"
+            >
+                👋 Hat dich gepingt
+            </span>
+            <span
+                v-else-if="participant.context_badge"
                 class="mt-0.5 inline-block rounded bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-600"
             >
                 {{ participant.context_badge }}
@@ -98,6 +106,14 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
         </div>
 
         <button
+            v-if="hasPingedYou"
+            class="shrink-0 rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700"
+            @click.stop="$emit('ping', participant.id)"
+        >
+            👋 Zurückpingen
+        </button>
+        <button
+            v-else
             class="shrink-0 text-xl"
             @click.stop="$emit('ping', participant.id)"
         >

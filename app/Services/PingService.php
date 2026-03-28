@@ -62,6 +62,16 @@ class PingService
 
             PingReceived::dispatch($event, $ping);
 
+            // Create persistent notification so the ping shows in notification bell
+            app(NotificationService::class)->send(
+                $receiver,
+                $event,
+                'ping',
+                'high',
+                "👋 {$sender->name} hat dich gepingt",
+                ['sender_id' => $sender->id, 'sender_name' => $sender->name, 'ping_id' => $ping->id],
+            );
+
             return $ping;
         });
     }

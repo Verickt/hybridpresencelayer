@@ -37,6 +37,7 @@ const wasDark = ref(false);
 onMounted(() => {
     wasDark.value = document.documentElement.classList.contains('dark');
     document.documentElement.classList.remove('dark');
+    (window as any).__eventSlug = eventSlug.value;
 
     if (!window.Echo || !currentUser.value?.id) return;
 

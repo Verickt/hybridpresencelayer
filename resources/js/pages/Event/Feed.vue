@@ -7,6 +7,7 @@ import ParticipantRow from '@/components/presence/ParticipantRow.vue';
 import PresenceFilters from '@/components/presence/PresenceFilters.vue';
 import { useHaptics } from '@/composables/useHaptics';
 import { ping, search } from '@/routes/event';
+import { decline as declineSuggestion } from '@/routes/event/suggestions';
 
 const { ping: hapticPing } = useHaptics();
 
@@ -27,6 +28,7 @@ const props = defineProps<{
     }>;
     suggestion?: {
         id: number;
+        suggestion_id: number;
         name: string;
         company?: string;
         role_title?: string;
@@ -37,6 +39,7 @@ const props = defineProps<{
         shared_context?: string;
         time_left?: string;
     } | null;
+    incomingPingUserIds: number[];
     filters: { type?: string; status?: string; tag?: string };
     availableTags?: string[];
 }>();
@@ -58,6 +61,20 @@ watch(
 );
 
 const pingRequest = useHttp();
+
+const dismissRequest = useHttp();
+
+async function handleDismissSuggestion() {
+    if (!props.suggestion) return;
+    try {
+        await dismissRequest.submit(
+            declineSuggestion({ event: props.event.slug, suggestion: props.suggestion.suggestion_id }),
+        );
+        router.reload({ only: ['suggestion'] });
+    } catch {
+        // silently fail
+    }
+}
 
 async function handlePing(userId: number) {
     hapticPing();
@@ -132,7 +149,7 @@ onUnmounted(() => {
             class="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm text-neutral-400 transition hover:border-neutral-300"
         >
             <Search class="size-4" />
-            Search people, tags...
+            Personen, Tags suchen...
         </Link>
 
         <!-- Filter pills -->
@@ -145,7 +162,7 @@ onUnmounted(() => {
         <!-- RIGHT NOW — Featured suggestion -->
         <div v-if="suggestion" class="space-y-2">
             <div class="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-orange-500 uppercase">
-                <span>✨</span> Right now
+                <span>✨</span> Gerade jetzt
             </div>
 
             <div class="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
@@ -163,14 +180,14 @@ onUnmounted(() => {
                                 <span class="text-base font-semibold text-neutral-900">{{ suggestion.name }}</span>
                                 <p class="text-sm text-neutral-500">
                                     {{ suggestion.role_title }}{{ suggestion.company ? `, ${suggestion.company}` : '' }}
-                                    · {{ suggestion.participant_type === 'physical' ? '📍' : '🌐' }} {{ suggestion.participant_type === 'physical' ? 'Physical' : 'Remote' }}
+                                    · {{ suggestion.participant_type === 'physical' ? '📍' : '🌐' }} {{ suggestion.participant_type === 'physical' ? 'Vor Ort' : 'Remote' }}
                                 </p>
                             </div>
                             <span v-if="suggestion.time_left" class="text-xs text-neutral-400">{{ suggestion.time_left }}</span>
                         </div>
 
                         <p class="mt-1 text-sm text-orange-600">
-                            {{ suggestion.shared_context || `Both interested in ${suggestion.shared_tags.join(' · ')}` }}
+                            {{ suggestion.shared_context || `Beide interessiert an ${suggestion.shared_tags.join(' · ')}` }}
                         </p>
 
                         <div class="mt-3 flex items-center gap-2">
@@ -182,8 +199,9 @@ onUnmounted(() => {
                             </button>
                             <button
                                 class="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+                                @click="handleDismissSuggestion"
                             >
-                                Later
+                                Später
                             </button>
                         </div>
                     </div>
@@ -194,7 +212,7 @@ onUnmounted(() => {
         <!-- People list -->
         <div>
             <p class="mb-2 text-xs font-semibold tracking-wider text-neutral-400 uppercase">
-                People · {{ liveParticipants.length }} here
+                Personen · {{ liveParticipants.length }} hier
             </p>
 
             <div class="rounded-2xl bg-white">
@@ -202,6 +220,7 @@ onUnmounted(() => {
                     v-for="participant in liveParticipants"
                     :key="participant.id"
                     :participant="participant"
+                    :has-pinged-you="incomingPingUserIds.includes(participant.id)"
                     @ping="handlePing"
                     @select="openDetail"
                 />
@@ -210,7 +229,7 @@ onUnmounted(() => {
                     v-if="liveParticipants.length === 0"
                     class="py-12 text-center text-sm text-neutral-400"
                 >
-                    No participants match your filters.
+                    Keine Teilnehmer entsprechen Ihren Filtern.
                 </p>
             </div>
         </div>
