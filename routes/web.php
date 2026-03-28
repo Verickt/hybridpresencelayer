@@ -25,6 +25,7 @@ use App\Http\Controllers\OrganizerActionController;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\PresenceFeedController;
 use App\Http\Controllers\QrResolveController;
+use App\Http\Controllers\QuickJoinController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SessionCheckInController;
@@ -48,6 +49,9 @@ Route::post('/magic-link', [MagicLinkController::class, 'send'])
     ->middleware('throttle:5,1')
     ->name('magic-link.send');
 Route::get('/magic-link/{token}', [MagicLinkController::class, 'authenticate'])->name('magic-link.authenticate');
+
+Route::get('/event/{event:slug}/join', [QuickJoinController::class, 'show'])->name('event.join');
+Route::post('/event/{event:slug}/join', [QuickJoinController::class, 'store'])->name('event.join.store');
 
 Route::middleware(['auth'])->group(function () {
     // Onboarding wizard
