@@ -4,6 +4,7 @@ use App\Models\Event;
 use App\Models\EventSession;
 use App\Models\SessionCheckIn;
 use App\Models\SessionQuestion;
+use App\Models\SessionQuestionReply;
 use App\Models\SessionQuestionVote;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -108,6 +109,32 @@ it('allows the organizer to view the session detail without being a participant'
             ->where('viewer.can_interact', false)
             ->etc()
         );
+});
+
+it('returns questions with replies and moderation data in session show', function () {
+    $organizer = $this->organizer;
+    $event = $this->event;
+    $session = EventSession::factory()->for($event)->live()->create(['speaker_user_id' => $organizer->id]);
+    $user = $this->participant;
+    $event->participants()->syncWithoutDetaching([$user->id => ['participant_type' => 'physical', 'status' => 'in_session']]);
+    SessionCheckIn::create(['user_id' => $user->id, 'event_session_id' => $session->id]);
+
+    $question = SessionQuestion::factory()->create(['event_session_id' => $session->id, 'is_pinned' => true]);
+    SessionQuestionReply::create([
+        'session_question_id' => $question->id,
+        'user_id' => $organizer->id,
+        'body' => 'Great question!',
+    ]);
+
+    $response = $this->actingAs($user)->get(route('event.sessions.show', [$event, $session]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Event/SessionDetail')
+        ->has('questions.0.replies', 1)
+        ->where('questions.0.is_pinned', true)
+        ->where('questions.0.is_hidden', false)
+    );
 });
 
 it('forbids outsiders from the session pages', function () {

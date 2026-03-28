@@ -60,6 +60,7 @@ class SessionController extends Controller
 
         $viewerParticipant = $event->participants()->whereKey($user->id)->first();
         $isOrganizer = $event->organizer_id === $user->id;
+        $isSpeaker = $session->speaker_user_id === $user->id;
         $isParticipant = $viewerParticipant !== null;
         $isCheckedIn = $isParticipant && $session->hasActiveCheckInFor($user);
 
@@ -75,17 +76,39 @@ class SessionController extends Controller
                 'participant_type' => $checkIn->user->events->first()?->pivot?->participant_type,
             ]);
 
-        $questions = $session->questions()
-            ->with('user:id,name')
-            ->withCount('votes')
-            ->with([
-                'votes' => fn ($query) => $query
-                    ->where('user_id', $user->id)
-                    ->select('id', 'session_question_id'),
-            ])
+        $questionsQuery = $session->questions()
+            ->with(['user:id,name', 'replies' => fn ($q) => $q->with('user:id,name')->withCount('votes'), 'votes'])
+            ->withCount('votes');
+
+        if (! $isOrganizer && ! $isSpeaker) {
+            $questionsQuery->where('is_hidden', false);
+        }
+
+        $questions = $questionsQuery
+            ->orderByDesc('is_pinned')
             ->orderByDesc('votes_count')
-            ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->map(fn ($q) => [
+                'id' => $q->id,
+                'body' => $q->body,
+                'user' => ['id' => $q->user->id, 'name' => $q->user->name],
+                'votes_count' => $q->votes_count,
+                'viewer_has_voted' => $q->votes->contains('user_id', $user->id),
+                'is_answered' => $q->is_answered,
+                'is_pinned' => $q->is_pinned,
+                'is_hidden' => $q->is_hidden,
+                'answered_by' => $q->answered_by,
+                'replies' => $q->replies->map(fn ($r) => [
+                    'id' => $r->id,
+                    'body' => $r->body,
+                    'user' => ['id' => $r->user->id, 'name' => $r->user->name],
+                    'votes_count' => $r->votes_count,
+                    'viewer_has_voted' => $r->votes->contains('user_id', $user->id),
+                    'is_speaker' => $session->speaker_user_id === $r->user_id,
+                    'is_organizer' => $event->organizer_id === $r->user_id,
+                    'created_at' => $r->created_at->toISOString(),
+                ]),
+            ]);
 
         return Inertia::render('Event/SessionDetail', [
             'event' => ['id' => $event->id, 'name' => $event->name, 'slug' => $event->slug],
@@ -102,25 +125,19 @@ class SessionController extends Controller
                 'qa_enabled' => $session->qa_enabled,
                 'reactions_enabled' => $session->reactions_enabled,
                 'can_interact' => $session->canInteract(),
+                'speaker_user_id' => $session->speaker_user_id,
             ],
             'viewer' => [
                 'is_organizer' => $isOrganizer,
+                'is_speaker' => $isSpeaker,
+                'is_moderator' => $isOrganizer || $isSpeaker,
                 'participant_type' => $viewerParticipant?->pivot?->participant_type,
                 'is_checked_in' => $isCheckedIn,
                 'can_join' => $isParticipant && $session->isJoinable(),
                 'can_interact' => $isParticipant && $isCheckedIn && $session->canInteract(),
             ],
             'participants' => $participants,
-            'questions' => $questions->map(fn ($question) => [
-                'id' => $question->id,
-                'body' => $question->body,
-                'user' => [
-                    'id' => $question->user->id,
-                    'name' => $question->user->name,
-                ],
-                'votes_count' => $question->votes_count,
-                'viewer_has_voted' => $question->votes->isNotEmpty(),
-            ]),
+            'questions' => $questions,
         ]);
     }
 
