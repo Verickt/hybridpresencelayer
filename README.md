@@ -1,185 +1,217 @@
-# Hybrid Presence Platform
+# Hybrid Presence Layer
 
-**Ein Social Layer in Echtzeit für hybride Events — verbindet physische und remote Teilnehmende, die sich sonst nie begegnet wären.**
+**Die soziale Schicht fuer hybride Events.**
 
----
-
-## Das Problem
-
-Hybride Events schaffen zwei getrennte Welten:
-
-- **Vor-Ort-Teilnehmende** vernetzen sich ganz natürlich — Pausengespräche, zufällige Begegnungen, gemeinsame Reaktionen.
-- **Remote-Teilnehmende** sind unsichtbar. Sie schauen zu, aber sie nehmen nicht am sozialen Geschehen teil. Sie sind Zuschauer, keine Teilnehmer.
-
-Die Technologie für Content-Streaming existiert. Die Technologie, um **Beziehungen über diese Grenze hinweg** zu schaffen, fehlt.
-
-**Was fehlt, ist nicht Video — es ist soziale Infrastruktur.**
-
-## Die Lösung
-
-Drei Schichten, eine Plattform:
-
-```
-┌─────────────────────────────────┐
-│     Interaktions-Schicht        │  Ping, Chat, 3-Minuten-Videocall
-├─────────────────────────────────┤
-│     Connection Engine           │  Wer sollte wen treffen — genau jetzt
-├─────────────────────────────────┤
-│     Präsenz-Schicht             │  Wer ist da, wo, und was tut er/sie
-└─────────────────────────────────┘
-```
-
-Wir sind **keine** Streaming-Plattform, keine Chat-App, kein Event-Management-Tool und kein soziales Netzwerk. Wir sind die **fehlende Schicht dazwischen** — der Mechanismus, der gemeinsame Anwesenheit in echte Verbindungen verwandelt.
-
-## Wie es funktioniert
-
-### Akt 1: Einstieg in unter 60 Sekunden
-1. Teilnehmende erhalten einen Event-Link (E-Mail oder QR-Code am Veranstaltungsort)
-2. Magic Link klicken — **kein Passwort, kein Registrierungsformular**
-3. Auswahl: *«Ich bin vor Ort»* oder *«Ich bin remote dabei»*
-4. 3 Interessen-Tags aus der Tag-Cloud wählen (z.B. «Zero Trust», «Cloud Migration», «DevOps»)
-5. Fertig — der **Präsenz-Feed** ist live
-
-**Keine App-Installation nötig** (es ist eine PWA).
-
-### Akt 2: Entdecken & Verbinden
-6. Der Feed zeigt andere Teilnehmende, sortiert nach Relevanz — gemeinsame Interessen und Kontext
-7. Eine **«Jetzt gerade»-Karte** erscheint: *«Du und Lena habt beide Zero Trust getaggt und schaut die gleiche Keynote»*
-8. Ein Tap auf **Ping** — kein Text nötig, reines Signal: «Ich bin interessiert»
-9. Lena pingt zurück → **Match!** Optionen: Chat starten oder 3-Minuten-Call
-
-### Akt 3: Echte Interaktion
-10. **3-Minuten-Videocall** mit Countdown — kurz, fokussiert, risikolos
-11. Icebreaker-Frage als Gesprächseinstieg
-12. Nach 3 Minuten: verlängern (+3 Min, max. 9 total) oder beenden
-13. Danach: digitale Kontaktkarten werden ausgetauscht, mit vollem Kontext
-
-### Akt 4: Sessions & Booths
-14. **Session-Check-in** per QR-Scan — sehen, wer noch dabei ist (physisch + remote)
-15. **Live-Reaktionen** fliessen über beide Welten (💡👏🔥)
-16. **Q&A** — Fragen werden von allen Teilnehmenden hochgevoted
-17. **Post-Session-Matching**: *«4 Leute in dieser Session teilen deine Interessen — jetzt verbinden?»*
-18. **Booth-Besuche** — Booth-Personal sieht physische und remote Besucher gleichermassen
-
-### Akt 5: Organizer-Dashboard
-19. Echtzeit-Metriken: aktive Teilnehmende, Verbindungen, Cross-Pollination-Rate
-20. **Serendipity-Wave** auslösen — alle bekommen gleichzeitig einen Match-Vorschlag
-21. Booths boosten, Ankündigungen senden, Matching in Echtzeit steuern
-
-## Signature Features
-
-| Feature | Beschreibung |
-|---|---|
-| **One-Tap Ping** | Kein Text, kein Commitment. Löst das schwerste Problem beim Netzwerken: den ersten Schritt machen. Gegenseitiger Ping nötig — keine unerwünschten Nachrichten. |
-| **3-Minuten-Call** | Zeitlich begrenzt = risikolos. Spiegelt die natürliche Länge eines Hallengesprächs. Verlängerbar bei guter Chemie. |
-| **Serendipity-Modus** | Opt-in: «Überrasch mich mit jemandem, den ich sonst nie treffen würde.» Matcht bewusst Leute ohne gemeinsame Interessen — die wertvollsten Verbindungen. |
-| **Cross-World-Gleichheit** | Remote-Teilnehmende generieren dieselben Lead-Daten, sehen denselben Reaktions-Stream, erscheinen im selben Feed. Keine Zuschauer zweiter Klasse. |
-| **Anti-Harassment by Design** | Kein unaufgeforderter Chat (Match nötig), Rate-Limiting, Block/Report, Invisible-Modus. |
-
-## Technologie
-
-- **PWA** — kein App Store, sofortiger Zugang per URL/QR-Code
-- **Laravel + Inertia.js + Vue 3** — Server-driven SPA
-- **Echtzeit via WebSockets** (Laravel Reverb) — Präsenz-Updates in 1–2 Sekunden
-- **WebRTC** — Peer-to-Peer-Videocalls ohne externen Service
-- **Mobile-first Design** — Bottom-Tab-Navigation, grosse Tap-Targets
-
-## Drei Akteure
-
-| Akteur | Rolle |
-|---|---|
-| **Teilnehmende** (physisch + remote) | Entdecken und verbinden sich mit relevanten Personen |
-| **Organizer** | Event einrichten, Echtzeit-Dashboard überwachen, Networking steuern |
-| **Booth-Personal** | Besucher sehen, proaktiv pingen, Leads erfassen — physisch wie remote |
-
-## Business Value
-
-- **Für Organizer**: Neue KPIs jenseits der Teilnehmerzahl — Networking-Dichte, Cross-Pollination-Rate, Match-Akzeptanz
-- **Für Sponsoren**: Leads aus beiden Welten, Session-to-Booth-Attribution, proaktive Kontaktaufnahme
-- **Für Teilnehmende**: Null Kosten, null Reibung, unter 60 Sekunden zum Start — und remote Teilnehmende sind endlich gleichwertig
-
-## Zielmarkt
-
-B2B-Konferenzen und Verbandsevents, 200–2'000 Teilnehmende, 10–40% Remote-Anteil. Sweet Spot: Events, bei denen professionelles Networking ein erklärtes Ziel ist.
+> *Ein Raum, nicht zwei Bildschirme.*
 
 ---
 
-## MVP-Status: Feature-Prüfung
+## Was ist das Problem?
 
-Jede in dieser README erwähnte Aktion/Funktion wurde gegen den aktuellen Codestand geprüft.
+Ein Talk endet. Vor Ort beginnt das Networking — der Raum ist voller Moeglichkeiten. Menschen drehen sich zueinander, in der Schlange, beim Kaffee entstehen spontane Gespraeche.
 
-### Akt 1: Einstieg
+Remote? Der Stream endet, der Tab schliesst sich, die Sichtbarkeit verschwindet. Der soziale Moment geht verloren.
 
-| # | Aktion | Status | Details |
-|---|--------|--------|---------|
-| 1 | Event-Link per E-Mail oder QR-Code | ✅ Vorhanden | Magic-Link-Versand per E-Mail implementiert; QR-Code am Veranstaltungsort zeigt Join-URL |
-| 2 | Magic Link — kein Passwort | ✅ Vorhanden | `MagicLinkController` mit SHA-256-Token, 1h Throttling, automatische Weiterleitung |
-| 3 | Auswahl physisch/remote | ✅ Vorhanden | Onboarding-Schritt 1, gespeichert in `event_user`-Pivot |
-| 4 | 3 Interessen-Tags wählen | ✅ Vorhanden | Onboarding-Schritt 2, 3–5 Tags erforderlich, event-spezifisch |
-| 5 | PWA — keine App-Installation | ⚠️ Teilweise | Dynamisches `manifest.json` pro Event vorhanden; kein dedizierter Service Worker für Offline-Modus gefunden |
+**Hybrid verliert nicht den Inhalt. Hybrid verliert den Anschluss danach.**
 
-### Akt 2: Entdecken & Verbinden
+Der wertvollste Teil einer Konferenz passiert nicht auf der Buehne. Flurgespraeche, Zufallsbegegnungen und «weak ties» entscheiden oft ueber den eigentlichen Mehrwert. Die Energie ist fuer alle gleichzeitig hoch — genau dann waere Verbindung am leichtesten. Aber es gibt keinen sozialen Layer. Streaming verteilt Information, es orchestriert keine Begegnung.
 
-| # | Aktion | Status | Details |
-|---|--------|--------|---------|
-| 6 | Feed sortiert nach Relevanz | ✅ Vorhanden | `PresenceFeedController` mit Tag-Intersection-Scoring, Filter nach Typ/Status/Tags |
-| 7 | «Jetzt gerade»-Karten | ✅ Vorhanden | `SuggestionService` generiert kontextbasierte Vorschläge (gleiche Session, gleiche Tags) |
-| 8 | One-Tap Ping | ✅ Vorhanden | `PingService` mit Rate-Limiting (10/h), Duplikat-Prüfung, Block-Check, 3-Ignore-Cooldown |
-| 9 | Gegenseitiger Match → Chat/Call | ✅ Vorhanden | Mutual Match erzeugt automatisch `Connection`; Broadcast-Events `PingReceived` + `MutualMatchCreated` |
+**Unsere These: Wenn wir den Moment nach dem Talk richtig gestalten, wird aus Content Connection.**
 
-### Akt 3: Echte Interaktion
+> Siehe auch: [Praesentationsfolien](presentation/) fuer den vollstaendigen Pitch mit App-Screenshots.
 
-| # | Aktion | Status | Details |
-|---|--------|--------|---------|
-| 10 | 3-Minuten-Videocall mit Countdown | ✅ Vorhanden | WebRTC mit nativer MediaDevices API, Timer, Room-UUID |
-| 11 | Icebreaker-Frage | ✅ Vorhanden | Icebreaker-Antwort wird im Onboarding erfasst und bei Calls angezeigt |
-| 12 | Verlängern (+3 Min, max 9) | ✅ Vorhanden | Bis zu 2 Extensions, Call-State mit `started_at`, `expires_at`, `extensions` |
-| 13 | Digitale Kontaktkarten austauschen | ⚠️ Teilweise | `ContactCard`-Model existiert mit Connection-FK; automatische Erstellung nach Call-Ende nicht explizit in Controllern sichtbar |
+---
 
-### Akt 4: Sessions & Booths
+## Was baut Hybrid Presence Layer?
 
-| # | Aktion | Status | Details |
-|---|--------|--------|---------|
-| 14 | Session-Check-in per QR-Scan | ✅ Vorhanden | QR mit Signatur-Validierung, `PresenceService.checkInToSession()`, Check-in/Check-out-Routes |
-| 15 | Live-Reaktionen (💡👏🔥) | ✅ Vorhanden | `SessionReactionController`, 5 Typen, Broadcast `SessionReactionSent`, Echtzeit-Graph in Moderation |
-| 16 | Q&A mit Upvoting | ✅ Vorhanden | `SessionQuestion` + `SessionQuestionVote` + Replies, Pinning/Hiding durch Moderatoren |
-| 17 | Post-Session-Matching (15 Min) | ✅ Vorhanden | `SessionEngagementEdge` mit Reaction-Sync (60%) + QA-Score (40%), 15-Min-Fenster |
-| 18 | Booth-Besuche (physisch + remote) | ✅ Vorhanden | Visit-Tracking, anonyme + benannte Besuche, Booth-Detail mit Visitor-Liste |
+Nicht eine generische Event-App, sondern einen sozialen Layer fuer den heissesten Moment im Event: **das 15-Minuten-Fenster nach einer Session**.
 
-### Akt 5: Organizer-Dashboard
+```
+ +0 Min          +2 Min              +5 Min            +15 Min
+ Talk endet      Kontext taucht      Match entsteht    Verbindung steht
+                 auf
+ Menschen        Wer war im selben   Mutual opt-in     Kurzcall oder
+ verlassen den   Talk? Wer hat       sicher, dass      Follow-up, solange
+ Content-Modus   dieselben           das Gespraech     der gemeinsame
+ und werden      Interessen?         einen klaren      Kontext noch
+ wieder offen    Wer ist gerade      Grund hat.        warm ist.
+ fuer Kontakte.  verfuegbar?
+```
 
-| # | Aktion | Status | Details |
-|---|--------|--------|---------|
-| 19 | Echtzeit-Metriken | ✅ Vorhanden | `DashboardService` mit Overview-Stats, Session-Analytics, Booth-Performance |
-| 20 | Serendipity-Wave auslösen | ✅ Vorhanden | `OrganizerActionController.serendipityWave()` generiert Vorschläge für alle aktiven Teilnehmenden |
-| 21 | Booths boosten | ✅ Vorhanden | Organizer-Aktionen für Booth-Boost implementiert |
+HPL macht aus dem kurzen Fenster nach einer Session einen gezielt orchestrierten Verbindungs-Moment.
 
-### Signature Features
+---
+
+## Der Flow — in 20 Sekunden vom Kontext zum Gespraech
+
+Die gesamte User Journey ist auf minimale Friction und maximale Relevanz ausgelegt. So laeuft ein typischer Durchgang:
+
+### 1. Einstieg — kein Passwort, kein Account-Chaos
+
+Der Organizer verschickt einen Event-Link per E-Mail oder zeigt einen QR-Code am Veranstaltungsort. Teilnehmende klicken den **Magic Link** — kein Passwort, kein Registrierungsformular, keine App-Installation. HPL ist eine **PWA**: direkt im Browser, keine App-Store-Huerde.
+
+Nach dem Klick: Typ waehlen (*«Ich bin vor Ort»* oder *«Ich bin remote dabei»*), drei Interessen-Tags aus der Event-Tag-Cloud waehlen (z.B. «Zero Trust», «Cloud Migration», «DevOps»), optional einen Icebreaker beantworten. **Unter 60 Sekunden zur Teilnahme.**
+
+> Screenshot: [Login & Onboarding Flow](presentation/slide-6.png)
+
+### 2. RIGHT NOW — eine konkrete Person statt hundert Namen
+
+Der **Praesenz-Feed** beantwortet genau eine Frage: *Wen sollte ich jetzt ansprechen?*
+
+Nicht Suche, sondern Entscheidungshilfe. RIGHT NOW zeigt eine Person, die im aktuellen Moment relevant ist — shared interest und shared context machen sofort klar, warum dieses Gespraech Sinn ergibt. Jede Karte zeigt: Name, physisch/remote-Indikator, aktuelle Session oder Booth, gemeinsame Tags, Aktivitaetspuls.
+
+Ein naechster Schritt, kein offenes Ende.
+
+> Screenshot: [RIGHT NOW Feed](presentation/slide-5.png) | [Feed Detail](presentation/slide-7.png)
+
+### 3. Ping — der erste Schritt ohne Risiko
+
+Ein Tap auf **Ping**. Kein Text, kein Commitment. Reines Signal: *«Ich bin interessiert.»*
+
+Die andere Person sieht den Ping und kann zurueckpingen. Erst bei **gegenseitigem Ping** entsteht ein Match — dann oeffnen sich Chat und 3-Minuten-Call. Keine unerwuenschten Nachrichten, kein Spam. Anti-Harassment by Design.
+
+### 4. It's a Match — sofort ins Gespraech
+
+Beide Seiten sehen einen Grund. Der Match-Screen zeigt die gemeinsamen Interessen und den gemeinsamen Kontext (gleicher Talk, gleiche Tags). Von hier aus: direkt ins kurze Gespraech.
+
+> Screenshot: [Match & Call Flow](presentation/check-4.png)
+
+### 5. 3-Minuten-Call — das digitale Hallengespreach
+
+**Zeitlich begrenzt = risikolos.** 3 Minuten spiegeln die natuerliche Laenge eines Hallengespraechs. Ein Countdown-Timer haelt das Gespraech fokussiert. Eine Icebreaker-Frage startet die Konversation.
+
+Nach 3 Minuten: verlængern (+3 Min, max. 9 total) oder beenden. Danach werden digitale Kontaktkarten mit vollem Kontext ausgetauscht — wer sich getroffen hat, wo (welche Session), was sie gemeinsam haben.
+
+> Screenshot: [3-Minuten-Call](presentation/slide-5.png) (rechts im Bild)
+
+### 6. Sessions — gleicher Talk, gleicher Moment, sofort connecten
+
+Teilnehmende checken per **QR-Scan** in eine Session ein. Sie sehen, wer noch dabei ist — aufgeteilt nach physisch und remote. **Live-Reaktionen** fliessen ueber beide Welten (💡👏🔥), sodass auch remote Teilnehmende die Energie im Raum spueren. Jeder kann **Q&A-Fragen** stellen, die von der gesamten Audience hochgevoted werden.
+
+Nach der Session das Kernfeature: **Post-Session-Matching**. HPL oeffnet ein 15-Minuten-Fenster und schlaegt Teilnehmende vor, die im selben Talk waren und aehnliche Interessen haben. *«4 Leute in dieser Session teilen deine Interessen — jetzt verbinden?»*
+
+> Screenshot: [Post-Session-Fenster](presentation/check-5.png)
+
+### 7. Booths — der gleiche Booth fuer vor Ort und remote
+
+Booths werden kontextuell vorgeschlagen und sind fuer beide Welten gleich zugaenglich. Remote-Besucher generieren **dieselben Lead-Daten** wie physische Besucher. Booth-Staff kann aktiv reagieren, Leads synchronisieren und sieht, welche Sessions Besucher zu ihrem Booth getrieben haben.
+
+**Lead-Capture wird messbar hybrid.** Session-to-Booth-Attribution zeigt: *«60% deiner Hot Leads kamen aus der Zero Trust Session.»*
+
+### 8. Organizer-Dashboard — sehen, steuern, beweisen
+
+Organisatoren sehen **Echtzeit-Metriken**: aktive Teilnehmende (physisch + remote), Verbindungen, Cross-Pollination-Rate (Anteil der Verbindungen, die die physisch/remote-Grenze ueberschreiten). Nicht Bauchgefuehl, sondern messbare Verbindungen zwischen Menschen, Sessions und Booths.
+
+Steuerungswerkzeuge:
+- **Serendipity-Wave** ausloesen — alle bekommen gleichzeitig einen unerwarteten Match-Vorschlag
+- Booths boosten, die unterdurchschnittlich performen
+- Ankuendigungen an alle Teilnehmenden senden
+
+Zielwerte: >60% Aktivierung, <10 Min bis zur ersten Interaktion, >35% Cross-Pollination, >15% Match-Akzeptanz.
+
+---
+
+## Kontext statt GPS
+
+HPL braucht keine permanente Ortung. Das System arbeitet mit sauberen, freiwilligen Signalen:
+
+| Signal | Beschreibung |
+|--------|-------------|
+| **Eintritt** | Link oder QR — Teilnehmende kommen ins Event und waehlen vor Ort oder remote |
+| **Session** | QR-Scan oder Tap — *«Ich bin hier»* setzt den gemeinsamen Session-Kontext |
+| **Booth** | Booth-Besuche werden erkannt, aktiv, nicht ueber unsichtbares Tracking |
+| **Live-Status** | Available, In Session, At Booth, Busy oder Away |
+
+Was die Plattform speichert: nicht den exakten Standort, sondern Kontext — Session, Booth, Teilnehmer-Typ und Dauer. Was das Dashboard daraus macht: es zeigt live, wer wo ist und ob die Touchpoints spaeter reale Begegnungen ausgeloest haben.
+
+---
+
+## Sicherheit und Respekt
+
+- Kein unaufgeforderter Chat — Kommunikation erfordert gegenseitigen Match
+- Ping traegt keine Nachricht — kein unerwuenschter Text moeglich
+- Rate-Limiting: max. 10 Pings pro Stunde
+- Block- und Report-Funktion
+- Cooldown nach 3 ignorierten Pings
+- **Invisible-Modus** jederzeit verfuegbar
+- Keine GPS-Daten, kein Behavioral Tracking
+
+---
+
+## Tech Stack
+
+| Komponente | Technologie |
+|------------|-------------|
+| Backend | Laravel 13 (PHP 8.4) |
+| Frontend | Vue 3 + Inertia.js v3 |
+| Echtzeit | Laravel Reverb (WebSockets), 18 Broadcast-Events |
+| Video | WebRTC (Peer-to-Peer, kein externer Service) |
+| Styling | Tailwind CSS v4, Mobile-first |
+| Auth | Magic Links (passwortlos) via Laravel Fortify |
+| Deployment | PWA — kein App Store, sofortiger Zugang per URL/QR |
+| Testing | Pest v4 (PHP), Playwright (Browser) |
+
+---
+
+## Dokumentation & Materialien
+
+| Dokument | Pfad |
+|----------|------|
+| Praesentation (Slidev, 11 Folien) | [`presentation/`](presentation/) |
+| App-Screenshots (Flows) | [`presentation/slide-*.png`](presentation/) |
+| Design-Katalog (alle UI-Screens) | [`docs/designs/design-catalog.html`](docs/designs/design-catalog.html) |
+| Praesentations-Brief fuer die Jury | [`docs/mvp/PRESENTATION-BRIEF.md`](docs/mvp/PRESENTATION-BRIEF.md) |
+| Demo-Script | [`docs/mvp/DEMO-SCRIPT.md`](docs/mvp/DEMO-SCRIPT.md) |
+| MVP-Scope (Build vs. Stub) | [`docs/mvp/13-mvp-scope.md`](docs/mvp/13-mvp-scope.md) |
+| Feature-Specs (13 Kapitel) | [`docs/mvp/`](docs/mvp/) |
+
+---
+
+## MVP-Status: Feature-Pruefung
+
+Jede in dieser README erwæhnte Aktion wurde gegen den aktuellen Codestand geprueft.
 
 | Feature | Status | Details |
 |---------|--------|---------|
-| One-Tap Ping | ✅ Vorhanden | Komplett mit Rate-Limiting, Duplikat-Schutz, Cooldown |
-| 3-Minuten-Call | ✅ Vorhanden | WebRTC, Timer, Extensions, Icebreaker |
-| Serendipity-Modus | ✅ Vorhanden | Opt-in Matching über `SuggestionService`, bewusst niedrige Überlappung |
-| Cross-World-Gleichheit | ✅ Vorhanden | Remote-Teilnehmende in Feed, Booths, Sessions gleichgestellt; `is_cross_world` auf Connections |
-| Anti-Harassment | ✅ Vorhanden | Rate-Limiting (10/h), `Block`-Model, `Report`-Model, 3-Ignore-Cooldown, Invisible-Modus |
+| Magic Link (passwortlos) | ✅ Implementiert | SHA-256-Token, 1h Throttling, automatische Weiterleitung |
+| Onboarding (Typ + Tags + Icebreaker) | ✅ Implementiert | 4-Schritt-Wizard, 3–5 Tags, event-spezifisch |
+| PWA (kein App Store) | ⚠️ Teilweise | Dynamisches Manifest pro Event; kein Service Worker fuer Offline |
+| Praesenz-Feed (RIGHT NOW) | ✅ Implementiert | Tag-Intersection-Scoring, Filter nach Typ/Status/Tags |
+| Kontextbasierte Vorschlaege | ✅ Implementiert | SuggestionService mit Session-Affinitaet und Tag-Overlap |
+| One-Tap Ping | ✅ Implementiert | Rate-Limiting (10/h), Duplikat-Schutz, Block-Check, 3-Ignore-Cooldown |
+| Gegenseitiger Match | ✅ Implementiert | Erzeugt automatisch Connection, Broadcast an beide Seiten |
+| Chat nach Match | ✅ Implementiert | Echtzeit-Nachrichten ueber WebSocket-Kanal |
+| 3-Minuten-Videocall | ✅ Implementiert | WebRTC, Countdown-Timer, Room-UUID |
+| Call-Verlaengerung (max. 9 Min) | ✅ Implementiert | Bis zu 2 Extensions mit Tracking |
+| Icebreaker-Frage im Call | ✅ Implementiert | Erfasst im Onboarding, angezeigt im Call |
+| Digitale Kontaktkarten | ⚠️ Teilweise | Model existiert; automatischer Austausch nach Call nicht explizit verkabelt |
+| Session-Check-in (QR) | ✅ Implementiert | Signatur-Validierung, Check-in/Check-out mit Statusupdate |
+| Live-Reaktionen | ✅ Implementiert | 5 Typen, Echtzeit-Broadcast, Moderations-Graph |
+| Q&A mit Upvoting | ✅ Implementiert | Fragen, Replies, Votes, Pinning/Hiding durch Moderatoren |
+| Post-Session-Matching (15 Min) | ✅ Implementiert | Engagement-Score (60% Reactions, 40% Q&A), automatisches Expiry |
+| Booth-Besuche (physisch + remote) | ✅ Implementiert | Visit-Tracking, anonyme + benannte Besuche |
+| Booth-Staff-Tools (Leads, Ping) | ✅ Implementiert | Lead-Capture, CSV-Export, Announcements, Visitor-Dashboard |
+| Organizer-Dashboard | ✅ Implementiert | Overview-Stats, Session-Analytics, Booth-Performance |
+| Serendipity-Wave | ✅ Implementiert | Mass-Suggestion fuer alle aktiven Teilnehmenden |
+| Serendipity-Modus (Opt-in) | ✅ Implementiert | Cross-Discipline-Matching ueber SuggestionService |
+| Booth-Boost | ✅ Implementiert | Organizer-Aktion fuer unterdurchschnittliche Booths |
+| Anti-Harassment (Block/Report) | ✅ Implementiert | Block-Model, Report-Model, Rate-Limiting, Cooldown |
+| Invisible-Modus | ✅ Implementiert | Toggle mit Broadcast, Feed filtert unsichtbare User |
+| WebSockets (Reverb) | ✅ Implementiert | 18 Events, 6 Kanaltypen |
+| Cross-World-Gleichheit | ✅ Implementiert | `is_cross_world` auf Connections, gleiche Feeds/Booths/Sessions |
 
-### Technologie
-
-| Komponente | Status | Details |
-|------------|--------|---------|
-| PWA | ⚠️ Teilweise | Manifest vorhanden, kein Service Worker für Offline |
-| Laravel + Inertia + Vue 3 | ✅ Vorhanden | Vollständiger Stack |
-| WebSockets (Reverb) | ✅ Vorhanden | 18 Broadcast-Events, 6 Kanäle (User, Event, Chat, Session, Booth, Notifications) |
-| WebRTC | ✅ Vorhanden | Native Browser-API, kein externer Service |
-| Mobile-first / Bottom-Tabs | ✅ Vorhanden | `BottomTabs.vue` mit Tab-Navigation |
-
-### Zusammenfassung
-
-- **✅ Voll implementiert**: 23 von 26 Aktionen
-- **⚠️ Teilweise**: 3 (PWA-Offline, Kontaktkarten-Automatik, Service Worker)
-- **❌ Fehlend**: 0
+**Ergebnis: 24 von 26 Features voll implementiert, 2 teilweise (PWA-Offline, Kontaktkarten-Automatik).**
 
 ---
+
+## Was wir eigentlich bauen
+
+Ein hybrides Event, das sich wieder wie **ein gemeinsamer Raum** anfuehlt.
+
+Sichtbarkeit / Relevanz / Verbindungen.
+
+---
+
+*Rick / Maerz 2026 — riccardo.previti@uoiea.ch*
 
 *Gebaut mit Laravel, Vue 3, Inertia.js, Laravel Reverb und WebRTC.*
