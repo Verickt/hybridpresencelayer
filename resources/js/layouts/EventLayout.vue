@@ -52,7 +52,11 @@ onMounted(() => {
 
             matchData.value = {
                 connectionId: data.connection_id,
-                user: { name: otherUser.name },
+                user: {
+                    name: otherUser.name,
+                    role_title: otherUser.role_title,
+                    company: otherUser.company,
+                },
                 sharedTags: data.shared_tags ?? [],
                 icebreaker: data.icebreaker ?? undefined,
             };

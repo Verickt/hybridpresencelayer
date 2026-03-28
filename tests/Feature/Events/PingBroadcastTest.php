@@ -4,6 +4,7 @@ use App\Events\MutualMatchCreated;
 use App\Events\PingReceived;
 use App\Models\Connection;
 use App\Models\Event;
+use App\Models\InterestTag;
 use App\Models\Ping;
 use App\Models\User;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -38,8 +39,8 @@ it('broadcasts ping on the receiver private channel with a safe payload', functi
 
 it('broadcasts mutual match to both users with connection context', function () {
     $event = Event::factory()->live()->create();
-    $userA = User::factory()->create();
-    $userB = User::factory()->create();
+    $userA = User::factory()->create(['company' => 'Acme Corp', 'role_title' => 'Engineer']);
+    $userB = User::factory()->create(['company' => 'Beta Inc', 'role_title' => 'Designer']);
 
     $connection = Connection::factory()->create([
         'user_a_id' => $userA->id,
@@ -61,13 +62,46 @@ it('broadcasts mutual match to both users with connection context', function () 
             'event_id' => $event->id,
         ]);
 
-    expect($broadcastEvent->broadcastWith()['user_a'])->toMatchArray([
+    $payload = $broadcastEvent->broadcastWith();
+
+    expect($payload['user_a'])->toMatchArray([
         'id' => $userA->id,
         'name' => $userA->name,
+        'company' => 'Acme Corp',
+        'role_title' => 'Engineer',
     ]);
 
-    expect($broadcastEvent->broadcastWith()['user_b'])->toMatchArray([
+    expect($payload['user_b'])->toMatchArray([
         'id' => $userB->id,
         'name' => $userB->name,
+        'company' => 'Beta Inc',
+        'role_title' => 'Designer',
     ]);
+
+    expect($payload)->toHaveKey('shared_tags')
+        ->and($payload['shared_tags'])->toBeArray();
+});
+
+it('includes shared interest tags in mutual match broadcast', function () {
+    $event = Event::factory()->live()->create();
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    // Create shared tags
+    $sharedTag = InterestTag::factory()->create(['name' => 'AI']);
+    $onlyATag = InterestTag::factory()->create(['name' => 'Backend']);
+    $userA->interestTags()->attach($sharedTag, ['event_id' => $event->id]);
+    $userA->interestTags()->attach($onlyATag, ['event_id' => $event->id]);
+    $userB->interestTags()->attach($sharedTag, ['event_id' => $event->id]);
+
+    $connection = Connection::factory()->create([
+        'user_a_id' => $userA->id,
+        'user_b_id' => $userB->id,
+        'event_id' => $event->id,
+    ]);
+
+    $broadcastEvent = new MutualMatchCreated($event, $connection, $userA, $userB);
+    $payload = $broadcastEvent->broadcastWith();
+
+    expect($payload['shared_tags'])->toBe(['AI']);
 });

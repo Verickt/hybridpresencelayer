@@ -33,10 +33,28 @@ class MutualMatchCreated implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
+        $tagsA = $this->userA->interestTags()
+            ->wherePivot('event_id', $this->event->id)
+            ->pluck('name');
+        $tagsB = $this->userB->interestTags()
+            ->wherePivot('event_id', $this->event->id)
+            ->pluck('name');
+
         return [
             'connection_id' => $this->userConnection->id,
-            'user_a' => ['id' => $this->userA->id, 'name' => $this->userA->name],
-            'user_b' => ['id' => $this->userB->id, 'name' => $this->userB->name],
+            'user_a' => [
+                'id' => $this->userA->id,
+                'name' => $this->userA->name,
+                'company' => $this->userA->company,
+                'role_title' => $this->userA->role_title,
+            ],
+            'user_b' => [
+                'id' => $this->userB->id,
+                'name' => $this->userB->name,
+                'company' => $this->userB->company,
+                'role_title' => $this->userB->role_title,
+            ],
+            'shared_tags' => $tagsA->intersect($tagsB)->values()->all(),
             'event_id' => $this->event->id,
         ];
     }

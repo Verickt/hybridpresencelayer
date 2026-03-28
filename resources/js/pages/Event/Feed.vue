@@ -79,9 +79,12 @@ async function handleDismissSuggestion() {
 async function handlePing(userId: number) {
     hapticPing();
     try {
-        await pingRequest.submit(
+        const response = await pingRequest.submit(
             ping({ event: props.event.slug, user: userId }),
         );
+        if (response?.data?.status === 'matched') {
+            router.reload({ only: ['participants', 'incomingPingUserIds'] });
+        }
     } catch {
         // silently fail
     }
