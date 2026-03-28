@@ -41,4 +41,9 @@ class SessionQuestion extends Model
     {
         return $this->hasMany(SessionQuestionVote::class);
     }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(SessionQuestionReply::class);
+    }
 }
