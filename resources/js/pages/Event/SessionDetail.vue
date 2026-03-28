@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, router, useHttp } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { getInitials } from '@/composables/useInitials';
 import { checkin, checkout } from '@/routes/event/sessions';
 import { store as storeQuestion, vote as voteQuestion } from '@/routes/event/sessions/questions';
@@ -13,12 +13,28 @@ type Participant = {
     participant_type: string | null;
 };
 
+type QuestionReply = {
+    id: number;
+    body: string;
+    user: { id: number; name: string };
+    votes_count: number;
+    viewer_has_voted: boolean;
+    is_speaker: boolean;
+    is_organizer: boolean;
+    created_at: string;
+};
+
 type SessionQuestion = {
     id: number;
     body: string;
     user: { id: number; name: string };
     votes_count: number;
     viewer_has_voted: boolean;
+    is_answered: boolean;
+    is_pinned: boolean;
+    is_hidden: boolean;
+    answered_by: number | null;
+    replies: QuestionReply[];
 };
 
 type ReactionType = 'lightbulb' | 'clap' | 'question' | 'fire' | 'think';
@@ -38,9 +54,12 @@ const props = defineProps<{
         qa_enabled: boolean;
         reactions_enabled: boolean;
         can_interact: boolean;
+        speaker_user_id: number | null;
     };
     viewer: {
         is_organizer: boolean;
+        is_speaker: boolean;
+        is_moderator: boolean;
         participant_type: string | null;
         is_checked_in: boolean;
         can_join: boolean;
@@ -55,6 +74,8 @@ const joinRequest = useHttp();
 const reactionRequest = useHttp<{ type: ReactionType }>({ type: 'clap' });
 const questionRequest = useHttp<{ body: string }>({ body: '' });
 const voteRequest = useHttp();
+const replyRequest = useHttp<{ body: string }>({ body: '' });
+const expandedQuestionId = ref<number | null>(null);
 
 const physicalParticipants = computed(() => props.participants.filter((p) => p.participant_type === 'physical'));
 const remoteParticipants = computed(() => props.participants.filter((p) => p.participant_type !== 'physical'));
@@ -67,9 +88,41 @@ const reactionEmojis: Array<{ type: ReactionType; emoji: string }> = [
     { type: 'think', emoji: '🤔' },
 ];
 
+// Reaction cluster badge
+const WINDOW_SECONDS = 30;
+const reactionWindows = ref<Map<number, Set<number>>>(new Map());
+const clusterCount = ref(0);
+const showClusterBadge = ref(false);
+let clusterDismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+function getCurrentWindow(): number {
+    const sessionStart = new Date(props.session.starts_at).getTime();
+    return Math.floor((Date.now() - sessionStart) / (WINDOW_SECONDS * 1000));
+}
+
+function trackReaction(userId: number) {
+    const window = getCurrentWindow();
+    if (!reactionWindows.value.has(window)) {
+        reactionWindows.value.set(window, new Set());
+    }
+    reactionWindows.value.get(window)!.add(userId);
+
+    const othersInWindow = reactionWindows.value.get(window)!.size - 1;
+    if (othersInWindow > 0) {
+        clusterCount.value = othersInWindow;
+        showClusterBadge.value = true;
+        if (clusterDismissTimer) clearTimeout(clusterDismissTimer);
+        clusterDismissTimer = setTimeout(() => { showClusterBadge.value = false; }, 15000);
+    }
+}
+
 function formatTimeRange(startsAt: string, endsAt: string): string {
     const fmt = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' });
     return `${fmt.format(new Date(startsAt))}–${fmt.format(new Date(endsAt))}`;
+}
+
+function formatTime(dateStr: string): string {
+    return new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date(dateStr));
 }
 
 async function refresh() {
@@ -114,6 +167,68 @@ async function handleVote(questionId: number) {
         await refresh();
     } catch { /* */ }
 }
+
+async function handleReplySubmit(questionId: number) {
+    if (!replyRequest.body.trim()) return;
+    try {
+        await router.post(
+            `/event/${props.event.slug}/sessions/${props.session.id}/questions/${questionId}/replies`,
+            { body: replyRequest.body },
+            { preserveScroll: true, onSuccess: () => { replyRequest.reset(); refresh(); } },
+        );
+    } catch { /* */ }
+}
+
+async function handleReplyVote(questionId: number, replyId: number) {
+    try {
+        await router.post(
+            `/event/${props.event.slug}/sessions/${props.session.id}/questions/${questionId}/replies/${replyId}/vote`,
+            {},
+            { preserveScroll: true, onSuccess: () => refresh() },
+        );
+    } catch { /* */ }
+}
+
+async function handlePin(questionId: number) {
+    await router.post(`/event/${props.event.slug}/sessions/${props.session.id}/questions/${questionId}/pin`, {}, { preserveScroll: true, onSuccess: () => refresh() });
+}
+
+async function handleHide(questionId: number) {
+    await router.post(`/event/${props.event.slug}/sessions/${props.session.id}/questions/${questionId}/hide`, {}, { preserveScroll: true, onSuccess: () => refresh() });
+}
+
+async function handleAnswer(questionId: number) {
+    await router.post(`/event/${props.event.slug}/sessions/${props.session.id}/questions/${questionId}/answer`, {}, { preserveScroll: true, onSuccess: () => refresh() });
+}
+
+onMounted(() => {
+    if (typeof window !== 'undefined' && (window as any).Echo) {
+        const echo = (window as any).Echo;
+        echo.private(`session.${props.session.id}`)
+            .listen('SessionReactionSent', (e: { type: string; user_id: number }) => {
+                trackReaction(e.user_id);
+            })
+            .listen('SessionQuestionPosted', () => {
+                refresh();
+            })
+            .listen('SessionQuestionReplyPosted', () => {
+                refresh();
+            })
+            .listen('SessionQuestionPinned', () => {
+                refresh();
+            })
+            .listen('SessionEnded', () => {
+                router.visit(`/event/${props.event.slug}/sessions/${props.session.id}/connections`);
+            });
+    }
+});
+
+onUnmounted(() => {
+    if (typeof window !== 'undefined' && (window as any).Echo) {
+        (window as any).Echo.leave(`session.${props.session.id}`);
+    }
+    if (clusterDismissTimer) clearTimeout(clusterDismissTimer);
+});
 </script>
 
 <template>
@@ -140,9 +255,18 @@ async function handleVote(questionId: number) {
                 {{ session.speaker }} · {{ formatTimeRange(session.starts_at, session.ends_at) }} · {{ session.room }}
             </p>
             <div class="mt-1 flex items-center gap-3 text-xs text-neutral-500">
-                <span>📍 {{ physicalParticipants.length }} physical</span>
+                <span>📍 {{ physicalParticipants.length }} vor Ort</span>
                 <span>🌐 {{ remoteParticipants.length }} remote</span>
             </div>
+
+            <!-- Moderate link for organizers/moderators -->
+            <button
+                v-if="viewer.is_moderator"
+                class="mt-2 text-xs font-medium text-indigo-600 hover:underline"
+                @click="router.visit(`/event/${event.slug}/sessions/${session.id}/moderate`)"
+            >
+                Session moderieren →
+            </button>
 
             <!-- Join/Leave -->
             <div class="mt-3">
@@ -152,7 +276,7 @@ async function handleVote(questionId: number) {
                     :disabled="joinRequest.processing"
                     @click="handleJoin"
                 >
-                    Check in
+                    Einchecken
                 </button>
                 <button
                     v-else-if="viewer.is_checked_in"
@@ -160,7 +284,7 @@ async function handleVote(questionId: number) {
                     :disabled="joinRequest.processing"
                     @click="handleLeave"
                 >
-                    Leave session
+                    Session verlassen
                 </button>
             </div>
         </div>
@@ -172,7 +296,7 @@ async function handleVote(questionId: number) {
                 :class="activeTab === 'people' ? 'text-indigo-600' : 'text-neutral-400'"
                 @click="activeTab = 'people'"
             >
-                People
+                Personen
                 <span
                     v-if="activeTab === 'people'"
                     class="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-indigo-600"
@@ -236,7 +360,7 @@ async function handleVote(questionId: number) {
                 </div>
 
                 <p v-if="participants.length === 0" class="py-8 text-center text-sm text-neutral-400">
-                    No active participants yet.
+                    Noch keine aktiven Teilnehmer.
                 </p>
             </div>
 
@@ -244,12 +368,12 @@ async function handleVote(questionId: number) {
             <div v-else-if="activeTab === 'qa'">
                 <!-- Ask question form -->
                 <div v-if="session.qa_enabled" class="mb-4">
-                    <label class="text-sm font-medium text-neutral-700">Ask the room</label>
+                    <label class="text-sm font-medium text-neutral-700">Fragen Sie den Raum</label>
                     <textarea
                         v-model="questionRequest.body"
                         rows="3"
                         class="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                        placeholder="Type your question for the speaker or moderator."
+                        placeholder="Stellen Sie Ihre Frage an den Referenten oder Moderator."
                         :disabled="!viewer.can_interact || questionRequest.processing"
                     />
                     <div class="mt-2 flex justify-end">
@@ -258,7 +382,7 @@ async function handleVote(questionId: number) {
                             :disabled="!viewer.can_interact || questionRequest.processing || !questionRequest.body.trim()"
                             @click="handleQuestionSubmit"
                         >
-                            Submit question
+                            Frage absenden
                         </button>
                     </div>
                 </div>
@@ -270,10 +394,23 @@ async function handleVote(questionId: number) {
                         :key="question.id"
                         class="rounded-xl border border-neutral-100 bg-white p-4"
                     >
+                        <!-- Status badges -->
+                        <div v-if="question.is_pinned || question.is_answered || question.is_hidden" class="mb-2 flex flex-wrap gap-1.5">
+                            <span v-if="question.is_pinned" class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                                📌 Angepinnt
+                            </span>
+                            <span v-if="question.is_answered" class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                                ✅ Beantwortet
+                            </span>
+                            <span v-if="question.is_hidden" class="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-500">
+                                Versteckt
+                            </span>
+                        </div>
+
                         <p class="text-sm font-medium text-neutral-900">{{ question.body }}</p>
                         <div class="mt-2 flex items-center justify-between">
                             <p class="text-xs text-neutral-500">
-                                {{ question.user.name }} · {{ question.votes_count }} vote{{ question.votes_count !== 1 ? 's' : '' }}
+                                {{ question.user.name }} · {{ question.votes_count }} Stimme{{ question.votes_count !== 1 ? 'n' : '' }}
                             </p>
                             <button
                                 class="rounded-full border px-3 py-1 text-xs font-medium transition"
@@ -284,17 +421,111 @@ async function handleVote(questionId: number) {
                                 :dusk="`session-question-vote-button-${question.id}`"
                                 @click="handleVote(question.id)"
                             >
-                                {{ question.viewer_has_voted ? 'Voted' : 'Vote' }}
+                                {{ question.viewer_has_voted ? 'Abgestimmt' : 'Abstimmen' }}
                             </button>
+                        </div>
+
+                        <!-- Moderator actions -->
+                        <div v-if="viewer.is_moderator" class="mt-3 flex flex-wrap gap-2 border-t border-neutral-50 pt-3">
+                            <button
+                                class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-50"
+                                @click="handlePin(question.id)"
+                            >
+                                {{ question.is_pinned ? 'Lösen' : 'Anpinnen' }}
+                            </button>
+                            <button
+                                class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-50"
+                                @click="handleHide(question.id)"
+                            >
+                                {{ question.is_hidden ? 'Anzeigen' : 'Verbergen' }}
+                            </button>
+                            <button
+                                class="rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-50"
+                                @click="handleAnswer(question.id)"
+                            >
+                                {{ question.is_answered ? 'Markierung aufheben' : 'Als beantwortet markieren' }}
+                            </button>
+                        </div>
+
+                        <!-- Replies toggle -->
+                        <button
+                            class="mt-3 text-xs font-medium text-indigo-600 hover:underline"
+                            @click="expandedQuestionId = expandedQuestionId === question.id ? null : question.id"
+                        >
+                            {{ expandedQuestionId === question.id ? 'Antworten ausblenden' : `Antworten anzeigen (${question.replies?.length ?? 0})` }}
+                        </button>
+
+                        <!-- Replies section -->
+                        <div v-if="expandedQuestionId === question.id" class="mt-3 space-y-3">
+                            <!-- Existing replies -->
+                            <div
+                                v-for="reply in question.replies"
+                                :key="reply.id"
+                                class="rounded-lg bg-neutral-50 p-3"
+                            >
+                                <p class="text-sm text-neutral-800">{{ reply.body }}</p>
+                                <div class="mt-1.5 flex items-center justify-between">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs text-neutral-500">{{ reply.user.name }}</span>
+                                        <span v-if="reply.is_speaker" class="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
+                                            Sprecher
+                                        </span>
+                                        <span v-else-if="reply.is_organizer" class="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                                            Organisator
+                                        </span>
+                                        <span class="text-[10px] text-neutral-400">{{ formatTime(reply.created_at) }}</span>
+                                    </div>
+                                    <button
+                                        class="rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition"
+                                        :class="reply.viewer_has_voted
+                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-600'
+                                            : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50'"
+                                        :disabled="!viewer.can_interact || reply.viewer_has_voted"
+                                        @click="handleReplyVote(question.id, reply.id)"
+                                    >
+                                        {{ reply.votes_count }} · {{ reply.viewer_has_voted ? 'Abgestimmt' : 'Abstimmen' }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Reply form -->
+                            <div v-if="viewer.can_interact" class="mt-2">
+                                <textarea
+                                    v-model="replyRequest.body"
+                                    rows="2"
+                                    class="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder="Antwort schreiben …"
+                                    :disabled="replyRequest.processing"
+                                />
+                                <div class="mt-1.5 flex justify-end">
+                                    <button
+                                        class="rounded-full bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-40"
+                                        :disabled="replyRequest.processing || !replyRequest.body.trim()"
+                                        @click="handleReplySubmit(question.id)"
+                                    >
+                                        Antwort absenden
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <p v-else class="py-8 text-center text-sm text-neutral-400">
-                    No questions yet. Be the first to ask!
+                    Noch keine Fragen. Stellen Sie die erste!
                 </p>
             </div>
         </div>
+
+        <!-- Reaction cluster badge -->
+        <Transition name="fade">
+            <div
+                v-if="showClusterBadge && viewer.is_checked_in"
+                class="fixed bottom-36 left-1/2 z-40 -translate-x-1/2 rounded-full bg-neutral-900/80 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur"
+            >
+                {{ clusterCount }} {{ clusterCount === 1 ? 'andere Person' : 'andere Personen' }} fühlt das auch
+            </div>
+        </Transition>
 
         <!-- Floating emoji reaction bar -->
         <div
@@ -314,3 +545,14 @@ async function handleVote(questionId: number) {
         </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
