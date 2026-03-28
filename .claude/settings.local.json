@@ -51,7 +51,21 @@
       "mcp__browser-tools__takeScreenshot",
       "mcp__browser-tools__getConsoleErrors",
       "mcp__paper__get_computed_styles",
-      "Bash(wc -l /Users/rick/Projects/hybridpresencelayer/resources/js/pages/Event/*.vue)"
+      "Bash(wc -l /Users/rick/Projects/hybridpresencelayer/resources/js/pages/Event/*.vue)",
+      "mcp__laravel-boost__last-error",
+      "Bash(composer remove:*)",
+      "Bash(composer require:*)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "Bash(find /Users/rick/Projects/hybridpresencelayer/resources/js/routes -name *.ts)",
+      "mcp__filesystem__create_directory",
+      "Bash(cp:*)",
+      "mcp__filesystem__write_file",
+      "mcp__laravel-boost__database-schema",
+      "Bash(npm install:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(git log:*)",
+      "mcp__paper__get_jsx",
+      "mcp__laravel-boost__database-query"
     ]
   },
   "enableAllProjectMcpServers": true,
