@@ -17,7 +17,7 @@ class SessionQuestionReplyController extends Controller
     {
         abort_unless($session->hasActiveCheckInFor($request->user()), 403);
         abort_unless($session->qa_enabled, 403);
-        abort_unless($session->canInteract(), 422, 'Session has ended');
+        abort_unless($session->canInteract(), 422, 'Sitzung ist beendet');
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:500'],
@@ -31,7 +31,7 @@ class SessionQuestionReplyController extends Controller
 
         SessionQuestionReplyPosted::dispatch($session, $reply);
 
-        return response()->json(['message' => 'Reply posted']);
+        return response()->json(['message' => 'Antwort gepostet']);
     }
 
     public function vote(Request $request, Event $event, EventSession $session, SessionQuestion $question, SessionQuestionReply $reply): JsonResponse
@@ -44,7 +44,7 @@ class SessionQuestionReplyController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json(['message' => 'Already voted'], 409);
+            return response()->json(['message' => 'Bereits abgestimmt'], 409);
         }
 
         SessionQuestionReplyVote::create([
@@ -52,6 +52,6 @@ class SessionQuestionReplyController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return response()->json(['message' => 'Vote recorded']);
+        return response()->json(['message' => 'Stimme erfasst']);
     }
 }

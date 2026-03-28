@@ -16,7 +16,7 @@ class SessionQuestionController extends Controller
     {
         abort_unless($session->hasActiveCheckInFor($request->user()), 403);
         abort_unless($session->qa_enabled, 403);
-        abort_unless($session->canInteract(), 422, 'Session has ended');
+        abort_unless($session->canInteract(), 422, 'Sitzung ist beendet');
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:500'],
@@ -30,21 +30,21 @@ class SessionQuestionController extends Controller
 
         SessionQuestionPosted::dispatch($session, $question);
 
-        return response()->json(['message' => 'Question submitted']);
+        return response()->json(['message' => 'Frage eingereicht']);
     }
 
     public function vote(Request $request, Event $event, EventSession $session, SessionQuestion $question): JsonResponse
     {
         abort_unless($session->hasActiveCheckInFor($request->user()), 403);
         abort_unless($session->qa_enabled, 403);
-        abort_unless($session->canInteract(), 422, 'Session has ended');
+        abort_unless($session->canInteract(), 422, 'Sitzung ist beendet');
 
         $exists = SessionQuestionVote::where('session_question_id', $question->id)
             ->where('user_id', $request->user()->id)
             ->exists();
 
         if ($exists) {
-            return response()->json(['message' => 'Already voted'], 409);
+            return response()->json(['message' => 'Bereits abgestimmt'], 409);
         }
 
         SessionQuestionVote::create([
@@ -52,6 +52,6 @@ class SessionQuestionController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return response()->json(['message' => 'Vote recorded']);
+        return response()->json(['message' => 'Stimme erfasst']);
     }
 }

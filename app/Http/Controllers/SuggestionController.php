@@ -56,7 +56,7 @@ class SuggestionController extends Controller
 
         $suggestionService->decline($suggestion);
 
-        return response()->json(['message' => 'Suggestion declined']);
+        return response()->json(['message' => 'Vorschlag abgelehnt']);
     }
 
     public function accept(Request $request, Event $event, Suggestion $suggestion, SuggestionService $suggestionService): JsonResponse
@@ -67,6 +67,6 @@ class SuggestionController extends Controller
 
         $suggestionService->accept($suggestion);
 
-        return response()->json(['message' => 'Suggestion accepted']);
+        return response()->json(['message' => 'Vorschlag angenommen']);
     }
 }

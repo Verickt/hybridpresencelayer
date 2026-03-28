@@ -32,7 +32,7 @@ class NotificationController extends Controller
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        return response()->json(['message' => 'Marked as read']);
+        return response()->json(['message' => 'Als gelesen markiert']);
     }
 
     public function unreadCount(Request $request): JsonResponse
@@ -58,6 +58,6 @@ class NotificationController extends Controller
             'notification_mode' => $validated['notification_mode'],
         ]);
 
-        return response()->json(['message' => 'Preferences updated']);
+        return response()->json(['message' => 'Einstellungen aktualisiert']);
     }
 }

@@ -41,12 +41,12 @@ class MagicLinkController extends Controller
 
         if (! $user) {
             // Don't reveal whether the email exists
-            return response()->json(['message' => 'If your email is registered, you will receive a link.']);
+            return back()->with('magic_link_sent', true);
         }
 
         $createMagicLink->handle($user, $event);
 
-        return response()->json(['message' => 'If your email is registered, you will receive a link.']);
+        return back()->with('magic_link_sent', true);
     }
 
     public function authenticate(string $token, AuthenticateViaMagicLink $authenticate)

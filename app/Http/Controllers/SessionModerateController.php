@@ -19,7 +19,7 @@ class SessionModerateController extends Controller
 
         SessionQuestionPinned::dispatch($session, $question->fresh());
 
-        return response()->json(['message' => $question->fresh()->is_pinned ? 'Question pinned' : 'Question unpinned']);
+        return response()->json(['message' => $question->fresh()->is_pinned ? 'Frage angepinnt' : 'Frage gelöst']);
     }
 
     public function hide(Request $request, Event $event, EventSession $session, SessionQuestion $question): JsonResponse
@@ -28,7 +28,7 @@ class SessionModerateController extends Controller
 
         $question->update(['is_hidden' => ! $question->is_hidden]);
 
-        return response()->json(['message' => $question->fresh()->is_hidden ? 'Question hidden' : 'Question visible']);
+        return response()->json(['message' => $question->fresh()->is_hidden ? 'Frage ausgeblendet' : 'Frage sichtbar']);
     }
 
     public function answer(Request $request, Event $event, EventSession $session, SessionQuestion $question): JsonResponse
@@ -42,7 +42,7 @@ class SessionModerateController extends Controller
             'answered_by' => $isAnswered ? $request->user()->id : null,
         ]);
 
-        return response()->json(['message' => $isAnswered ? 'Marked as answered' : 'Unmarked as answered']);
+        return response()->json(['message' => $isAnswered ? 'Als beantwortet markiert' : 'Markierung aufgehoben']);
     }
 
     private function authorizeModeration(Request $request, Event $event, EventSession $session): void

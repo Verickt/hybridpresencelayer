@@ -25,7 +25,7 @@ class OrganizerActionController extends Controller
             "\xF0\x9F\x93\xA2 {$validated['message']}"
         );
 
-        return response()->json(['message' => 'Announcement sent']);
+        return response()->json(['message' => 'Ankündigung gesendet']);
     }
 
     public function serendipityWave(Request $request, Event $event, SuggestionService $suggestionService): JsonResponse
@@ -42,6 +42,6 @@ class OrganizerActionController extends Controller
             $generated += $suggestions->count();
         }
 
-        return response()->json(['message' => 'Serendipity wave triggered', 'suggestions_generated' => $generated]);
+        return response()->json(['message' => 'Serendipity-Welle ausgelöst', 'suggestions_generated' => $generated]);
     }
 }
