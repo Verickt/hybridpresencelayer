@@ -26,15 +26,15 @@ function skip() {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-white px-6 pt-6 pb-8">
+    <div class="flex h-fit flex-col bg-white px-6 pt-6 pb-8">
         <Head :title="`${event.name} - Icebreaker`" />
 
-        <StepProgress :current-step="3" :total-steps="4" />
+        <StepProgress :current-step="3" :total-steps="5" />
 
         <div class="mt-8">
-            <h1 class="text-2xl font-bold text-neutral-900">Break the ice</h1>
+            <h1 class="text-2xl font-bold text-neutral-900">Brechen Sie das Eis</h1>
             <p class="mt-1 text-sm text-neutral-500">
-                Pick a question others can see on your profile. This helps start conversations.
+                Wählen Sie eine Frage, die andere auf Ihrem Profil sehen können. Das hilft, Gespräche zu beginnen.
             </p>
         </div>
 
@@ -65,14 +65,14 @@ function skip() {
                 class="px-6 py-3.5 text-sm font-medium text-neutral-500 transition hover:text-neutral-700"
                 @click="skip"
             >
-                Skip
+                Überspringen
             </button>
             <button
                 :disabled="form.processing"
                 class="flex-1 rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
-                Continue
+                Weiter
             </button>
         </div>
     </div>

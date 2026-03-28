@@ -31,18 +31,18 @@ function submit() {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-white px-6 pt-6 pb-8">
+    <div class="flex h-fit flex-col bg-white px-6 pt-6 pb-8">
         <Head :title="`${event.name} - Interests`" />
 
-        <StepProgress :current-step="2" :total-steps="4" />
+        <StepProgress :current-step="2" :total-steps="5" />
 
         <div class="mt-8">
-            <h1 class="text-2xl font-bold text-neutral-900">What interests you?</h1>
-            <p class="mt-1 text-sm text-neutral-500">Pick 3 topics to help us find your people</p>
+            <h1 class="text-2xl font-bold text-neutral-900">Was interessiert Sie?</h1>
+            <p class="mt-1 text-sm text-neutral-500">Wählen Sie 3 Themen, damit wir Ihre Leute finden</p>
         </div>
 
         <p class="mt-4 text-sm font-medium text-orange-600">
-            {{ form.tag_ids.length }} of 3 selected
+            {{ form.tag_ids.length }} von 3 ausgewählt
         </p>
 
         <div class="mt-4 flex flex-wrap gap-2">
@@ -65,7 +65,7 @@ function submit() {
                 class="w-full rounded-xl bg-orange-600 py-3.5 text-base font-semibold text-white transition hover:bg-orange-700 disabled:opacity-40"
                 @click="submit"
             >
-                {{ canContinue ? 'Continue' : `Pick ${remaining} more` }}
+                {{ canContinue ? 'Weiter' : `Noch ${remaining} auswählen` }}
             </button>
         </div>
     </div>
