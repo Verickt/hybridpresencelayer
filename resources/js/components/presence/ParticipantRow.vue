@@ -72,20 +72,20 @@ const displayTags = computed(() => props.participant.interest_tags.slice(0, 3));
         </div>
 
         <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-                <span class="truncate text-sm font-semibold text-neutral-900">
+            <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <span class="text-sm font-semibold text-neutral-900">
                     {{ participant.name }}
                 </span>
-                <span v-if="participant.role_title" class="truncate text-sm text-neutral-500">
+                <span v-if="participant.role_title" class="text-xs text-neutral-500">
                     {{ participant.role_title }}
                 </span>
-                <span
-                    v-if="participant.context_badge"
-                    class="shrink-0 rounded bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-600"
-                >
-                    {{ participant.context_badge }}
-                </span>
             </div>
+            <span
+                v-if="participant.context_badge"
+                class="mt-0.5 inline-block rounded bg-orange-50 px-1.5 py-0.5 text-[11px] font-medium text-orange-600"
+            >
+                {{ participant.context_badge }}
+            </span>
             <div class="mt-0.5 flex flex-wrap gap-1">
                 <span
                     v-for="t in displayTags"
